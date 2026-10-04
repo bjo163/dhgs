@@ -1,0 +1,77 @@
+name: Issue Label Sync
+
+on:
+  schedule:
+    - cron: '41 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+concurrency:
+  group: issue-label-sync
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure milestone/type labels on existing issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const specs = {
+              M0: ['milestone:M0', '5319E7', 'Foundation kernel'],
+              M1: ['milestone:M1', '1D76DB', 'Case, identity, knowledge and intake spine'],
+              M2: ['milestone:M2', '0E8A16', 'Decision spine'],
+              M3: ['milestone:M3', 'FBCA04', 'Execution, accountability and public'],
+              M4: ['milestone:M4', 'D93F0B', 'Assurance and hardening'],
+              M5: ['milestone:M5', 'B60205', 'Deployment, controlled pilot and year-one'],
+              MASTER: ['type:master', '000000', 'Master program/control issue'],
+              BUG: ['type:bug', 'D73A4A', 'Software defect'],
+              SECURITY: ['type:security', '8B0000', 'Security issue'],
+              DOCS: ['type:docs', '0075CA', 'Documentation issue'],
+            };
+
+            for (const [prefix, [name, color, description]] of Object.entries(specs)) {
+              try {
+                await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name });
+              } catch (error) {
+                if (error.status !== 404) throw error;
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name,
+                  color,
+                  description,
+                });
+              }
+            }
+
+            const all = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              per_page: 100,
+            });
+            const issues = all.filter(item => !item.pull_request);
+            let updated = 0;
+
+            for (const issue of issues) {
+              const match = /^\[(M[0-5]|MASTER|BUG|SECURITY|DOCS)\]\s+/i.exec(issue.title || '');
+              if (!match) continue;
+              const prefix = match[1].toUpperCase();
+              const [wanted] = specs[prefix];
+              const existing = new Set((issue.labels || []).map(label => typeof label === 'string' ? label : label.name));
+              if (existing.has(wanted)) continue;
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: [wanted],
+              });
+              updated += 1;
+            }
+
+            core.notice(`Issue label sync updated ${updated} issue(s).`);
