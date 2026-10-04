@@ -2,7 +2,7 @@
 
 > **Digital Governance Assurance Platform** for lawful, evidence-based, accountable, reviewable, correctable, privacy-preserving, accessible, and publicly understandable governance.
 
-**Blueprint document baseline:** `DHGS v15.1.1`  
+**Blueprint document baseline:** `DHGS v15.1.2`  
 **Blueprint status:** Controlled implementation baseline candidate  
 **Software version:** see [`VERSION`](./VERSION) and root `package.json`  
 **Primary architectural specification:** [`BLUEPRINT.md`](./BLUEPRINT.md)  

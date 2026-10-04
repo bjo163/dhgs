@@ -1,9 +1,9 @@
-# DHGS v15.1.1 — Controlled Implementation, Product Experience & Data-Driven Architecture Blueprint
+# DHGS v15.1.2 — Controlled Implementation, Product Experience & Data-Driven Architecture Blueprint
 
 ## Divine–Human Governance System
 
 **Document ID:** `DHGS-BP-001`  
-**Version:** `15.1.1`  
+**Version:** `15.1.2`  
 **Status:** `CONTROLLED_IMPLEMENTATION_BASELINE_CANDIDATE`  
 **Document type:** Governance + Product + UX/UI + Visual Identity + Asset + Engine + Corpus + ORM/Data-Driven + Technical + Institutional Architecture Blueprint  
 **Product type:** Digital Governance Assurance Platform  
@@ -2130,6 +2130,15 @@ For high-risk unknowns: fail safe, not fail open.
 
 Schemas alone are insufficient. Critical governance behavior MUST receive stable IDs.
 
+ID uniqueness rule:
+
+```text
+ONE MACHINE-READABLE ID = ONE CANONICAL REQUIREMENT MEANING
+```
+
+A later section MAY reference an existing ID, but MUST NOT redefine the same ID with a different meaning. Registry validation under issue #7 MUST fail duplicate definitions and dangling references.
+
+
 ID namespaces:
 
 ```text
@@ -2171,11 +2180,13 @@ REQ-SEC-002 Technical admin cannot alter governance outcome outside correction p
 REQ-PRV-001 Protected data is not directly exposed to Open Book.
 REQ-KNO-001 Authoritative knowledge requires provenance and version.
 REQ-EVD-001 Material evidence retains provenance and challenge status.
-REQ-UX-001 High-impact actions use deliberate confirmation and visible basis.
-REQ-UX-002 Appeal interfaces MUST NOT use dark patterns or hidden deadlines.
-REQ-UX-003 Mizan independent reviewers MUST NOT see aggregate peer scores before individual submission where independence is required.
-REQ-AST-001 Informative visual assets require accessible text alternatives or equivalent explanation.
-REQ-AST-002 Synthetic/AI visual media MUST NOT be presented as case evidence unless its synthetic provenance is explicit and legally relevant.
+Product-experience / asset minimum seed references (canonical definitions are in §169):
+REQ-UX-004
+REQ-UX-005
+REQ-UX-007
+REQ-AST-003
+REQ-AST-006
+REQ-AST-007
 REQ-ORM-001 Every material model operation carries actor/purpose/request context.
 REQ-ORM-002 ORM scope checks do not replace PostgreSQL RLS.
 REQ-ORM-003 Governance records have no unrestricted hard-delete path.
@@ -5086,7 +5097,7 @@ REQ-UX-003 Critical journeys define happy, failure, accessibility, and recovery 
 REQ-UX-004 High-impact actions require deliberate confirmation and reason capture.
 REQ-UX-005 Mizan review UI protects reviewer independence where required.
 REQ-UX-006 Evidence status, admissibility, confidentiality, and challenge are visible to authorized users.
-REQ-UX-007 Appeal and correction paths are clearly discoverable.
+REQ-UX-007 Appeal and correction paths are clearly discoverable and MUST NOT use dark patterns or hidden deadlines.
 REQ-UX-008 Long submissions support draft/save/recovery.
 REQ-UX-009 Public content supports Simple, Standard, and Technical modes where appropriate.
 REQ-UX-010 Public web targets WCAG 2.2 AA.
