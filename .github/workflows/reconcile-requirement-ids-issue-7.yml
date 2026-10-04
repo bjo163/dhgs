@@ -1,0 +1,72 @@
+name: Issue 7 Requirement ID Reconciliation
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/reconcile-requirement-ids-issue-7.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+      - name: Reconcile duplicate Blueprint requirement IDs
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          const blueprintPath = 'BLUEPRINT.md';
+          const readmePath = 'README.md';
+          let bp = fs.readFileSync(blueprintPath, 'utf8');
+          let readme = fs.readFileSync(readmePath, 'utf8');
+
+          const replaceOnce = (text, before, after, label) => {
+            const count = text.split(before).length - 1;
+            if (count !== 1) throw new Error(`${label}: expected exactly one match, found ${count}`);
+            return text.replace(before, after);
+          };
+
+          bp = replaceOnce(bp, '# DHGS v15.1.1 —', '# DHGS v15.1.2 —', 'Blueprint heading version');
+          bp = replaceOnce(bp, '**Version:** `15.1.1`', '**Version:** `15.1.2`', 'Blueprint metadata version');
+          readme = replaceOnce(readme, '**Blueprint document baseline:** `DHGS v15.1.1`', '**Blueprint document baseline:** `DHGS v15.1.2`', 'README Blueprint baseline');
+
+          const oldBlock = `REQ-UX-001 High-impact actions use deliberate confirmation and visible basis.\nREQ-UX-002 Appeal interfaces MUST NOT use dark patterns or hidden deadlines.\nREQ-UX-003 Mizan independent reviewers MUST NOT see aggregate peer scores before individual submission where independence is required.\nREQ-AST-001 Informative visual assets require accessible text alternatives or equivalent explanation.\nREQ-AST-002 Synthetic/AI visual media MUST NOT be presented as case evidence unless its synthetic provenance is explicit and legally relevant.`;
+          const newBlock = `Product-experience / asset minimum seed references (canonical definitions are in §169):\nREQ-UX-004\nREQ-UX-005\nREQ-UX-007\nREQ-AST-003\nREQ-AST-006\nREQ-AST-007`;
+          bp = replaceOnce(bp, oldBlock, newBlock, 'duplicate UX/asset minimum requirement block');
+
+          bp = replaceOnce(
+            bp,
+            'REQ-UX-007 Appeal and correction paths are clearly discoverable.',
+            'REQ-UX-007 Appeal and correction paths are clearly discoverable and MUST NOT use dark patterns or hidden deadlines.',
+            'canonical REQ-UX-007 wording'
+          );
+
+          const marker = 'Schemas alone are insufficient. Critical governance behavior MUST receive stable IDs.';
+          const markerIndex = bp.indexOf(marker);
+          if (markerIndex < 0) throw new Error('Registry marker not found');
+          const insertion = `\n\nID uniqueness rule:\n\n\`\`\`text\nONE MACHINE-READABLE ID = ONE CANONICAL REQUIREMENT MEANING\n\`\`\`\n\nA later section MAY reference an existing ID, but MUST NOT redefine the same ID with a different meaning. Registry validation under issue #7 MUST fail duplicate definitions and dangling references.\n`;
+          if (!bp.includes('ONE MACHINE-READABLE ID = ONE CANONICAL REQUIREMENT MEANING')) {
+            const insertAt = markerIndex + marker.length;
+            bp = bp.slice(0, insertAt) + insertion + bp.slice(insertAt);
+          }
+
+          fs.writeFileSync(blueprintPath, bp);
+          fs.writeFileSync(readmePath, readme);
+          NODE
+      - name: Commit Blueprint/README reconciliation
+        run: |
+          set -euo pipefail
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add BLUEPRINT.md README.md
+          git commit -m 'docs(blueprint): reconcile canonical requirement IDs [skip ci]'
+          git push origin HEAD:dev
