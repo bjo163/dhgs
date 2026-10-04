@@ -3,6 +3,7 @@ import { Pool } from 'pg';
 import {
   createEnvironment,
   ModelRegistry,
+  verifyAdapterContract,
   type BaseRecord,
   type ModelDefinition,
   type MutationEvent
@@ -58,6 +59,33 @@ suite('@dhgs/orm-postgres integration', () => {
     expect(first.map((item) => item.id)).toEqual(['0001_base']);
     await applyMigrations(admin);
     expect((await currentMigrationState(admin))[0]?.checksum).toBe(first[0]?.checksum);
+  });
+
+  it('passes the common ORM adapter contract', async () => {
+    const now = '2026-10-04T00:00:00.000Z';
+    await verifyAdapterContract({
+      adapter: new PostgresAdapter(app),
+      model: InstitutionModel,
+      context: { actorId: 'ACTOR-1', purpose: 'CONTRACT', requestId: 'REQ-PG-CONTRACT', jurisdictionIds: ['J-1'] },
+      prefix: 'PG-CONTRACT',
+      makeRecord: (id) => ({
+        id,
+        code: id,
+        name: 'Contract Institution',
+        kind: 'OTHER',
+        parentInstitutionId: null,
+        status: 'SANDBOX',
+        createdAt: now,
+        updatedAt: now,
+        createdBy: 'ACTOR-1',
+        updatedBy: 'ACTOR-1',
+        version: 1,
+        archivedAt: null,
+        jurisdictionId: 'J-1',
+        institutionId: null
+      }),
+      makePatch: (version) => ({ name: `Contract Institution v${version}`, updatedAt: now, version })
+    });
   });
 
   it('supports scoped CRUD/archive and optimistic version conflicts', async () => {

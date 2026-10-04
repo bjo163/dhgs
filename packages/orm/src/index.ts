@@ -5,6 +5,7 @@ export * from './model.js';
 export * from './registry.js';
 export * from './domain.js';
 export * from './adapter.js';
+export * from './adapter-contract.js';
 export * from './repository.js';
 export * from './environment.js';
 export * from './memory-adapter.js';
