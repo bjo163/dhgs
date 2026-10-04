@@ -1,0 +1,866 @@
+name: Issue 81 Async Foundation Bootstrap
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/bootstrap-async-issue-81.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: dhgs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d dhgs"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.3
+      - name: Enable pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.18.0 --activate
+      - name: Install current workspace
+        run: pnpm install --frozen-lockfile
+
+      - name: Create portable async contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p packages/async/src/__tests__ packages/async-postgres/src/__tests__ packages/async-postgres/migrations docs
+
+          cat > packages/async/package.json <<'EOF'
+          {
+            "name": "@dhgs/async",
+            "version": "0.1.0",
+            "private": true,
+            "type": "module",
+            "exports": { ".": "./src/index.ts" },
+            "scripts": {
+              "test": "vitest run",
+              "typecheck": "tsc -p tsconfig.json --noEmit"
+            },
+            "dependencies": {
+              "@dhgs/contracts": "workspace:*"
+            },
+            "devDependencies": {
+              "@types/node": "^24.0.0",
+              "typescript": "^5.9.0",
+              "vitest": "^3.2.0"
+            }
+          }
+          EOF
+
+          cat > packages/async/tsconfig.json <<'EOF'
+          {
+            "extends": "../../tsconfig.base.json",
+            "compilerOptions": { "incremental": false, "types": ["node", "vitest/globals"] },
+            "include": ["src/**/*.ts"]
+          }
+          EOF
+
+          cat > packages/async/src/types.ts <<'EOF'
+          import type { ActorContext, JsonObject } from '@dhgs/contracts';
+
+          export type DataSensitivity = 'P0' | 'P1' | 'P2' | 'P3';
+          export type GovernanceEffect =
+            | 'NOTIFY'
+            | 'PUBLISH'
+            | 'REVIEW'
+            | 'ESCALATE'
+            | 'MAINTENANCE'
+            | 'FINALIZE_HIGH_IMPACT_DECISION';
+
+          export type JobStatus = 'READY' | 'LEASED' | 'RETRY_WAIT' | 'SUCCEEDED' | 'FAILED' | 'DEAD_LETTER';
+          export type OutboxStatus = 'PENDING' | 'LEASED' | 'RETRY_WAIT' | 'PUBLISHED' | 'FAILED' | 'DEAD_LETTER';
+
+          export interface JobSpec<TPayload extends JsonObject = JsonObject> {
+            job_id: string;
+            job_type: string;
+            job_version: number;
+            payload: TPayload;
+            resource_ref?: string;
+            priority: number;
+            available_at: string;
+            max_attempts: number;
+            idempotency_key: string;
+            schedule_key?: string;
+            sensitivity: DataSensitivity;
+            privileged: boolean;
+            governance_effect: GovernanceEffect;
+            source_actor: ActorContext;
+          }
+
+          export interface JobRecord<TPayload extends JsonObject = JsonObject> extends JobSpec<TPayload> {
+            status: JobStatus;
+            attempt_count: number;
+            lease_owner?: string | null;
+            lease_expires_at?: string | null;
+            last_error?: string | null;
+            created_at: string;
+            started_at?: string | null;
+            completed_at?: string | null;
+          }
+
+          export interface OutboxEvent<TPayload extends JsonObject = JsonObject> {
+            event_id: string;
+            event_type: string;
+            payload_version: number;
+            aggregate_ref: string;
+            payload: TPayload;
+            request_id: string;
+            correlation_id: string;
+            available_at: string;
+            max_attempts: number;
+            status: OutboxStatus;
+            attempt_count: number;
+            lease_owner?: string | null;
+            lease_expires_at?: string | null;
+            last_error?: string | null;
+            created_at: string;
+            published_at?: string | null;
+          }
+
+          export interface SystemActorContext extends ActorContext {
+            actor_id: `SYSTEM:${string}`;
+            privileged: false;
+          }
+
+          export interface JobExecutionContext {
+            actor: SystemActorContext;
+            job: JobRecord;
+          }
+
+          export interface JobHandler {
+            type: string;
+            version: number;
+            handle(context: JobExecutionContext): Promise<void>;
+          }
+
+          export interface AuthorizationGate {
+            authorize(input: { actor: SystemActorContext; job: JobRecord }): Promise<boolean>;
+          }
+
+          export interface IdempotencyGate {
+            begin(key: string, owner: string, now: string, leaseMs: number): Promise<'ACQUIRED' | 'COMPLETED' | 'BUSY'>;
+            complete(key: string, owner: string, completedAt: string): Promise<void>;
+            release(key: string, owner: string): Promise<void>;
+          }
+
+          export interface AsyncMetrics {
+            queue_depth: number;
+            oldest_job_age_ms: number;
+            retry_count: number;
+            dead_letter_count: number;
+          }
+          EOF
+
+          cat > packages/async/src/registry.ts <<'EOF'
+          import type { JobHandler } from './types';
+
+          export class JobHandlerRegistry {
+            private readonly handlers = new Map<string, JobHandler>();
+
+            register(handler: JobHandler): this {
+              if (!handler.type.trim()) throw new Error('Job handler type is required');
+              if (!Number.isInteger(handler.version) || handler.version < 1) throw new Error('Job handler version must be a positive integer');
+              const key = handlerKey(handler.type, handler.version);
+              if (this.handlers.has(key)) throw new Error(`Duplicate job handler: ${key}`);
+              this.handlers.set(key, handler);
+              return this;
+            }
+
+            get(type: string, version: number): JobHandler {
+              const handler = this.handlers.get(handlerKey(type, version));
+              if (!handler) throw new Error(`Unregistered job handler: ${type}@${version}`);
+              return handler;
+            }
+
+            list(): readonly JobHandler[] {
+              return [...this.handlers.values()].sort((a, b) => handlerKey(a.type, a.version).localeCompare(handlerKey(b.type, b.version)));
+            }
+          }
+
+          function handlerKey(type: string, version: number): string {
+            return `${type}@${version}`;
+          }
+          EOF
+
+          cat > packages/async/src/policy.ts <<'EOF'
+          import type { JobRecord, JobSpec, SystemActorContext } from './types';
+
+          export function validateJobSpec(job: JobSpec | JobRecord): void {
+            if (!job.job_id.trim() || !job.job_type.trim() || !job.idempotency_key.trim()) throw new Error('Job identity fields are required');
+            if (!Number.isInteger(job.job_version) || job.job_version < 1) throw new Error('Job version must be a positive integer');
+            if (!Number.isInteger(job.max_attempts) || job.max_attempts < 1) throw new Error('max_attempts must be a positive integer');
+            if (Number.isNaN(Date.parse(job.available_at))) throw new Error('available_at must be an ISO-compatible timestamp');
+            if (job.governance_effect === 'FINALIZE_HIGH_IMPACT_DECISION') {
+              throw new Error('Background jobs cannot finalize high-impact governance decisions');
+            }
+            if (job.sensitivity === 'P2' || job.sensitivity === 'P3') {
+              if (!job.resource_ref?.trim()) throw new Error('Protected jobs require resource_ref');
+              if (Object.keys(job.payload).length > 0) throw new Error('Protected jobs must carry references, not sensitive payload content');
+            }
+          }
+
+          export function systemActorFor(job: JobRecord): SystemActorContext {
+            return {
+              actor_id: `SYSTEM:${job.job_type}`,
+              request_id: job.source_actor.request_id,
+              correlation_id: job.source_actor.correlation_id,
+              purpose: `BACKGROUND_JOB:${job.job_type}`,
+              identity_assurance: 'IA4_VERIFIED_INSTITUTION',
+              jurisdiction_ids: job.source_actor.jurisdiction_ids,
+              institution_id: job.source_actor.institution_id,
+              roles: ['SYSTEM_WORKER'],
+              permissions: [],
+              privileged: false
+            };
+          }
+
+          export function retryBackoffMs(attemptCount: number, baseMs = 1_000, maxMs = 15 * 60_000): number {
+            if (!Number.isInteger(attemptCount) || attemptCount < 1) throw new Error('attemptCount must be >= 1');
+            return Math.min(maxMs, baseMs * (2 ** (attemptCount - 1)));
+          }
+          EOF
+
+          cat > packages/async/src/worker.ts <<'EOF'
+          import { systemActorFor, validateJobSpec } from './policy';
+          import { JobHandlerRegistry } from './registry';
+          import type { AuthorizationGate, IdempotencyGate, JobRecord } from './types';
+
+          export type JobExecutionResult = 'SUCCEEDED' | 'ALREADY_PROCESSED' | 'BUSY';
+
+          export async function executeJob(input: {
+            job: JobRecord;
+            registry: JobHandlerRegistry;
+            authorization: AuthorizationGate;
+            idempotency: IdempotencyGate;
+            workerId: string;
+            now: string;
+            idempotencyLeaseMs?: number;
+          }): Promise<JobExecutionResult> {
+            validateJobSpec(input.job);
+            const handler = input.registry.get(input.job.job_type, input.job.job_version);
+            const actor = systemActorFor(input.job);
+            if (input.job.privileged && !(await input.authorization.authorize({ actor, job: input.job }))) {
+              throw new Error('Privileged background job authorization denied');
+            }
+            const state = await input.idempotency.begin(
+              input.job.idempotency_key,
+              input.workerId,
+              input.now,
+              input.idempotencyLeaseMs ?? 60_000
+            );
+            if (state === 'COMPLETED') return 'ALREADY_PROCESSED';
+            if (state === 'BUSY') return 'BUSY';
+            try {
+              await handler.handle({ actor, job: input.job });
+              await input.idempotency.complete(input.job.idempotency_key, input.workerId, input.now);
+              return 'SUCCEEDED';
+            } catch (error) {
+              await input.idempotency.release(input.job.idempotency_key, input.workerId);
+              throw error;
+            }
+          }
+          EOF
+
+          cat > packages/async/src/index.ts <<'EOF'
+          export * from './policy';
+          export * from './registry';
+          export * from './types';
+          export * from './worker';
+          EOF
+
+          cat > packages/async/src/__tests__/async.test.ts <<'EOF'
+          import { describe, expect, it } from 'vitest';
+          import { executeJob, JobHandlerRegistry, retryBackoffMs, systemActorFor, validateJobSpec, type IdempotencyGate, type JobRecord } from '../index';
+
+          const job = (overrides: Partial<JobRecord> = {}): JobRecord => ({
+            job_id: 'job-1', job_type: 'NOTICE_DELIVERY', job_version: 1, payload: { notice_id: 'n-1' },
+            priority: 10, available_at: '2026-10-05T00:00:00.000Z', max_attempts: 3,
+            idempotency_key: 'notice:n-1', sensitivity: 'P1', privileged: false, governance_effect: 'NOTIFY',
+            source_actor: { actor_id: 'user-1', request_id: 'req-1', correlation_id: 'corr-1', roles: ['ADMIN'], permissions: ['ALL'], privileged: true },
+            status: 'LEASED', attempt_count: 1, created_at: '2026-10-05T00:00:00.000Z', ...overrides
+          });
+
+          describe('@dhgs/async', () => {
+            it('uses an explicit handler registry and rejects unknown/duplicate handlers', () => {
+              const registry = new JobHandlerRegistry().register({ type: 'NOTICE_DELIVERY', version: 1, handle: async () => {} });
+              expect(registry.list()).toHaveLength(1);
+              expect(() => registry.get('UNKNOWN', 1)).toThrow(/Unregistered/);
+              expect(() => registry.register({ type: 'NOTICE_DELIVERY', version: 1, handle: async () => {} })).toThrow(/Duplicate/);
+            });
+
+            it('reconstructs a restricted system actor without inheriting user authority', () => {
+              const actor = systemActorFor(job());
+              expect(actor.actor_id).toBe('SYSTEM:NOTICE_DELIVERY');
+              expect(actor.request_id).toBe('req-1');
+              expect(actor.correlation_id).toBe('corr-1');
+              expect(actor.roles).toEqual(['SYSTEM_WORKER']);
+              expect(actor.permissions).toEqual([]);
+              expect(actor.privileged).toBe(false);
+            });
+
+            it('prohibits high-impact finalization and protected payload leakage', () => {
+              expect(() => validateJobSpec(job({ governance_effect: 'FINALIZE_HIGH_IMPACT_DECISION' }))).toThrow(/cannot finalize/);
+              expect(() => validateJobSpec(job({ sensitivity: 'P3', resource_ref: 'case:1', payload: { secret: 'x' } }))).toThrow(/references/);
+              expect(() => validateJobSpec(job({ sensitivity: 'P3', resource_ref: 'case:1', payload: {} }))).not.toThrow();
+            });
+
+            it('uses deterministic exponential retry backoff', () => {
+              expect(retryBackoffMs(1)).toBe(1000);
+              expect(retryBackoffMs(4)).toBe(8000);
+            });
+
+            it('requires authorization for privileged handlers', async () => {
+              const registry = new JobHandlerRegistry().register({ type: 'NOTICE_DELIVERY', version: 1, handle: async () => {} });
+              const idempotency = memoryIdempotency();
+              await expect(executeJob({ job: job({ privileged: true }), registry, authorization: { authorize: async () => false }, idempotency, workerId: 'w1', now: '2026-10-05T00:00:00.000Z' })).rejects.toThrow(/authorization denied/);
+            });
+
+            it('does not repeat a completed logical action on duplicate delivery', async () => {
+              let calls = 0;
+              const registry = new JobHandlerRegistry().register({ type: 'NOTICE_DELIVERY', version: 1, handle: async () => { calls += 1; } });
+              const idempotency = memoryIdempotency();
+              const input = { job: job(), registry, authorization: { authorize: async () => true }, idempotency, workerId: 'w1', now: '2026-10-05T00:00:00.000Z' };
+              expect(await executeJob(input)).toBe('SUCCEEDED');
+              expect(await executeJob(input)).toBe('ALREADY_PROCESSED');
+              expect(calls).toBe(1);
+            });
+          });
+
+          function memoryIdempotency(): IdempotencyGate {
+            const completed = new Set<string>();
+            const active = new Set<string>();
+            return {
+              async begin(key) {
+                if (completed.has(key)) return 'COMPLETED';
+                if (active.has(key)) return 'BUSY';
+                active.add(key); return 'ACQUIRED';
+              },
+              async complete(key) { active.delete(key); completed.add(key); },
+              async release(key) { active.delete(key); }
+            };
+          }
+          EOF
+
+      - name: Create PostgreSQL async store
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > packages/async-postgres/package.json <<'EOF'
+          {
+            "name": "@dhgs/async-postgres",
+            "version": "0.1.0",
+            "private": true,
+            "type": "module",
+            "exports": { ".": "./src/index.ts" },
+            "scripts": {
+              "test": "vitest run src/__tests__/unit.test.ts",
+              "test:integration": "vitest run src/__tests__/integration.test.ts",
+              "typecheck": "tsc -p tsconfig.json --noEmit"
+            },
+            "dependencies": {
+              "@dhgs/async": "workspace:*",
+              "@dhgs/contracts": "workspace:*",
+              "@dhgs/orm": "workspace:*",
+              "@dhgs/orm-postgres": "workspace:*",
+              "pg": "8.23.1"
+            },
+            "devDependencies": {
+              "@types/node": "^24.0.0",
+              "@types/pg": "8.23.1",
+              "typescript": "^5.9.0",
+              "vitest": "^3.2.0"
+            }
+          }
+          EOF
+
+          cat > packages/async-postgres/tsconfig.json <<'EOF'
+          {
+            "extends": "../../tsconfig.base.json",
+            "compilerOptions": { "incremental": false, "types": ["node", "vitest/globals"] },
+            "include": ["src/**/*.ts"]
+          }
+          EOF
+
+          cat > packages/async-postgres/migrations/0001_async.sql <<'EOF'
+          CREATE SCHEMA IF NOT EXISTS dhgs_async;
+
+          CREATE TABLE IF NOT EXISTS dhgs_async.outbox_events (
+            event_id text PRIMARY KEY,
+            event_type text NOT NULL,
+            payload_version integer NOT NULL CHECK (payload_version > 0),
+            aggregate_ref text NOT NULL,
+            payload jsonb NOT NULL DEFAULT '{}'::jsonb,
+            request_id text NOT NULL,
+            correlation_id text NOT NULL,
+            available_at timestamptz NOT NULL,
+            max_attempts integer NOT NULL CHECK (max_attempts > 0),
+            attempt_count integer NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),
+            status text NOT NULL CHECK (status IN ('PENDING','LEASED','RETRY_WAIT','PUBLISHED','FAILED','DEAD_LETTER')),
+            lease_owner text,
+            lease_expires_at timestamptz,
+            last_error text,
+            created_at timestamptz NOT NULL DEFAULT now(),
+            published_at timestamptz
+          );
+          CREATE INDEX IF NOT EXISTS outbox_due_idx ON dhgs_async.outbox_events (status, available_at, created_at);
+
+          CREATE TABLE IF NOT EXISTS dhgs_async.jobs (
+            job_id text PRIMARY KEY,
+            job_type text NOT NULL,
+            job_version integer NOT NULL CHECK (job_version > 0),
+            payload jsonb NOT NULL DEFAULT '{}'::jsonb,
+            resource_ref text,
+            priority integer NOT NULL DEFAULT 0,
+            available_at timestamptz NOT NULL,
+            max_attempts integer NOT NULL CHECK (max_attempts > 0),
+            attempt_count integer NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),
+            status text NOT NULL CHECK (status IN ('READY','LEASED','RETRY_WAIT','SUCCEEDED','FAILED','DEAD_LETTER')),
+            idempotency_key text NOT NULL UNIQUE,
+            schedule_key text UNIQUE,
+            sensitivity text NOT NULL CHECK (sensitivity IN ('P0','P1','P2','P3')),
+            privileged boolean NOT NULL DEFAULT false,
+            governance_effect text NOT NULL,
+            source_actor jsonb NOT NULL,
+            lease_owner text,
+            lease_expires_at timestamptz,
+            last_error text,
+            created_at timestamptz NOT NULL DEFAULT now(),
+            started_at timestamptz,
+            completed_at timestamptz
+          );
+          CREATE INDEX IF NOT EXISTS jobs_due_idx ON dhgs_async.jobs (status, available_at, priority DESC, created_at);
+
+          CREATE TABLE IF NOT EXISTS dhgs_async.idempotency_keys (
+            idempotency_key text PRIMARY KEY,
+            status text NOT NULL CHECK (status IN ('PROCESSING','COMPLETED')),
+            owner text NOT NULL,
+            lease_expires_at timestamptz,
+            created_at timestamptz NOT NULL DEFAULT now(),
+            completed_at timestamptz
+          );
+          EOF
+
+          cat > packages/async-postgres/src/migration.ts <<'EOF'
+          import { createHash } from 'node:crypto';
+          import { readFile } from 'node:fs/promises';
+          import type { Pool, PoolClient } from 'pg';
+
+          interface Migration { id: string; sql: string; checksum: string; }
+
+          export async function loadAsyncMigrations(): Promise<Migration[]> {
+            const sql = await readFile(new URL('../migrations/0001_async.sql', import.meta.url), 'utf8');
+            return [{ id: '0001_async', sql, checksum: createHash('sha256').update(sql).digest('hex') }];
+          }
+
+          export async function applyAsyncMigrations(pool: Pool): Promise<void> {
+            const client = await pool.connect();
+            try {
+              await ensureTable(client);
+              for (const migration of await loadAsyncMigrations()) await applyOne(client, migration);
+            } finally { client.release(); }
+          }
+
+          async function ensureTable(client: PoolClient): Promise<void> {
+            await client.query('CREATE SCHEMA IF NOT EXISTS dhgs_async');
+            await client.query(`CREATE TABLE IF NOT EXISTS dhgs_async.schema_migrations (
+              id text PRIMARY KEY, checksum text NOT NULL, applied_at timestamptz NOT NULL DEFAULT now()
+            )`);
+          }
+
+          async function applyOne(client: PoolClient, migration: Migration): Promise<void> {
+            await client.query('BEGIN');
+            try {
+              await client.query(`SELECT pg_advisory_xact_lock(hashtext('dhgs_async.schema_migrations'))`);
+              const existing = await client.query<{ checksum: string }>('SELECT checksum FROM dhgs_async.schema_migrations WHERE id=$1', [migration.id]);
+              if (existing.rows[0]) {
+                if (existing.rows[0].checksum !== migration.checksum) throw new Error(`Async migration checksum mismatch: ${migration.id}`);
+                await client.query('COMMIT'); return;
+              }
+              await client.query(migration.sql);
+              await client.query('INSERT INTO dhgs_async.schema_migrations (id, checksum) VALUES ($1,$2)', [migration.id, migration.checksum]);
+              await client.query('COMMIT');
+            } catch (error) { await client.query('ROLLBACK'); throw error; }
+          }
+          EOF
+
+          cat > packages/async-postgres/src/store.ts <<'EOF'
+          import type { Pool, PoolClient, QueryResultRow } from 'pg';
+          import { retryBackoffMs, validateJobSpec, type AsyncMetrics, type IdempotencyGate, type JobRecord, type JobSpec, type OutboxEvent } from '@dhgs/async';
+          import type { ActorContext, JsonObject } from '@dhgs/contracts';
+
+          type Runner = Pool | PoolClient;
+
+          export class AsyncPostgresStore implements IdempotencyGate {
+            constructor(private readonly runner: Runner) {}
+
+            async enqueueOutbox(input: Omit<OutboxEvent, 'status'|'attempt_count'|'created_at'|'lease_owner'|'lease_expires_at'|'last_error'|'published_at'>): Promise<void> {
+              await this.runner.query(`INSERT INTO dhgs_async.outbox_events
+                (event_id,event_type,payload_version,aggregate_ref,payload,request_id,correlation_id,available_at,max_attempts,status)
+                VALUES ($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9,'PENDING')`,
+                [input.event_id,input.event_type,input.payload_version,input.aggregate_ref,JSON.stringify(input.payload),input.request_id,input.correlation_id,input.available_at,input.max_attempts]);
+            }
+
+            async claimOutbox(workerId: string, now: string, leaseMs: number, limit = 10): Promise<OutboxEvent[]> {
+              const leaseUntil = new Date(Date.parse(now) + leaseMs).toISOString();
+              const result = await this.runner.query<OutboxRow & QueryResultRow>(`WITH candidate AS (
+                SELECT event_id FROM dhgs_async.outbox_events
+                WHERE available_at <= $1 AND (
+                  status IN ('PENDING','RETRY_WAIT') OR (status='LEASED' AND lease_expires_at <= $1)
+                )
+                ORDER BY available_at, created_at
+                FOR UPDATE SKIP LOCKED LIMIT $2
+              ) UPDATE dhgs_async.outbox_events o
+                SET status='LEASED', lease_owner=$3, lease_expires_at=$4, attempt_count=attempt_count+1
+                FROM candidate WHERE o.event_id=candidate.event_id RETURNING o.*`, [now,limit,workerId,leaseUntil]);
+              return result.rows.map(outboxFromRow);
+            }
+
+            async publishOutbox(eventId: string, workerId: string, at: string): Promise<void> {
+              const result = await this.runner.query(`UPDATE dhgs_async.outbox_events SET status='PUBLISHED', published_at=$3, lease_owner=NULL, lease_expires_at=NULL
+                WHERE event_id=$1 AND status='LEASED' AND lease_owner=$2`, [eventId,workerId,at]);
+              if (result.rowCount !== 1) throw new Error(`Outbox lease ownership lost: ${eventId}`);
+            }
+
+            async failOutbox(event: OutboxEvent, workerId: string, error: string, now: string): Promise<'RETRY_WAIT'|'DEAD_LETTER'> {
+              const terminal = event.attempt_count >= event.max_attempts;
+              const status = terminal ? 'DEAD_LETTER' : 'RETRY_WAIT';
+              const nextAt = terminal ? now : new Date(Date.parse(now) + retryBackoffMs(event.attempt_count)).toISOString();
+              await this.runner.query(`UPDATE dhgs_async.outbox_events SET status=$4,last_error=$5,available_at=$6,lease_owner=NULL,lease_expires_at=NULL
+                WHERE event_id=$1 AND status='LEASED' AND lease_owner=$2 AND attempt_count=$3`, [event.event_id,workerId,event.attempt_count,status,error,nextAt]);
+              return status;
+            }
+
+            async enqueueJob(spec: JobSpec): Promise<{ job: JobRecord; created: boolean }> {
+              validateJobSpec(spec);
+              const result = await this.runner.query<JobRow & QueryResultRow>(`INSERT INTO dhgs_async.jobs
+                (job_id,job_type,job_version,payload,resource_ref,priority,available_at,max_attempts,status,idempotency_key,schedule_key,sensitivity,privileged,governance_effect,source_actor)
+                VALUES ($1,$2,$3,$4::jsonb,$5,$6,$7,$8,'READY',$9,$10,$11,$12,$13,$14::jsonb)
+                ON CONFLICT (idempotency_key) DO NOTHING RETURNING *`, jobValues(spec));
+              if (result.rows[0]) return { job: jobFromRow(result.rows[0]), created: true };
+              const existing = await this.runner.query<JobRow & QueryResultRow>('SELECT * FROM dhgs_async.jobs WHERE idempotency_key=$1', [spec.idempotency_key]);
+              if (!existing.rows[0]) throw new Error(`Unable to load idempotent job: ${spec.idempotency_key}`);
+              return { job: jobFromRow(existing.rows[0]), created: false };
+            }
+
+            async enqueueScheduledJob(spec: JobSpec, scheduleKey: string): Promise<{ job: JobRecord; created: boolean }> {
+              validateJobSpec(spec);
+              if (!scheduleKey.trim()) throw new Error('scheduleKey is required');
+              const scheduled = { ...spec, schedule_key: scheduleKey };
+              const result = await this.runner.query<JobRow & QueryResultRow>(`INSERT INTO dhgs_async.jobs
+                (job_id,job_type,job_version,payload,resource_ref,priority,available_at,max_attempts,status,idempotency_key,schedule_key,sensitivity,privileged,governance_effect,source_actor)
+                VALUES ($1,$2,$3,$4::jsonb,$5,$6,$7,$8,'READY',$9,$10,$11,$12,$13,$14::jsonb)
+                ON CONFLICT (schedule_key) DO NOTHING RETURNING *`, jobValues(scheduled));
+              if (result.rows[0]) return { job: jobFromRow(result.rows[0]), created: true };
+              const existing = await this.runner.query<JobRow & QueryResultRow>('SELECT * FROM dhgs_async.jobs WHERE schedule_key=$1', [scheduleKey]);
+              if (!existing.rows[0]) throw new Error(`Unable to load scheduled job: ${scheduleKey}`);
+              return { job: jobFromRow(existing.rows[0]), created: false };
+            }
+
+            async claimJobs(workerId: string, now: string, leaseMs: number, limit = 10): Promise<JobRecord[]> {
+              const leaseUntil = new Date(Date.parse(now) + leaseMs).toISOString();
+              const result = await this.runner.query<JobRow & QueryResultRow>(`WITH candidate AS (
+                SELECT job_id FROM dhgs_async.jobs
+                WHERE available_at <= $1 AND (
+                  status IN ('READY','RETRY_WAIT') OR (status='LEASED' AND lease_expires_at <= $1)
+                )
+                ORDER BY priority DESC, available_at, created_at
+                FOR UPDATE SKIP LOCKED LIMIT $2
+              ) UPDATE dhgs_async.jobs j SET status='LEASED',lease_owner=$3,lease_expires_at=$4,
+                started_at=COALESCE(started_at,$1),attempt_count=attempt_count+1
+                FROM candidate WHERE j.job_id=candidate.job_id RETURNING j.*`, [now,limit,workerId,leaseUntil]);
+              return result.rows.map(jobFromRow);
+            }
+
+            async completeJob(jobId: string, workerId: string, at: string): Promise<void> {
+              const result = await this.runner.query(`UPDATE dhgs_async.jobs SET status='SUCCEEDED',completed_at=$3,lease_owner=NULL,lease_expires_at=NULL
+                WHERE job_id=$1 AND status='LEASED' AND lease_owner=$2`, [jobId,workerId,at]);
+              if (result.rowCount !== 1) throw new Error(`Job lease ownership lost: ${jobId}`);
+            }
+
+            async failJob(job: JobRecord, workerId: string, error: string, now: string): Promise<'RETRY_WAIT'|'DEAD_LETTER'> {
+              const terminal = job.attempt_count >= job.max_attempts;
+              const status = terminal ? 'DEAD_LETTER' : 'RETRY_WAIT';
+              const nextAt = terminal ? now : new Date(Date.parse(now) + retryBackoffMs(job.attempt_count)).toISOString();
+              const result = await this.runner.query(`UPDATE dhgs_async.jobs SET status=$4,last_error=$5,available_at=$6,lease_owner=NULL,lease_expires_at=NULL
+                WHERE job_id=$1 AND status='LEASED' AND lease_owner=$2 AND attempt_count=$3`, [job.job_id,workerId,job.attempt_count,status,error,nextAt]);
+              if (result.rowCount !== 1) throw new Error(`Job lease ownership lost: ${job.job_id}`);
+              return status;
+            }
+
+            async begin(key: string, owner: string, now: string, leaseMs: number): Promise<'ACQUIRED'|'COMPLETED'|'BUSY'> {
+              const leaseUntil = new Date(Date.parse(now) + leaseMs).toISOString();
+              const inserted = await this.runner.query(`INSERT INTO dhgs_async.idempotency_keys (idempotency_key,status,owner,lease_expires_at)
+                VALUES ($1,'PROCESSING',$2,$3) ON CONFLICT DO NOTHING`, [key,owner,leaseUntil]);
+              if (inserted.rowCount === 1) return 'ACQUIRED';
+              const reclaimed = await this.runner.query(`UPDATE dhgs_async.idempotency_keys SET owner=$2,lease_expires_at=$3
+                WHERE idempotency_key=$1 AND status='PROCESSING' AND lease_expires_at <= $4`, [key,owner,leaseUntil,now]);
+              if (reclaimed.rowCount === 1) return 'ACQUIRED';
+              const current = await this.runner.query<{ status: string } & QueryResultRow>('SELECT status FROM dhgs_async.idempotency_keys WHERE idempotency_key=$1', [key]);
+              return current.rows[0]?.status === 'COMPLETED' ? 'COMPLETED' : 'BUSY';
+            }
+
+            async complete(key: string, owner: string, completedAt: string): Promise<void> {
+              const result = await this.runner.query(`UPDATE dhgs_async.idempotency_keys SET status='COMPLETED',completed_at=$3,lease_expires_at=NULL
+                WHERE idempotency_key=$1 AND status='PROCESSING' AND owner=$2`, [key,owner,completedAt]);
+              if (result.rowCount !== 1) throw new Error(`Idempotency lease ownership lost: ${key}`);
+            }
+
+            async release(key: string, owner: string): Promise<void> {
+              await this.runner.query(`DELETE FROM dhgs_async.idempotency_keys WHERE idempotency_key=$1 AND status='PROCESSING' AND owner=$2`, [key,owner]);
+            }
+
+            async metrics(now: string): Promise<AsyncMetrics> {
+              const result = await this.runner.query<{ queue_depth: string; oldest_ms: string | null; retry_count: string; dead_count: string } & QueryResultRow>(`SELECT
+                count(*) FILTER (WHERE status IN ('READY','LEASED','RETRY_WAIT'))::text AS queue_depth,
+                extract(epoch from ($1::timestamptz - min(created_at) FILTER (WHERE status IN ('READY','LEASED','RETRY_WAIT'))))*1000 AS oldest_ms,
+                count(*) FILTER (WHERE status='RETRY_WAIT')::text AS retry_count,
+                count(*) FILTER (WHERE status='DEAD_LETTER')::text AS dead_count
+                FROM dhgs_async.jobs`, [now]);
+              const row = result.rows[0]!;
+              return { queue_depth:Number(row.queue_depth), oldest_job_age_ms:Math.max(0,Number(row.oldest_ms ?? 0)), retry_count:Number(row.retry_count), dead_letter_count:Number(row.dead_count) };
+            }
+          }
+
+          function jobValues(spec: JobSpec): unknown[] {
+            return [spec.job_id,spec.job_type,spec.job_version,JSON.stringify(spec.payload),spec.resource_ref ?? null,spec.priority,spec.available_at,spec.max_attempts,
+              spec.idempotency_key,spec.schedule_key ?? null,spec.sensitivity,spec.privileged,spec.governance_effect,JSON.stringify(spec.source_actor)];
+          }
+
+          interface JobRow extends QueryResultRow {
+            job_id:string; job_type:string; job_version:number; payload:JsonObject; resource_ref:string|null; priority:number; available_at:Date; max_attempts:number; attempt_count:number;
+            status:JobRecord['status']; idempotency_key:string; schedule_key:string|null; sensitivity:JobRecord['sensitivity']; privileged:boolean; governance_effect:JobRecord['governance_effect']; source_actor:ActorContext;
+            lease_owner:string|null; lease_expires_at:Date|null; last_error:string|null; created_at:Date; started_at:Date|null; completed_at:Date|null;
+          }
+          interface OutboxRow extends QueryResultRow {
+            event_id:string; event_type:string; payload_version:number; aggregate_ref:string; payload:JsonObject; request_id:string; correlation_id:string; available_at:Date; max_attempts:number;
+            attempt_count:number; status:OutboxEvent['status']; lease_owner:string|null; lease_expires_at:Date|null; last_error:string|null; created_at:Date; published_at:Date|null;
+          }
+          function jobFromRow(row: JobRow): JobRecord {
+            return { job_id:row.job_id,job_type:row.job_type,job_version:row.job_version,payload:row.payload,resource_ref:row.resource_ref ?? undefined,priority:row.priority,
+              available_at:row.available_at.toISOString(),max_attempts:row.max_attempts,attempt_count:row.attempt_count,status:row.status,idempotency_key:row.idempotency_key,
+              schedule_key:row.schedule_key ?? undefined,sensitivity:row.sensitivity,privileged:row.privileged,governance_effect:row.governance_effect,source_actor:row.source_actor,
+              lease_owner:row.lease_owner,lease_expires_at:row.lease_expires_at?.toISOString() ?? null,last_error:row.last_error,created_at:row.created_at.toISOString(),
+              started_at:row.started_at?.toISOString() ?? null,completed_at:row.completed_at?.toISOString() ?? null };
+          }
+          function outboxFromRow(row: OutboxRow): OutboxEvent {
+            return { event_id:row.event_id,event_type:row.event_type,payload_version:row.payload_version,aggregate_ref:row.aggregate_ref,payload:row.payload,request_id:row.request_id,
+              correlation_id:row.correlation_id,available_at:row.available_at.toISOString(),max_attempts:row.max_attempts,attempt_count:row.attempt_count,status:row.status,
+              lease_owner:row.lease_owner,lease_expires_at:row.lease_expires_at?.toISOString() ?? null,last_error:row.last_error,created_at:row.created_at.toISOString(),published_at:row.published_at?.toISOString() ?? null };
+          }
+          EOF
+
+          cat > packages/async-postgres/src/transaction.ts <<'EOF'
+          import type { ActorContext } from '@dhgs/contracts';
+          import { PostgresAdapter, applyContext } from '@dhgs/orm-postgres';
+          import type { Pool, PoolClient } from 'pg';
+          import { AsyncPostgresStore } from './store';
+
+          export async function withTransactionalOutbox<R>(
+            pool: Pool,
+            actor: ActorContext,
+            work: (context: { client: PoolClient; orm: PostgresAdapter; asyncStore: AsyncPostgresStore }) => Promise<R>
+          ): Promise<R> {
+            const client = await pool.connect();
+            try {
+              await client.query('BEGIN');
+              await applyContext(client, {
+                actorId: actor.actor_id,
+                requestId: actor.request_id,
+                correlationId: actor.correlation_id,
+                purpose: actor.purpose,
+                jurisdictionIds: [...(actor.jurisdiction_ids ?? [])],
+                institutionId: actor.institution_id,
+                identityAssurance: actor.identity_assurance,
+                roles: [...(actor.roles ?? [])],
+                permissions: [...(actor.permissions ?? [])],
+                privileged: actor.privileged
+              });
+              const result = await work({ client, orm: new PostgresAdapter(client), asyncStore: new AsyncPostgresStore(client) });
+              await client.query('COMMIT');
+              return result;
+            } catch (error) {
+              await client.query('ROLLBACK');
+              throw error;
+            } finally { client.release(); }
+          }
+          EOF
+
+          cat > packages/async-postgres/src/index.ts <<'EOF'
+          export * from './migration';
+          export * from './store';
+          export * from './transaction';
+          EOF
+
+          cat > packages/async-postgres/src/__tests__/unit.test.ts <<'EOF'
+          import { describe, expect, it } from 'vitest';
+          import { AsyncPostgresStore } from '../store';
+          describe('@dhgs/async-postgres unit', () => {
+            it('exports the durable store', () => { expect(AsyncPostgresStore).toBeTypeOf('function'); });
+          });
+          EOF
+
+          cat > packages/async-postgres/src/__tests__/integration.test.ts <<'EOF'
+          import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+          import { Pool } from 'pg';
+          import { executeJob, JobHandlerRegistry, type JobRecord, type JobSpec } from '@dhgs/async';
+          import { applyAsyncMigrations } from '../migration';
+          import { AsyncPostgresStore } from '../store';
+          import { withTransactionalOutbox } from '../transaction';
+
+          const url = process.env.PG_ADMIN_URL;
+          const suite = url ? describe : describe.skip;
+          const now = '2026-10-05T00:00:00.000Z';
+          const actor = { actor_id:'USER-1', request_id:'REQ-1', correlation_id:'CORR-1', purpose:'TEST', jurisdiction_ids:['J-1'] } as const;
+          let seq = 0;
+
+          suite('@dhgs/async-postgres integration', () => {
+            const pool = new Pool({ connectionString: url });
+            beforeAll(async () => {
+              await pool.query('DROP SCHEMA IF EXISTS dhgs_async CASCADE');
+              await pool.query('CREATE TABLE IF NOT EXISTS async_test_state (id text PRIMARY KEY, value integer NOT NULL)');
+              await pool.query('TRUNCATE async_test_state');
+              await applyAsyncMigrations(pool);
+            });
+            afterAll(async () => { await pool.query('DROP TABLE IF EXISTS async_test_state'); await pool.end(); });
+
+            it('commits state change and outbox atomically and rolls both back on failure', async () => {
+              await withTransactionalOutbox(pool, actor, async ({ client, asyncStore }) => {
+                await client.query("INSERT INTO async_test_state (id,value) VALUES ('ok',1)");
+                await asyncStore.enqueueOutbox(outbox('evt-ok'));
+              });
+              expect(Number((await pool.query("SELECT count(*) c FROM async_test_state WHERE id='ok'")).rows[0].c)).toBe(1);
+              expect(Number((await pool.query("SELECT count(*) c FROM dhgs_async.outbox_events WHERE event_id='evt-ok'")).rows[0].c)).toBe(1);
+
+              await expect(withTransactionalOutbox(pool, actor, async ({ client, asyncStore }) => {
+                await client.query("INSERT INTO async_test_state (id,value) VALUES ('rollback',1)");
+                await asyncStore.enqueueOutbox(outbox('evt-rollback'));
+                throw new Error('rollback-fixture');
+              })).rejects.toThrow('rollback-fixture');
+              expect(Number((await pool.query("SELECT count(*) c FROM async_test_state WHERE id='rollback'")).rows[0].c)).toBe(0);
+              expect(Number((await pool.query("SELECT count(*) c FROM dhgs_async.outbox_events WHERE event_id='evt-rollback'")).rows[0].c)).toBe(0);
+            });
+
+            it('dispatches outbox at-least-once with lease ownership and correlation intact', async () => {
+              const store = new AsyncPostgresStore(pool);
+              await store.enqueueOutbox(outbox('evt-dispatch'));
+              const [claimed] = await store.claimOutbox('worker-a', now, 60_000, 1);
+              expect(claimed?.request_id).toBe('REQ-1');
+              expect(claimed?.correlation_id).toBe('CORR-1');
+              await store.publishOutbox(claimed!.event_id, 'worker-a', now);
+              expect((await pool.query("SELECT status FROM dhgs_async.outbox_events WHERE event_id='evt-dispatch'")).rows[0].status).toBe('PUBLISHED');
+            });
+
+            it('claims jobs concurrency-safely and reclaims an expired lease after worker crash', async () => {
+              const store = new AsyncPostgresStore(pool);
+              await store.enqueueJob(job('claim-one'));
+              const [a,b] = await Promise.all([store.claimJobs('w-a', now, 1000, 1), store.claimJobs('w-b', now, 1000, 1)]);
+              expect(a.length + b.length).toBe(1);
+              const claimed = [...a,...b][0]!;
+              await pool.query("UPDATE dhgs_async.jobs SET lease_expires_at=$2 WHERE job_id=$1", [claimed.job_id,'2026-10-04T23:59:59.000Z']);
+              const reclaimed = await store.claimJobs('w-c', now, 60_000, 1);
+              expect(reclaimed[0]?.job_id).toBe(claimed.job_id);
+              expect(reclaimed[0]?.attempt_count).toBe(2);
+            });
+
+            it('retries with backoff then dead-letters instead of disappearing', async () => {
+              const store = new AsyncPostgresStore(pool);
+              await store.enqueueJob(job('dead', { max_attempts:2 }));
+              const first = (await store.claimJobs('w-dead', now, 60_000, 1)).find((x) => x.job_id.includes('dead'))!;
+              expect(await store.failJob(first,'w-dead','first',now)).toBe('RETRY_WAIT');
+              await pool.query('UPDATE dhgs_async.jobs SET available_at=$2 WHERE job_id=$1',[first.job_id,now]);
+              const second = (await store.claimJobs('w-dead',now,60_000,10)).find((x) => x.job_id===first.job_id)!;
+              expect(await store.failJob(second,'w-dead','second',now)).toBe('DEAD_LETTER');
+              const row = (await pool.query('SELECT status,last_error FROM dhgs_async.jobs WHERE job_id=$1',[first.job_id])).rows[0];
+              expect(row).toEqual(expect.objectContaining({ status:'DEAD_LETTER', last_error:'second' }));
+              expect((await store.metrics(now)).dead_letter_count).toBeGreaterThanOrEqual(1);
+            });
+
+            it('deduplicates repeated scheduler invocations by schedule key', async () => {
+              const store = new AsyncPostgresStore(pool);
+              const first = await store.enqueueScheduledJob(job('schedule-a'),'expiry:mandate-1:2026-10-05');
+              const second = await store.enqueueScheduledJob(job('schedule-b'),'expiry:mandate-1:2026-10-05');
+              expect(first.created).toBe(true);
+              expect(second.created).toBe(false);
+              expect(second.job.job_id).toBe(first.job.job_id);
+            });
+
+            it('durably prevents duplicate logical actions through idempotency completion', async () => {
+              const store = new AsyncPostgresStore(pool);
+              let calls = 0;
+              const registry = new JobHandlerRegistry().register({ type:'NOTICE_DELIVERY',version:1,handle:async()=>{calls += 1;} });
+              const scheduled = await store.enqueueJob(job('idem'));
+              const record: JobRecord = { ...scheduled.job, status:'LEASED', attempt_count:1 };
+              const input = { job:record, registry, authorization:{authorize:async()=>true}, idempotency:store, workerId:'w-idem', now };
+              expect(await executeJob(input)).toBe('SUCCEEDED');
+              expect(await executeJob(input)).toBe('ALREADY_PROCESSED');
+              expect(calls).toBe(1);
+            });
+          });
+
+          function outbox(id:string) {
+            return { event_id:id,event_type:'NOTICE_ISSUED',payload_version:1,aggregate_ref:'notice:n-1',payload:{notice_id:'n-1'},request_id:'REQ-1',correlation_id:'CORR-1',available_at:now,max_attempts:3 };
+          }
+          function job(suffix:string, overrides:Partial<JobSpec> = {}): JobSpec {
+            seq += 1;
+            return { job_id:`job-${suffix}-${seq}`,job_type:'NOTICE_DELIVERY',job_version:1,payload:{notice_id:`n-${seq}`},priority:10,available_at:now,max_attempts:3,
+              idempotency_key:`idem-${suffix}-${seq}`,sensitivity:'P1',privileged:false,governance_effect:'NOTIFY',source_actor:actor,...overrides };
+          }
+          EOF
+
+          cat > docs/async-foundation.md <<'EOF'
+          # Asynchronous-work foundation
+
+          DHGS M0 uses PostgreSQL-backed jobs, transactional outbox records, durable idempotency keys, and one explicit handler registry. Delivery is **at least once**; DHGS does not claim exactly-once delivery.
+
+          `@dhgs/async` owns portable contracts and safety policy. `@dhgs/async-postgres` owns durable PostgreSQL storage, `FOR UPDATE SKIP LOCKED` claims, lease recovery, retry/dead-letter state, UTC schedule keys, metrics, and the transaction coordinator that commits domain state and required outbox records together.
+
+          Protected P2/P3 jobs carry a resource reference and empty payload. Workers reconstruct a restricted `SYSTEM:<job_type>` ActorContext, preserve request/correlation IDs, and never inherit initiating-user roles/permissions. Background work cannot finalize high-impact governance decisions; privileged handlers require an explicit authorization gate.
+
+          Scheduler callers MUST use deterministic UTC schedule keys. Repeated invocation is idempotent through a unique schedule key. Job handlers are executable only when registered in code; database content cannot name arbitrary executable code.
+          EOF
+
+      - name: Update lockfile and verify packages
+        env:
+          PG_ADMIN_URL: postgres://postgres:postgres@127.0.0.1:5432/dhgs
+        run: |
+          pnpm install --lockfile-only
+          pnpm install --frozen-lockfile
+          pnpm --filter @dhgs/async typecheck
+          pnpm --filter @dhgs/async test
+          pnpm --filter @dhgs/async-postgres typecheck
+          pnpm --filter @dhgs/async-postgres test
+          pnpm --filter @dhgs/async-postgres test:integration
+
+      - name: Commit async foundation
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add packages/async packages/async-postgres docs/async-foundation.md pnpm-lock.yaml
+          git commit -m 'feat(async): add outbox jobs scheduler and idempotency foundation
+
+          Refs #81'
+          git push origin HEAD:dev
