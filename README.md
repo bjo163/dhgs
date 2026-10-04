@@ -651,3 +651,9 @@ Repository/release automation:
 - Issue #95 — pinned toolchain / lockfile / frozen installs.
 
 Implementation progress is tracked through GitHub Issues and evidence gates rather than by continuously expanding undocumented scope inside code.
+
+---
+
+## Documentation reconciliation status
+
+Blueprint/README roadmap reconciliation is complete for Blueprint `v15.1.1`. Permanent CI checks enforce Blueprint↔README document-version alignment, M0–M5 roadmap markers, master issue #6 linkage, explicit #77 ruleset limitation, and software VERSION↔`package.json` consistency. M0 remains active until the separate foundation exit requirements pass.
