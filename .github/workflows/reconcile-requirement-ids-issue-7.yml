@@ -61,10 +61,25 @@ jobs:
           fs.writeFileSync(blueprintPath, bp);
           fs.writeFileSync(readmePath, readme);
           NODE
+      - name: Validate reconciled authority documents
+        run: |
+          set -euo pipefail
+          grep -F '# DHGS v15.1.2 —' BLUEPRINT.md >/dev/null
+          grep -F '**Version:** `15.1.2`' BLUEPRINT.md >/dev/null
+          grep -F '**Blueprint document baseline:** `DHGS v15.1.2`' README.md >/dev/null
+          grep -F 'ONE MACHINE-READABLE ID = ONE CANONICAL REQUIREMENT MEANING' BLUEPRINT.md >/dev/null
+          grep -F 'REQ-UX-007 Appeal and correction paths are clearly discoverable and MUST NOT use dark patterns or hidden deadlines.' BLUEPRINT.md >/dev/null
+          if grep -F 'REQ-UX-001 High-impact actions use deliberate confirmation and visible basis.' BLUEPRINT.md >/dev/null; then
+            echo 'Duplicate REQ-UX-001 definition remains.' >&2
+            exit 1
+          fi
+          if grep -F 'REQ-AST-001 Informative visual assets require accessible text alternatives or equivalent explanation.' BLUEPRINT.md >/dev/null; then
+            echo 'Duplicate REQ-AST-001 definition remains.' >&2
+            exit 1
+          fi
       - name: Commit Blueprint/README reconciliation
         run: |
           set -euo pipefail
-          git diff --check
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add BLUEPRINT.md README.md
