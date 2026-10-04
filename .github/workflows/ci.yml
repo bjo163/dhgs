@@ -110,6 +110,11 @@ jobs:
           pnpm --filter @dhgs/governance-registry typecheck
           pnpm --filter @dhgs/governance-registry test
 
+      - name: Validate canonical contracts
+        run: |
+          pnpm --filter @dhgs/contracts typecheck
+          pnpm --filter @dhgs/contracts test
+
       - name: Generate reproducibility provenance
         run: pnpm --silent release:provenance
 
