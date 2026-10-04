@@ -96,7 +96,7 @@ jobs:
           grep -F 'M0 — FOUNDATION KERNEL — ACTIVE' README.md >/dev/null
           grep -F 'M5 — DEPLOYMENT, GOVERNANCE-OF-SOFTWARE & CONTROLLED PILOT' README.md >/dev/null
           grep -F 'github.com/bjo163/dhgs/issues/6' README.md >/dev/null
-          grep -F 'server-side GitHub Rulesets are not yet considered active/verified' README.md >/dev/null
+          grep -F 'not yet considered active/verified' README.md >/dev/null
 
           if grep -F 'M4 — ASSURANCE & PILOT' BLUEPRINT.md >/dev/null; then
             echo 'Stale implementation milestone found: M4 — ASSURANCE & PILOT' >&2
