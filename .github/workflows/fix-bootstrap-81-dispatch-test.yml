@@ -1,0 +1,45 @@
+name: Fix Issue 81 Bootstrap Dispatch Fixture
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/fix-bootstrap-81-dispatch-test.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+      - name: Patch dispatch integration fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const path = '.github/workflows/bootstrap-async-issue-81.yml';
+          let text = fs.readFileSync(path, 'utf8');
+          const before = `              const [claimed] = await store.claimOutbox('worker-a', now, 60_000, 1);\n              expect(claimed?.request_id).toBe('REQ-1');\n              expect(claimed?.correlation_id).toBe('CORR-1');\n              await store.publishOutbox(claimed!.event_id, 'worker-a', now);\n              expect((await pool.query(\"SELECT status FROM dhgs_async.outbox_events WHERE event_id='evt-dispatch'\")).rows[0].status).toBe('PUBLISHED');`;
+          const after = `              const batch = await store.claimOutbox('worker-a', now, 60_000, 10);\n              const claimed = batch.find((event) => event.event_id === 'evt-dispatch');\n              expect(claimed).toBeDefined();\n              expect(claimed?.request_id).toBe('REQ-1');\n              expect(claimed?.correlation_id).toBe('CORR-1');\n              for (const event of batch) await store.publishOutbox(event.event_id, 'worker-a', now);\n              expect((await pool.query(\"SELECT status FROM dhgs_async.outbox_events WHERE event_id='evt-dispatch'\")).rows[0].status).toBe('PUBLISHED');`;
+          const count = text.split(before).length - 1;
+          if (count !== 1) throw new Error(`Expected one dispatch fixture block, found ${count}`);
+          text = text.replace(before, after);
+          fs.writeFileSync(path, text);
+          NODE
+      - name: Commit bootstrap fix
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/bootstrap-async-issue-81.yml
+          git commit -m 'fix(test): isolate async outbox dispatch fixture
+
+          Refs #81'
+          git push origin HEAD:dev
