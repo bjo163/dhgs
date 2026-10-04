@@ -1,11 +1,11 @@
-# DHGS v13.0.0 — Consolidated Professional Blueprint
+# DHGS v14.0.0 — Controlled Implementation Blueprint
 
 ## Divine–Human Governance System
 
 **Document ID:** `DHGS-BP-001`  
-**Version:** `13.0.0`  
-**Status:** `CONSOLIDATED_BASELINE_CANDIDATE`  
-**Document type:** Governance + Product + Engine + Corpus + Technical Architecture Blueprint  
+**Version:** `14.0.0`  
+**Status:** `CONTROLLED_IMPLEMENTATION_BASELINE_CANDIDATE`  
+**Document type:** Governance + Product + Engine + Corpus + Technical + Institutional Architecture Blueprint  
 **Product type:** Digital Governance Assurance Platform  
 **Architecture strategy:** Logical separation, simple deployment, modular monolith first  
 **Primary evaluation horizon:** `1 Hijri Year`  
@@ -13,11 +13,13 @@
 
 ---
 
-# 0. Document control and normative language
+# 0. Document control, scope, and normative language
 
-This document is the current **single source of truth** for the DHGS foundational architecture. It consolidates the earlier governance, Mizan, Hisab Ledger, Open Book, knowledge, work, product, technical, control, and implementation concepts without intentionally discarding them.
+This document is the **single source of truth** for the DHGS foundational and implementation architecture. It consolidates the governance, Shadow, Mizan, Hisab Ledger, Open Book, knowledge/corpus, work, identity, product, technical, control, security, privacy, audit, and implementation principles developed in earlier versions.
 
-Normative terms:
+The intent of v14 is **lossless consolidation plus gap closure**. Concepts from earlier baselines are retained unless explicitly superseded in this document.
+
+Normative language:
 
 | Term | Meaning |
 |---|---|
@@ -26,12 +28,12 @@ Normative terms:
 | `SHOULD` | recommended; exceptions require rationale |
 | `SHOULD_NOT` | discouraged; exceptions require rationale |
 | `MAY` | optional |
-| `HARD_FAIL` | process cannot authorize the action |
-| `HOLD` | pause pending information or review |
-| `ESCALATE` | transfer to higher/independent authority |
+| `HARD_FAIL` | action cannot be authorized |
+| `HOLD` | pause pending evidence or review |
+| `ESCALATE` | transfer to higher or independent authority |
 | `UNRESOLVED` | valid state when certainty is insufficient |
 
-Document rule:
+Canonical documentation rule:
 
 ```text
 ONE RULE
@@ -40,11 +42,11 @@ ONE OWNER
 ONE VERSION
 ```
 
-Other documents should reference canonical rules rather than silently duplicate them.
+Other documents SHOULD reference canonical rules rather than silently duplicate them.
 
 ---
 
-# PART I — Mission, boundary, and success
+# PART I — Mission, boundary, adoption, and success
 
 # 1. What DHGS is
 
@@ -52,7 +54,7 @@ DHGS is a:
 
 # DIGITAL GOVERNANCE ASSURANCE PLATFORM
 
-It is designed to help people and institutions transform:
+It helps people and institutions transform:
 
 ```text
 INFORMATION
@@ -70,17 +72,13 @@ INFORMATION
 
 into a structured, auditable, human-readable process.
 
-DHGS is intended to operate as **governance assurance infrastructure**. It is not itself a sovereign state.
+DHGS is governance assurance infrastructure. It is not itself a sovereign state.
 
 ---
 
-# 2. Main mission
-
-## `MIS-001`
+# 2. Main mission — `MIS-001`
 
 > Build a lawful, evidence-based, human-centered, transparent, accountable, auditable, appealable, and self-correcting governance system in which material exercises of public power can be explained, reviewed, challenged, corrected, and learned from.
-
-Machine-oriented representation:
 
 ```yaml
 mission:
@@ -113,31 +111,17 @@ DUE PROCESS
 PEACE
 ```
 
-The system does not optimize for punishment count, ideological conformity, or concentration of authority.
+The system does not optimize for punishment count, ideological conformity, religious conformity, or concentration of authority.
 
 ---
 
-# 4. Governance goal
+# 4. Governance goal and North Star
 
-No material public power should operate without:
+## `NST-001`
 
-```text
-LAWFUL AUTHORITY
-+
-ACCOUNTABLE OWNER
-+
-SUFFICIENT EVIDENCE
-+
-TRACEABLE RECORD
-+
-REVIEWABILITY
-+
-APPEAL / REDRESS WHERE APPLICABLE
-+
-CORRECTION PATH
-```
+> **No material public power without lawful authority, accountable ownership, sufficient evidence, traceable record, reviewability, and a correction path.**
 
-Conceptual authorization model:
+Conceptual model:
 
 \[
 ValidPower = L \times O \times E \times T \times R \times C
@@ -160,13 +144,13 @@ If a mandatory gate is zero:
 Authorization = 0
 \]
 
-No weighted score may override a mandatory legal, jurisdictional, due-process, or fundamental-rights failure.
+No weighted score may override a legal, jurisdictional, due-process, human-rights, or red-line failure.
 
 ---
 
 # 5. Software goal
 
-The software exists to translate governance principles into:
+The software translates governance into:
 
 ```text
 FRONTENDS
@@ -187,15 +171,7 @@ that real people can use and inspect.
 
 ---
 
-# 6. North Star
-
-## `NST-001`
-
-> **No material public power without lawful authority, accountable ownership, sufficient evidence, traceable record, reviewability, and a correction path.**
-
----
-
-# 7. System non-goals
+# 6. System non-goals
 
 DHGS `MUST_NOT` become:
 
@@ -217,9 +193,93 @@ non_goals:
 
 ---
 
-# 8. Definition of success
+# 7. Real-world adoption modes
 
-Success is **not** measured primarily by:
+DHGS MUST declare its operating mode. Capability and authority depend on the mode.
+
+```yaml
+AdoptionMode:
+  SANDBOX:
+    real_public_authority: false
+    real_coercive_decisions: false
+
+  VOLUNTARY:
+    real_public_authority: false
+    coercive_decisions: false
+    use: voluntary_assurance_or_mediation
+
+  INSTITUTIONAL:
+    real_public_authority: limited_to_host_institution
+    authority_source: institutional_mandate
+
+  STATUTORY:
+    real_public_authority: true
+    authority_source: constitution_law_or_valid_regulation
+```
+
+Rules:
+
+```text
+SANDBOX / VOLUNTARY
+→ MUST NOT impersonate statutory authority.
+
+INSTITUTIONAL
+→ MUST remain inside the institution's lawful mandate.
+
+STATUTORY
+→ MUST identify explicit legal authority for each coercive capability.
+```
+
+No deployment may silently move from one adoption mode to another.
+
+---
+
+# 8. Institutional operator model
+
+DHGS distinguishes governance authority from technical operation.
+
+```yaml
+InstitutionalRole:
+  GOVERNANCE_AUTHORITY:
+    purpose: lawful_governance_ownership
+
+  SYSTEM_STEWARD:
+    purpose: blueprint_and_system_integrity
+
+  PLATFORM_OPERATOR:
+    purpose: technical_operation
+
+  DATA_CONTROLLER:
+    purpose: determine_lawful_data_purpose_and_means
+
+  DATA_PROCESSOR:
+    purpose: process_data_under_controller_instruction
+
+  INDEPENDENT_OVERSIGHT:
+    purpose: audit_DHGS_and_governance_actors
+
+  SECURITY_OFFICER:
+    purpose: security_risk_and_incident_accountability
+
+  PRIVACY_OFFICER:
+    purpose: privacy_and_data_protection_accountability
+```
+
+Invariant:
+
+```text
+TECHNICAL ADMINISTRATION
+!=
+GOVERNANCE AUTHORITY
+```
+
+A system administrator MUST NOT alter a governance outcome merely because they possess technical access.
+
+---
+
+# 9. Definition of success
+
+Success is not primarily measured by:
 
 ```text
 NUMBER OF PUNISHMENTS
@@ -249,11 +309,11 @@ BETTER INSTITUTIONAL LEARNING
 
 ---
 
-# 9. Long-term maturity direction
+# 10. Long-term maturity direction
 
-`EXIT_TO_THE_LIGHT` is a **symbolic maturity direction**, not a legal rule, software feature, prophecy date, or verified Divine deadline.
+`EXIT_TO_THE_LIGHT` is a symbolic maturity direction, not a legal rule, software feature, prophecy date, or verified Divine deadline.
 
-Operationally it means a system that increasingly can:
+Operationally it means a system increasingly able to:
 
 ```text
 UNDERSTAND ITSELF
@@ -270,47 +330,37 @@ PROTECT HUMAN DIGNITY
 
 # PART II — Foundational governance
 
-# 10. The Eight Foundations
+# 11. The Eight Foundations
 
 | ID | Foundation | Operational meaning |
 |---|---|---|
-| `F1` | Truth | facts must be distinguished from rumor, interpretation, belief, symbolism, hypothesis, and unknowns |
+| `F1` | Truth | distinguish fact from rumor, interpretation, belief, symbolism, hypothesis, and unknown |
 | `F2` | Law | no actor or institution is above lawful constitutional order |
-| `F3` | Justice | due process, equal protection, fairness, and proportionality |
-| `F4` | Mercy | restitution, rehabilitation, reconciliation, and second chances considered where safe and just |
+| `F3` | Justice | due process, fairness, equal protection, proportionality |
+| `F4` | Mercy | restitution, rehabilitation, reconciliation, and second chances where safe and just |
 | `F5` | Accountability | material public power leaves a traceable record |
 | `F6` | Correction | detect → acknowledge → correct → record → learn |
-| `F7` | Transparency | greater public impact creates greater duty to explain, subject to lawful privacy limits |
-| `F8` | Human Dignity | a human being is never reducible to a score, case number, or object of control |
+| `F7` | Transparency | larger public impact creates larger duty to explain, subject to lawful privacy limits |
+| `F8` | Human Dignity | a person is never reducible to a score, case number, or object of control |
 
 ---
 
-# 11. Core covenant
+# 12. Core covenant
 
 ```text
 NO POWER WITHOUT ACCOUNTABILITY.
-
 NO DECISION WITHOUT REASON.
-
 NO JUDGMENT WITHOUT EVIDENCE.
-
 NO PUNISHMENT WITHOUT PROPORTIONALITY.
-
 NO MERCY WITHOUT RESPONSIBILITY.
-
 NO CORRECTION WITHOUT RECORD.
-
 NO TRANSPARENCY WITHOUT HUMAN PROTECTION.
-
-NO UNVERIFIABLE SPIRITUAL CLAIM
-AS THE SOLE BASIS FOR COERCIVE PUBLIC ACTION.
+NO UNVERIFIABLE SPIRITUAL CLAIM AS THE SOLE BASIS FOR COERCIVE PUBLIC ACTION.
 ```
 
 ---
 
-# 12. Authority precedence
-
-Canonical hierarchy:
+# 13. Authority precedence
 
 ```text
 L0 — ETHICAL / DIVINE VALUES
@@ -322,7 +372,7 @@ L5 — HISAB LEDGER / ACCOUNTABILITY RECORD
 L6 — OPEN BOOK / PUBLIC PROJECTION
 ```
 
-Legal precedence for coercive public authority:
+For coercive public authority:
 
 ```text
 CONSTITUTION & LAW
@@ -334,7 +384,7 @@ OPERATIONAL POLICY
 CASE DECISION
 ```
 
-Invalid relationships include:
+Invalid relationships:
 
 ```text
 SHADOW > CONSTITUTION
@@ -342,13 +392,14 @@ PERSONAL PREFERENCE > LAW
 POPULARITY > FUNDAMENTAL RIGHTS
 RUMOR > EVIDENCE
 SPIRITUAL CLAIM > DUE PROCESS
+TECHNICAL ADMIN > GOVERNANCE PROCESS
 ```
 
 ---
 
-# 13. Legal and ethical dual review
+# 14. Legal and ethical dual review
 
-Material decisions should distinguish:
+Material decisions distinguish:
 
 ```text
 LEGAL STATUS
@@ -356,15 +407,11 @@ from
 ETHICAL ASSESSMENT
 ```
 
-An action may be:
-
-- lawful but ethically problematic;
-- ethically desirable but not legally authorized;
-- subject to constitutional or judicial review.
+An action may be lawful but ethically problematic, ethically desirable but unauthorized, or legally contested.
 
 Ethical concern alone does not create coercive authority.
 
-If existing law is believed unjust, the system should support:
+If existing law is believed unjust:
 
 ```text
 IDENTIFY
@@ -378,15 +425,11 @@ Shadow may not personally override law.
 
 ---
 
-# PART III — Ethical, religious, and prophetic reference layer
+# PART III — Ethical, religious, and prophetic reference
 
-# 14. Religion as Ethical Canopy / Orbit Governance
+# 15. Religion as Ethical Canopy / Orbit Governance
 
-Religion may serve as a source of moral memory, ethical reference, conscience, and public reasoning while remaining distinct from coercive legal authority.
-
-DHGS does not assume that one religious interpretation should directly control the state. It explicitly rejects using religion to erase fundamental rights or due process.
-
-Operational distinction:
+Religion may serve as moral memory, ethical reference, conscience, and public reasoning while remaining distinct from coercive legal authority.
 
 ```text
 RELIGIOUS / ETHICAL REFERENCE
@@ -396,13 +439,13 @@ CONSTITUTION & LAW
 → coercive public authority
 ```
 
-This is neither forced secular erasure of religion nor automatic theocratic control.
+DHGS rejects both forced erasure of religion and automatic theocratic control.
 
 ---
 
-# 15. Scriptural Reference Matrix
+# 16. Scriptural Reference Matrix
 
-This matrix is a **functional abstraction for DHGS**, not an exhaustive theological classification.
+Functional abstraction only; not an exhaustive theological classification.
 
 | Scripture | Functional lens |
 |---|---|
@@ -410,8 +453,6 @@ This matrix is a **functional abstraction for DHGS**, not an exhaustive theologi
 | Zabur | `PRAISE / REMEMBRANCE / HOPE` |
 | Injil | `GUIDANCE / HEART / MERCY` |
 | Al-Qur'an | `CRITERION / INTEGRATION / CORRECTION` |
-
-Conceptual formula:
 
 \[
 LAW + REMEMBRANCE + MERCY + CRITERION = BALANCED\ MORAL\ ARCHITECTURE
@@ -421,9 +462,17 @@ DHGS does not claim that any scripture has only one function.
 
 ---
 
-# 16. Prophetic Alignment Layer
+# 17. Prophetic Alignment Profile
 
-DHGS may evaluate whether its policies are compatible with identified prophetic values such as:
+Prophetic alignment is an **ethical reference profile**, not legal authority.
+
+Suggested profile identifier:
+
+```text
+PROFILE-PROPHETIC-ISLAMIC
+```
+
+Reference values may include:
 
 ```text
 TRUTH
@@ -439,26 +488,24 @@ RESISTANCE TO FALSEHOOD
 HUMAN DIGNITY
 ```
 
-This is an **ethical compatibility layer**, not executable Divine authorization.
-
 DHGS may say:
 
-> “This design attempts to align with identified scriptural and prophetic values.”
+> This design attempts to align with identified scriptural and prophetic values.
 
-It must not claim:
+DHGS MUST NOT claim:
 
 ```text
 GOD APPROVED THIS IMPLEMENTATION
-A PROPHET OWNS OR AUTHORIZED THIS SOFTWARE
+A PROPHET AUTHORIZED THIS SOFTWARE
 ISA / JESUS WILL USE DHGS
 DHGS FULFILLS A PROPHECY
 ```
 
 ---
 
-# 17. Muhammad ﷺ — value-alignment lens
+# 18. Muhammad ﷺ — value-alignment lens
 
-DHGS may use themes such as:
+Design themes may include:
 
 ```text
 RAHMAH
@@ -469,9 +516,7 @@ SHURA
 CORRECTION
 ```
 
-as design questions.
-
-System implications include:
+System implications:
 
 ```text
 NO SHADOW IMMUNITY
@@ -483,9 +528,9 @@ HARM SHOULD BE REDUCED WHERE JUSTICE ALLOWS
 
 ---
 
-# 18. Isa / Jesus — value-alignment lens
+# 19. Isa / Jesus — value-alignment lens
 
-Within the Qur'anic and Islamic-traditional frame, DHGS may treat themes such as:
+Within Qur'anic and Islamic-traditional framing, DHGS may treat:
 
 ```text
 GUIDANCE
@@ -499,15 +544,13 @@ CORRECTION
 
 as ethical reference points.
 
-Within Islamic eschatological tradition, Isa's return is associated with just judgment. DHGS may use this only as an ethical reference toward justice and correction of falsehood. It does not claim to know or implement a future prophetic governance program.
+Islamic eschatological tradition associates Isa's return with just judgment. DHGS may use this as an ethical reference toward justice and correction of falsehood, but MUST NOT claim to know or implement a future prophetic governance program.
 
 ---
 
-# 19. Divine–Human communication boundary
+# 20. Divine–Human communication boundary
 
-Spiritual experiences, dreams, intuitions, perceived signs, religious interpretation, or perceived Divine communication may inform reflection but cannot automatically become coercive public authority.
-
-Canonical flow:
+Spiritual experiences, dreams, intuitions, perceived signs, religious interpretations, or perceived Divine communication may inform reflection but cannot automatically become coercive public authority.
 
 ```text
 RECEIVE
@@ -515,8 +558,9 @@ RECEIVE
 → CLASSIFY
 → VERIFY WHERE POSSIBLE
 → DISCUSS
+→ LEGAL BASIS PRECHECK
 → MIZAN
-→ LEGAL REVIEW
+→ FORMAL LEGAL REVIEW
 → ETHICAL REVIEW
 → HUMAN DECISION
 → AUDIT
@@ -526,17 +570,15 @@ Invariant:
 
 ```text
 UNVERIFIABLE SPIRITUAL INPUT
-≠
+!=
 COERCIVE PUBLIC AUTHORITY
 ```
 
 ---
 
-# PART IV — Seven-plane system architecture
+# PART IV — Seven-plane architecture
 
-# 20. Architecture planes
-
-DHGS consists of seven logical planes:
+# 21. Architecture planes
 
 ```text
 ┌────────────────────────────────────┐
@@ -563,7 +605,7 @@ DHGS consists of seven logical planes:
 └────────────────────────────────────┘
 ```
 
-Cross-cutting constraints:
+Cross-cutting:
 
 ```text
 SECURITY
@@ -573,19 +615,20 @@ COMPLIANCE
 RESILIENCE
 CHANGE MANAGEMENT
 AI GOVERNANCE
+ACCESSIBILITY
 ```
 
 ---
 
-# PART V — Real-world product and media
+# PART V — Product and technical architecture
 
-# 21. Primary communication medium
+# 22. Primary communication medium
 
-The canonical communication medium is:
+Canonical medium:
 
 # WEB PLATFORM / PWA
 
-Secondary channels may include:
+Secondary channels:
 
 ```text
 EMAIL
@@ -604,13 +647,9 @@ Canonical public source:
 
 ---
 
-# 22. User-facing applications
-
-The initial product consists of two frontends:
+# 23. User-facing applications
 
 ## `APP-PUB` — Public Web
-
-Contains:
 
 ```text
 OPEN BOOK
@@ -620,19 +659,7 @@ PUBLIC FEEDBACK
 APPEAL / CORRECTION REQUEST
 ```
 
-Audience:
-
-```text
-PUBLIC
-CITIZENS
-MEDIA
-CIVIL SOCIETY
-RESEARCHERS
-```
-
 ## `APP-OPS` — Operations Web
-
-Contains:
 
 ```text
 CASE WORKSPACE
@@ -646,22 +673,11 @@ SHADOW OVERSIGHT
 KNOWLEDGE MANAGEMENT
 ```
 
-Audience:
-
-```text
-REVIEWERS
-LEGAL REVIEWERS
-ETHICS REVIEWERS
-AUDITORS
-SHADOW OFFICE
-ADMINISTRATORS
-```
-
-Public users must not access internal operations screens.
+Public users MUST NOT access internal operations screens.
 
 ---
 
-# 23. High-level product architecture
+# 24. High-level product architecture
 
 ```text
 PUBLIC WEB                  OPERATIONS WEB
@@ -678,7 +694,6 @@ PUBLIC WEB                  OPERATIONS WEB
                   ▼
              DATA LAYER
           /       |        \
-         /        |         \
  POSTGRES     STORAGE     AUDIT LOG
                   │
                   ▼
@@ -688,7 +703,7 @@ PUBLIC WEB                  OPERATIONS WEB
               OPEN BOOK
 ```
 
-Important separation:
+Separation rules:
 
 ```text
 FRONTEND != BACKEND
@@ -697,17 +712,14 @@ ENGINES != CORPUS
 CORPUS != CASE EVIDENCE
 HISAB LEDGER != AUDIT LOG
 INTERNAL DATA != PUBLIC DATA
+TECHNICAL ADMIN != GOVERNANCE AUTHORITY
 ```
 
 Logical separation does not require microservices.
 
 ---
 
-# PART VI — Simple-first technical architecture
-
-# 24. Implementation principle
-
-Start with:
+# 25. Simple-first technology stack
 
 ```text
 ONE MONOREPO
@@ -717,16 +729,6 @@ PURE TYPESCRIPT ENGINE PACKAGES
 ONE SUPABASE PROJECT PER ENVIRONMENT
 ONE POSTGRES DATABASE PER ENVIRONMENT
 ```
-
-Architectural rule:
-
-# COMPLEXITY MUST BE EARNED.
-
-A new major technology should only be introduced to solve a documented problem.
-
----
-
-# 25. Initial technology stack
 
 | Layer | MVP technology |
 |---|---|
@@ -739,13 +741,13 @@ A new major technology should only be introduced to solve a documented problem.
 | Engines | Pure TypeScript packages |
 | Database | PostgreSQL via Supabase |
 | Authentication | Supabase Auth |
-| Authorization | application roles + PostgreSQL RLS |
+| Authorization | app roles + PostgreSQL RLS |
 | Files | Supabase Storage |
 | Unit tests | Vitest |
 | E2E tests | Playwright |
 | Source control | GitHub |
 | CI | GitHub Actions |
-| First hosting | Vercel + Supabase |
+| Initial hosting | Vercel + Supabase |
 
 Deferred until justified:
 
@@ -758,25 +760,26 @@ TEMPORAL
 OPA
 OPENFGA
 VECTOR DATABASE
-NATIVE MOBILE APPLICATIONS
+NATIVE MOBILE APPS
 AUTONOMOUS AI AGENTS
 ```
 
+Rule:
+
+# COMPLEXITY MUST BE EARNED.
+
 ---
 
-# 26. Repository target shape
+# 26. Target repository shape
 
 ```text
 dhgs/
-│
 ├── README.md
 ├── BLUEPRINT.md
-│
 ├── apps/
 │   ├── public-web/
 │   ├── ops-web/
 │   └── api/
-│
 ├── engines/
 │   ├── evidence-engine/
 │   ├── mizan-engine/
@@ -786,9 +789,10 @@ dhgs/
 │   ├── ledger-engine/
 │   ├── publication-engine/
 │   └── metrics-engine/
-│
 ├── corpus/
 │   ├── legal/
+│   ├── rights/
+│   ├── science/
 │   ├── governance/
 │   ├── ethical/
 │   ├── scriptural/
@@ -796,7 +800,6 @@ dhgs/
 │   ├── procedure/
 │   ├── precedent/
 │   └── lessons/
-│
 ├── packages/
 │   ├── domain/
 │   ├── schemas/
@@ -804,7 +807,6 @@ dhgs/
 │   ├── auth/
 │   ├── events/
 │   └── ui/
-│
 ├── supabase/
 ├── controls/
 ├── tests/
@@ -814,13 +816,13 @@ dhgs/
 └── .github/
 ```
 
-This blueprint does **not** require creating those folders immediately.
+This document does not require creating these directories immediately.
 
 ---
 
-# PART VII — Identity, trust, authority, and competency
+# PART VI — Identity, trust, authority, and competency
 
-# 27. Canonical actor types
+# 27. Actor types
 
 ```yaml
 ActorType:
@@ -844,13 +846,39 @@ ActorType:
   EXTERNAL_OBSERVER
 ```
 
-One human may hold multiple contextual roles, subject to conflict-of-interest controls.
+One human may hold multiple contextual roles subject to separation-of-duty and conflict controls.
 
 ---
 
-# 28. Authorization model
+# 28. Identity assurance levels
 
-Conceptually:
+Authentication does not automatically establish legal identity.
+
+```yaml
+IdentityAssurance:
+  IA0_ANONYMOUS:
+    identity_verified: false
+
+  IA1_PSEUDONYMOUS:
+    account_continuity: true
+    civil_identity_verified: false
+
+  IA2_VERIFIED_PERSON:
+    civil_identity_verified: true
+
+  IA3_VERIFIED_OFFICIAL:
+    civil_identity_verified: true
+    official_role_verified: true
+
+  IA4_VERIFIED_INSTITUTION:
+    institutional_authority_verified: true
+```
+
+Each service MUST define the minimum assurance level required. Whistleblower channels MAY intentionally support lower identity disclosure where lawful.
+
+---
+
+# 29. Authorization model
 
 \[
 Access = Identity \land Permission \land Jurisdiction \land Purpose \land DataAccess
@@ -866,34 +894,21 @@ APPLICATION ROLE
 POSTGRES RLS
 ```
 
-Example access boundaries:
+Examples:
 
 ```text
-PUBLIC
-→ public_records only
-
-CITIZEN
-→ own authorized cases / submissions
-
-REVIEWER
-→ assigned cases
-
-LEGAL_REVIEWER
-→ authorized legal-review scope
-
-AUDITOR
-→ authorized audit scope
-
-SHADOW
-→ oversight views, not unrestricted mutation
-
-ADMIN
-→ system administration, fully audited
+PUBLIC → public_records only
+CITIZEN → own authorized cases / submissions
+REVIEWER → assigned cases
+LEGAL_REVIEWER → authorized legal-review scope
+AUDITOR → authorized audit scope
+SHADOW → oversight views, not unrestricted mutation
+ADMIN → technical administration, fully audited
 ```
 
 ---
 
-# 29. Privileged access
+# 30. Privileged access and technical-admin control
 
 Privileged operations include:
 
@@ -904,23 +919,32 @@ ADMINISTRATIVE DATA ACCESS
 POLICY CHANGE
 LEDGER ADMINISTRATION
 EMERGENCY ACCESS
+KEY MANAGEMENT
 ```
 
-High-risk privileged action should require, where practical:
+High-risk privileged action SHOULD require:
 
 ```text
-AUTHENTICATION
+STRONG AUTHENTICATION
 JUSTIFICATION
 TIMESTAMP
 AUDIT TRACE
-SECONDARY APPROVAL
+SECONDARY APPROVAL / TWO-PERSON CONTROL
+TIME-LIMITED ACCESS WHERE PRACTICAL
+```
+
+Break-glass access MUST be exceptional, time-limited, justified, and independently reviewed afterward.
+
+Invariant:
+
+```text
+NO SYSTEM ADMIN MAY ALTER A GOVERNANCE OUTCOME
+OUTSIDE THE GOVERNANCE CORRECTION PROCESS.
 ```
 
 ---
 
-# 30. Delegated authority
-
-Delegation must be explicit and expiring:
+# 31. Delegated authority
 
 ```yaml
 Delegation:
@@ -935,49 +959,39 @@ Delegation:
   revocable: true
 ```
 
-Delegation must not silently expand authority.
+Delegation MUST NOT silently expand authority.
 
 ---
 
-# 31. Trust model
+# 32. Trust model
 
 Trust is purpose-limited.
 
 ```yaml
 SHADOW:
-  trusted_for:
-    - oversight
-    - mediation
-    - triggering_review
-  not_trusted_for:
-    - sole_conviction
-    - sole_ledger_control
+  trusted_for: [oversight, mediation, triggering_review]
+  not_trusted_for: [sole_conviction, sole_ledger_control]
 
 AUDITOR:
-  trusted_for:
-    - audit
-    - assurance
-  not_trusted_for:
-    - policy_ownership
+  trusted_for: [audit, assurance]
+  not_trusted_for: [policy_ownership]
 
 LEDGER:
-  trusted_for:
-    - record_integrity
-  not_trusted_for:
-    - moral_judgment
+  trusted_for: [record_integrity]
+  not_trusted_for: [moral_judgment]
 
 MIZAN:
-  trusted_for:
-    - decision_assurance
-  not_trusted_for:
-    - spiritual_judgment
+  trusted_for: [decision_readiness]
+  not_trusted_for: [legal_conviction, spiritual_judgment]
+
+PLATFORM_OPERATOR:
+  trusted_for: [technical_operation]
+  not_trusted_for: [governance_outcome_override]
 ```
 
 ---
 
-# 32. Competency model
-
-Critical roles must define competency requirements:
+# 33. Competency and reviewer calibration
 
 ```yaml
 Competency:
@@ -1017,19 +1031,21 @@ EXPIRED
 REVOKED
 ```
 
-Restricted tasks must not be assigned to an unqualified actor.
+Restricted tasks MUST NOT be assigned to unqualified actors.
+
+Mizan reviewers SHOULD undergo calibration exercises using common scenarios. DHGS SHOULD monitor inter-rater disagreement and document adjudication of large scoring differences.
 
 ---
 
-# PART VIII — Shadow governance
+# PART VII — Shadow governance
 
-# 33. Shadow definition
+# 34. Shadow definition and functions
 
 Shadow is an:
 
 # INDEPENDENT SUPERVISORY • MEDIATION • ACCOUNTABILITY FUNCTION
 
-Shadow is not:
+Not:
 
 ```text
 MONARCH
@@ -1040,7 +1056,7 @@ OWNER OF GOVERNMENT
 UNREVIEWABLE REPRESENTATIVE OF GOD
 ```
 
-Core functions:
+Functions:
 
 ```text
 WATCH
@@ -1049,15 +1065,13 @@ CORRECT
 ACCOUNT
 ```
 
-Principle:
-
 # SHADOW SUPERVISES POWER. SHADOW DOES NOT OWN POWER.
 
 ---
 
-# 34. Shadow legitimacy
+# 35. Shadow legitimacy and jurisdiction
 
-Required conditions:
+Required:
 
 ```text
 LEGAL MANDATE
@@ -1068,21 +1082,13 @@ REMOVAL MECHANISM
 CONFLICT DISCLOSURE
 ```
 
-Conceptual validity:
-
 \[
 SLV = L \times P \times O \times T \times R
 \]
 
-Any mandatory zero means the mandate is invalid for DHGS purposes.
+Any mandatory zero invalidates the mandate for DHGS purposes.
 
-No self-appointed, hereditary-by-default, or irremovable Shadow.
-
----
-
-# 35. Shadow jurisdiction
-
-Every mandate should define:
+Every mandate SHOULD define:
 
 ```text
 TERRITORY
@@ -1094,17 +1100,11 @@ ESCALATION AUTHORITY
 PROHIBITED ACTIONS
 ```
 
-Rule:
-
 # NO MANDATE = NO JURISDICTION.
-
-Shadow does not automatically gain the power to legislate, convict, replace courts, cancel elections, seize assets, or command force.
 
 ---
 
 # 36. Appointment, suspension, removal, succession
-
-Appointment baseline:
 
 ```text
 TRANSPARENT NOMINATION / IDENTIFICATION
@@ -1115,7 +1115,7 @@ TRANSPARENT NOMINATION / IDENTIFICATION
 → LAWFUL CONFIRMATION
 ```
 
-Possible removal grounds include:
+Removal grounds may include:
 
 ```text
 CORRUPTION
@@ -1128,7 +1128,7 @@ PERSISTENT REFUSAL OF AUDIT
 FUNDAMENTAL DUTY VIOLATION
 ```
 
-Removal process:
+Removal:
 
 ```text
 ALLEGATION
@@ -1139,23 +1139,17 @@ ALLEGATION
 → PUBLIC SUMMARY WHERE LAWFUL
 ```
 
-Shadow cannot determine its own guilt or removal outcome.
-
-Succession must be predefined, lawful, auditable, and non-hereditary by default.
+Shadow cannot determine its own guilt or removal outcome. Succession MUST be predefined, lawful, auditable, and non-hereditary by default.
 
 ---
 
 # 37. Zero-profit rule
 
-Target:
-
 \[
 UndisclosedPersonalBenefit = 0
 \]
 
-Prohibited or reviewable benefits include hidden commissions, kickbacks, success fees, hidden ownership, undisclosed gifts, family enrichment, proxy benefit, or payment by mediated parties.
-
-Potentially lawful benefit flow:
+Potential lawful benefit:
 
 ```text
 DECLARE
@@ -1164,13 +1158,13 @@ DECLARE
 → RETURN / TRANSFER / DISPOSE ACCORDING TO LAW
 ```
 
-Where lawful and appropriate, a gift may be redirected to an independent official charity rather than personally retained.
+No hidden commission, kickback, success fee, proxy benefit, family enrichment, or payment by mediated parties.
 
 ---
 
 # 38. Conflict of interest
 
-Types include:
+Types:
 
 ```text
 FINANCIAL
@@ -1183,21 +1177,19 @@ PRIOR INVOLVEMENT
 OTHER MATERIAL INTEREST
 ```
 
-Material conflict flow:
-
 ```text
 DISCLOSE
 → RECUSE
 → REASSIGN
 ```
 
-Undisclosed material conflict is a violation and may trigger review of the affected decision.
+Undisclosed material conflict may trigger review of the affected decision.
 
 ---
 
 # 39. Institutional separation and anti-capture
 
-Critical functions should be distributed across:
+Critical functions:
 
 ```text
 SHADOW OFFICE
@@ -1207,11 +1199,12 @@ LEDGER CUSTODIAN
 EXECUTION
 AUDIT
 APPEAL
+PLATFORM OPERATION
 ```
 
-No single actor should control accusation, investigation, judgment, ledger editing, execution, and appeal for the same high-impact case.
+No single actor or network SHOULD control accusation, investigation, judgment, ledger administration, execution, appeal, and platform administration for the same high-impact matter.
 
-Anti-capture safeguards include:
+Safeguards:
 
 ```text
 TERM LIMITS
@@ -1225,13 +1218,17 @@ WHISTLEBLOWER PROTECTION
 NO SINGLE NETWORK CONTROL
 ```
 
-No political party, business group, family network, religious organization, military structure, Shadow network, or other concentrated interest should control the complete decision chain.
+No privileged/VIP parallel process:
+
+```text
+SAME CORE PROCESS
+REGARDLESS OF STATUS,
+SUBJECT ONLY TO LAWFUL ROLE-SPECIFIC PROCEDURES.
+```
 
 ---
 
 # 40. Whistleblower protection
-
-Required controls:
 
 ```text
 SECURE REPORTING CHANNEL
@@ -1242,19 +1239,83 @@ AUDIT TRACE
 CLOSURE NOTICE
 ```
 
-Target:
-
 \[
 VerifiedRetaliation = 0
 \]
 
-Deliberately malicious false reporting may be processed under law, but the rule must not be used to intimidate good-faith reporting.
+Deliberately malicious false reporting may be processed under law without chilling good-faith reporting.
+
+---
+
+# PART VIII — Authority mandate and temporal law
+
+# 41. Authority Mandate Registry
+
+A machine-verifiable authority record MUST exist for material powers.
+
+```yaml
+AuthorityMandate:
+  mandate_id:
+  authority_holder:
+  authority_type:
+  source_of_law:
+  source_version:
+  jurisdiction:
+  permitted_actions: []
+  prohibited_actions: []
+  delegable: true_or_false
+  valid_from:
+  valid_until:
+  review_status:
+  supersedes:
+```
+
+No engine may infer coercive authority merely from a role name.
+
+---
+
+# 42. Temporal legal applicability
+
+Every material decision MUST be reproducible against the law and policy valid at the relevant time.
+
+Record:
+
+```text
+EVENT / CONDUCT DATE
+DECISION DATE
+LAW VERSION
+POLICY VERSION
+EFFECTIVE FROM / TO
+RETROACTIVITY RULE WHERE APPLICABLE
+```
+
+If law changes while a case is pending, the applicable-law rule MUST be explicitly determined and recorded rather than silently switching versions.
+
+---
+
+# 43. Legal review sequence
+
+To remove circularity:
+
+```text
+JURISDICTION CHECK
+→ LEGAL BASIS PRECHECK
+→ EVIDENCE / RIGHTS REVIEW
+→ MIZAN
+→ FORMAL LEGAL REVIEW
+→ ETHICAL REVIEW / VALIDATION
+→ DECISION
+```
+
+`LEGAL BASIS PRECHECK` confirms that a plausible lawful authority and legal pathway exist before Mizan proceeds.
+
+`FORMAL LEGAL REVIEW` confirms the final proposed decision against applicable law after Mizan and evidence analysis.
 
 ---
 
 # PART IX — Knowledge and corpus
 
-# 41. Knowledge classification K1–K8
+# 44. Knowledge classification K1–K8
 
 | ID | Classification |
 |---|---|
@@ -1267,35 +1328,15 @@ Deliberately malicious false reporting may be processed under law, but the rule 
 | `K7` | HYPOTHESIS |
 | `K8` | UNKNOWN |
 
-Invariant:
-
 ```text
-UNKNOWN ≠ TRUE ≠ FALSE
-```
-
-Unknown may remain unknown until evidence improves.
-
----
-
-# 42. Knowledge Plane responsibility
-
-The Knowledge Plane answers:
-
-```text
-WHAT IS KNOWN?
-WHERE DID IT COME FROM?
-WHAT DOMAIN DOES IT BELONG TO?
-WHO / WHAT GIVES IT AUTHORITY?
-WHICH VERSION IS CURRENT?
-WHEN IS IT VALID?
-IS IT CONTESTED?
-WHAT SUPERSEDES IT?
-WHAT LESSON WAS LEARNED?
+UNKNOWN != TRUE != FALSE
 ```
 
 ---
 
-# 43. Knowledge and corpus categories
+# 45. Knowledge Plane and corpus domains
+
+Knowledge Plane answers source, domain, authority, version, validity, contested status, supersession, and lessons learned.
 
 ```yaml
 KnowledgeType:
@@ -1318,30 +1359,12 @@ KnowledgeType:
   UNKNOWN
 ```
 
-Corpus is **curated reusable knowledge**. Case evidence is not corpus.
-
-Examples:
-
-```text
-CCTV RECORDING
-→ CASE EVIDENCE
-
-APPLICABLE LAW
-→ LEGAL CORPUS
-
-QUR'ANIC REFERENCE
-→ SCRIPTURAL CORPUS
-
-PREVIOUS INSTITUTIONAL LESSON
-→ LESSONS CORPUS
-```
-
----
-
-# 44. Corpus domains
+Corpus domains:
 
 ```text
 CORPUS-LEGAL
+CORPUS-RIGHTS
+CORPUS-SCIENCE
 CORPUS-GOVERNANCE
 CORPUS-ETHICAL
 CORPUS-SCRIPTURAL
@@ -1351,11 +1374,11 @@ CORPUS-PRECEDENT
 CORPUS-LESSONS
 ```
 
-Legal corpus should only become operational for a real jurisdiction after appropriate legal review.
+Corpus is curated reusable knowledge. Case evidence is not corpus.
 
 ---
 
-# 45. Knowledge lifecycle
+# 46. Knowledge lifecycle
 
 ```yaml
 KnowledgeStatus:
@@ -1367,8 +1390,6 @@ KnowledgeStatus:
   DEPRECATED
   ARCHIVED
 ```
-
-Canonical artifact:
 
 ```yaml
 KnowledgeArtifact:
@@ -1391,32 +1412,19 @@ KnowledgeArtifact:
 
 ---
 
-# 46. No universal truth score
+# 47. Domain validation and contradiction handling
 
-Different domains require different validation methods:
+No universal truth score.
 
 ```text
-LEGAL KNOWLEDGE
-→ authority + jurisdiction + validity + precedence
-
-CASE EVIDENCE
-→ reliability + corroboration + directness + integrity + uncertainty
-
-SCIENCE
-→ evidence + methodology + replication + uncertainty
-
-SCRIPTURE
-→ source + reference
-
-INTERPRETATION
-→ source + interpreter + tradition + context
+LEGAL KNOWLEDGE → authority + jurisdiction + validity + precedence
+CASE EVIDENCE → reliability + corroboration + directness + integrity + uncertainty
+SCIENCE → evidence + methodology + replication + uncertainty
+SCRIPTURE → primary source + reference
+INTERPRETATION → source + interpreter + tradition + context
 ```
 
-Evidence may be scored. Meaning must be contextualized. Law must be jurisdictionally validated. Spiritual interpretation must remain identified as interpretation.
-
----
-
-# 47. Contradiction handling
+Contradiction flow:
 
 ```text
 CONTRADICTION DETECTED
@@ -1431,7 +1439,31 @@ CONTRADICTION DETECTED
 
 ---
 
-# 48. Knowledge feedback loop
+# 48. Scriptural corpus provenance
+
+Scriptural and religious corpus entries SHOULD distinguish:
+
+```yaml
+ScripturalCorpusEntry:
+  entry_id:
+  primary_source:
+  edition:
+  language:
+  translator:
+  citation:
+  tradition:
+  interpreter:
+  interpretation_type:
+  historical_context:
+  review_status:
+  contested_status:
+```
+
+A human interpretation MUST NOT be presented as though it were an unmediated Divine statement.
+
+---
+
+# 49. Knowledge feedback loop
 
 ```text
 CASE
@@ -1444,31 +1476,11 @@ CASE
 → FUTURE CASES
 ```
 
-This loop is a core mechanism of self-correcting governance.
-
 ---
 
-# PART X — Work, services, tasks, SLA
-
-# 49. Work Plane responsibility
-
-The Work Plane answers:
-
-```text
-WHO DOES WHAT?
-WHEN?
-UNDER WHICH SLA?
-WITH WHICH DEPENDENCIES?
-WHAT OUTPUT IS REQUIRED?
-WHAT BLOCKS THE WORK?
-WHEN IS IT COMPLETE?
-```
-
----
+# PART X — Work, services, tasks, time
 
 # 50. Service catalog
-
-Initial services:
 
 ```text
 SVC-001 CASE INTAKE
@@ -1485,7 +1497,7 @@ SVC-010 KNOWLEDGE CORRECTION
 
 ---
 
-# 51. Task object
+# 51. Task model
 
 ```yaml
 Task:
@@ -1507,44 +1519,13 @@ Task:
   escalation_path:
 ```
 
-Task types may include:
+States:
 
 ```text
-CASE_TRIAGE
-IDENTITY_VERIFICATION
-JURISDICTION_REVIEW
-EVIDENCE_COLLECTION
-EVIDENCE_VERIFICATION
-MIZAN_REVIEW
-LEGAL_REVIEW
-ETHICAL_REVIEW
-CONFLICT_REVIEW
-DECISION_REVIEW
-LEDGER_APPEND
-EXECUTION
-PUBLIC_REDACTION
-OPEN_BOOK_PUBLICATION
-APPEAL_REVIEW
-REMIZAN
-AUDIT
-CORRECTION
-KNOWLEDGE_UPDATE
+CREATED → QUEUED → ASSIGNED → IN_PROGRESS → UNDER_REVIEW → COMPLETED
 ```
 
----
-
-# 52. Task state machine
-
-```text
-CREATED
-→ QUEUED
-→ ASSIGNED
-→ IN_PROGRESS
-→ UNDER_REVIEW
-→ COMPLETED
-```
-
-Alternative states:
+Alternatives:
 
 ```text
 BLOCKED
@@ -1557,7 +1538,7 @@ No critical task may be ownerless.
 
 ---
 
-# 53. Work priority
+# 52. Priority, queue fairness, backlog
 
 ```text
 P0 CRITICAL
@@ -1567,13 +1548,38 @@ P3 LOW
 P4 BACKLOG
 ```
 
-Optional priority model:
+Optional:
 
 \[
 PriorityScore = 0.40Impact + 0.30Urgency + 0.20TimeSensitivity + 0.10Vulnerability
 \]
 
-The score prioritizes work, not human worth.
+Priority scores work urgency, not human worth.
+
+Monitor backlog age P50/P90/P99 and review queues for systematic delay, discrimination, starvation, and priority abuse.
+
+---
+
+# 53. Time and calendar model
+
+Canonical machine time:
+
+```text
+UTC TIMESTAMP
+ISO-8601
+```
+
+Presentation and deadlines may use jurisdiction-local timezone and official business-day calendar.
+
+```yaml
+TimeContext:
+  canonical_utc:
+  jurisdiction_timezone:
+  business_calendar:
+  hijri_evaluation_horizon:
+```
+
+The one-Hijri-year governance horizon MUST remain distinct from case deadlines and statutory limitation periods.
 
 ---
 
@@ -1582,55 +1588,173 @@ The score prioritizes work, not human worth.
 | Activity | Initial baseline |
 |---|---|
 | standard intake acknowledgment | 2 business days |
-| critical intake acknowledgment | 4 hours |
+| critical intake | 4 hours |
 | standard appeal acknowledgment | 2 business days |
-| critical appeal acknowledgment | 24 hours |
+| critical appeal | 24 hours |
 | verified public correction notice | 3 business days |
 | critical whistleblower triage | 24 hours |
 | standard whistleblower triage | 3 business days |
 
-These are pilot defaults, not immutable values.
-
-SLA breach flow:
+Pilot defaults only; calibrate later.
 
 ```text
-SLA_BREACH
+SLA BREACH
 → OWNER ALERT
 → ESCALATION
 → AUDIT FLAG
 → PUBLIC DISCLOSURE IF MATERIAL AND LAWFUL
 ```
 
-Permitted SLA pauses must be explicit and recorded, e.g. external evidence dependency, court dependency, requestor delay, legal hold, or security hold.
+Permitted pause reasons MUST be recorded.
 
 ---
 
-# 55. Queue fairness and backlog health
+# 55. Capacity and operating model
 
-Monitor:
-
-```text
-P50 AGE
-P90 AGE
-P99 AGE
-```
-
-Task queues should be reviewed for:
+Production planning SHOULD define:
 
 ```text
-SYSTEMATIC DELAY
-DISCRIMINATION
-PRIORITY ABUSE
-STARVATION
+CASE INTAKE CAPACITY
+REVIEWER CAPACITY
+LEGAL REVIEW CAPACITY
+AUDIT CAPACITY
+ON-CALL / INCIDENT CAPACITY
+EXPECTED P50/P95 CASE LATENCY
+MAXIMUM SUSTAINABLE BACKLOG
+ESTIMATED OPERATING COST
 ```
 
-Critical cases must not disappear into a generic backlog.
+Capacity limits MUST NOT be hidden by silently lowering review quality.
 
 ---
 
-# PART XI — Evidence and impact
+# PART XI — Stakeholders, safeguarding, rights, notice
 
-# 56. Evidence provenance
+# 56. Stakeholders
+
+```text
+CLAIMANT
+RESPONDENT
+VICTIM
+AFFECTED_PARTY
+BENEFICIARY
+WITNESS
+REPRESENTATIVE
+DECISION_OWNER
+REVIEWER
+AUDITOR
+EXECUTOR
+WHISTLEBLOWER
+PUBLIC
+MEDIA
+CIVIL_SOCIETY
+```
+
+---
+
+# 57. Rights and obligations
+
+```yaml
+Right:
+  right_id:
+  holder:
+  legal_basis:
+  scope:
+  limitations:
+  remedy_if_violated:
+  appeal_available:
+
+Obligation:
+  obligation_id:
+  responsible_actor:
+  legal_basis:
+  required_action:
+  deadline:
+  evidence_of_completion:
+  consequence_if_unfulfilled:
+```
+
+High-impact decisions MUST identify affected rights and remedies.
+
+---
+
+# 58. Rights impact review
+
+```text
+WHOSE RIGHTS ARE AFFECTED?
+WHAT RIGHTS?
+WHAT LEGAL BASIS?
+IS THE RESTRICTION NECESSARY?
+IS IT PROPORTIONATE?
+IS A LESS RESTRICTIVE OPTION AVAILABLE?
+IS A REMEDY AVAILABLE?
+```
+
+---
+
+# 59. Notice and service of process
+
+Due process requires more than an appeal button.
+
+```yaml
+NoticeRecord:
+  notice_id:
+  case_id:
+  recipient:
+  notice_type:
+  content_version:
+  issued_at:
+  delivery_channel:
+  delivery_status:
+  delivered_at:
+  acknowledged_at:
+  failed_reason:
+  deadline_triggered_at:
+```
+
+Deadlines MUST NOT be treated as running from successful notice where applicable law requires delivery or legally sufficient service.
+
+---
+
+# 60. Vulnerable-person safeguarding
+
+Special handling MAY be required for:
+
+```text
+MINORS
+VICTIMS OF VIOLENCE
+TRAFFICKING SURVIVORS
+PEOPLE WITH LIMITED CAPACITY
+PEOPLE AT IMMEDIATE SAFETY RISK
+PROTECTED WITNESSES
+```
+
+Safeguards may include representative support, confidentiality, trauma-aware process, age-appropriate communication, restricted disclosure, and expedited safety escalation.
+
+---
+
+# 61. Intake abuse and brigading
+
+Public access MUST NOT mean unlimited abuse capacity.
+
+Controls MAY include:
+
+```text
+RATE LIMITING
+DUPLICATE DETECTION
+SPAM / AUTOMATION DETECTION
+ABUSE TRIAGE
+MASS-BRIGADING DETECTION
+SAFE BLOCKING OF MALICIOUS TRAFFIC
+```
+
+These controls MUST NOT suppress legitimate good-faith complaints merely because they are unpopular or numerous.
+
+---
+
+# PART XII — Evidence and admissibility
+
+# 62. Evidence provenance
 
 ```yaml
 Evidence:
@@ -1647,15 +1771,34 @@ Evidence:
   verifier:
   confidence:
   confidentiality:
+  admissibility_status:
 ```
 
-Every material transformation should be traceable.
+Every material transformation SHOULD be traceable.
 
 ---
 
-# 57. Evidence Confidence Score
+# 63. Evidence status, challenge, privilege
 
-Variables:
+```yaml
+EvidenceStatus:
+  SUBMITTED
+  VERIFIED
+  CHALLENGED
+  ADMISSIBLE
+  PRIVILEGED
+  SEALED
+  EXCLUDED
+  REJECTED
+```
+
+Parties SHOULD have a defined pathway to challenge material evidence where due process requires it.
+
+Illegally obtained, privileged, sealed, or otherwise excluded evidence MUST be handled according to applicable law and MUST NOT be made usable merely because an engine can score it.
+
+---
+
+# 64. Evidence Confidence Score
 
 ```text
 R = source reliability
@@ -1665,13 +1808,9 @@ I = integrity / chain of custody
 U = uncertainty penalty
 ```
 
-Initial advisory formula:
-
 \[
 ECS = 0.30R + 0.30C + 0.20D + 0.20I - 0.20U
 \]
-
-Clamp:
 
 \[
 0 \le ECS \le 100
@@ -1687,11 +1826,11 @@ Initial mapping:
 80–100 E4 STRONG
 ```
 
-ECS is an internal decision-quality indicator. It does not replace a legally applicable burden of proof.
+ECS is advisory and never replaces the applicable legal burden of proof.
 
 ---
 
-# 58. Uncertainty model
+# 65. Uncertainty and impact
 
 ```yaml
 Uncertainty:
@@ -1702,27 +1841,11 @@ Uncertainty:
   sensitivity: LOW | MEDIUM | HIGH
 ```
 
-Uncertainty must be recorded, not hidden.
-
----
-
-# 59. Decision Impact Score
-
-Variables:
-
-```text
-S = severity of potential harm, 0..5
-P = probability of harm, 0..5
-X = exposure / affected population, 0..5
-```
-
-Initial model:
+Decision Impact Score:
 
 \[
 DIS = 100 \times (0.45(S/5) + 0.35(P/5) + 0.20(X/5))
 \]
-
-Classification:
 
 ```text
 0–24 LOW
@@ -1731,58 +1854,34 @@ Classification:
 75–100 CRITICAL
 ```
 
----
+Initial evidence guidance:
 
-# 60. Evidence threshold guidance
-
-| Impact | Initial ECS guidance | Review expectation |
+| Impact | ECS guidance | Review expectation |
 |---|---:|---|
 | LOW | 50 | standard |
 | MODERATE | 65 | additional review recommended |
 | HIGH | 80 | independent review |
 | CRITICAL | 85 | independent review + audit |
-| coercive / punitive | applicable legal standard | lawful formal process mandatory |
-
-Legal standards always override the numerical guidance.
+| coercive / punitive | applicable legal standard | formal lawful process mandatory |
 
 ---
 
-# 61. Intent / impact principle
+# 66. Intent / impact principle
 
 ```text
 GOOD INTENT DOES NOT ERASE HARMFUL IMPACT.
-
 HARMFUL IMPACT DOES NOT AUTOMATICALLY PROVE MALICIOUS INTENT.
 ```
 
 ---
 
-# PART XII — Sword, Wing, Mizan, and decision assurance
+# PART XIII — Sword, Wing, Mizan, and engines
 
-# 62. The Sword and the Wing
+# 67. Sword and Wing
 
-**Sword** represents:
+**Sword:** protection, boundary, sanction, enforcement, prevention.
 
-```text
-PROTECTION
-BOUNDARY
-SANCTION
-ENFORCEMENT
-PREVENTION
-```
-
-**Wing** represents:
-
-```text
-MERCY
-RESTITUTION
-RESTORATION
-REHABILITATION
-RECONCILIATION
-SECOND CHANCE
-```
-
-Conceptual balance:
+**Wing:** mercy, restitution, restoration, rehabilitation, reconciliation, second chance.
 
 \[
 Justice = Sword + Wing
@@ -1792,24 +1891,15 @@ Sword without Wing risks cruelty. Wing without Sword risks impunity.
 
 ---
 
-# 63. Mizan definition
+# 68. Mizan definition
 
 Mizan is a:
 
 # DECISION READINESS & BALANCING ENGINE
 
-It is not:
+It is NOT a spiritual court, sin score, human-value score, or automatic legal judge.
 
-```text
-SPIRITUAL COURT
-SIN SCORE
-HUMAN VALUE SCORE
-AUTOMATIC CRIMINAL JUDGE
-```
-
----
-
-# 64. Mizan inputs
+Inputs:
 
 ```text
 EVENT
@@ -1817,7 +1907,7 @@ ACTOR
 ACTION
 INTENT
 EVIDENCE
-APPLICABLE LAW
+LEGAL BASIS PRECHECK
 IMPACT
 AFFECTED PARTIES
 RIGHTS
@@ -1829,34 +1919,36 @@ UNCERTAINTY
 
 ---
 
-# 65. Seven Mizan gates
+# 69. Seven Mizan gates
 
 | Gate | Core question |
 |---|---|
 | `M1 Truth` | What is known and unknown? |
-| `M2 Legality` | What lawful authority and rule apply? |
+| `M2 Legality Context` | Is there a plausible lawful basis and what legal constraints matter? |
 | `M3 Intent` | What was the apparent purpose? |
 | `M4 Impact` | Who is affected and how? |
-| `M5 Proportionality` | Is the response necessary and proportionate? |
+| `M5 Proportionality` | Is the proposed response necessary and proportionate? |
 | `M6 Mercy & Correction` | Can harm be repaired while preserving justice? |
 | `M7 Accountability` | Can the decision be explained, reviewed, and audited? |
 
+M2 provides legality context but does not replace formal legal review.
+
 ---
 
-# 66. Mizan hard gates
+# 70. Mizan hard gates and score
 
-Before numerical quality scoring, the following must pass where applicable:
+Before quality scoring:
 
 ```text
 JURISDICTION VALID
-LEGAL AUTHORITY EXISTS
+PLAUSIBLE LEGAL BASIS EXISTS
 EVIDENCE THRESHOLD MET
-CONFLICT OF INTEREST RESOLVED
+CONFLICT RESOLVED
 NO RED-LINE VIOLATION
 RIGHTS REVIEW COMPLETE
 ```
 
-Failure leads to:
+Failure:
 
 ```text
 STOP
@@ -1866,21 +1958,13 @@ or
 UNRESOLVED
 ```
 
-A high score cannot rescue a failed hard gate.
-
----
-
-# 67. Mizan Quality Score
-
-Initial advisory weighted score for non-legality dimensions:
+Advisory score:
 
 \[
 MQS = 0.20M1 + 0.10M3 + 0.15M4 + 0.20M5 + 0.15M6 + 0.20M7
 \]
 
-M2 Legality remains a hard gate.
-
-Initial interpretation:
+M2 remains contextual/hard-gate oriented rather than part of the weighted average.
 
 ```text
 <60      REWORK
@@ -1890,58 +1974,50 @@ Initial interpretation:
 95–100   EXCEPTIONAL
 ```
 
-All weights and thresholds are provisional until calibration.
+Weights and thresholds are provisional until calibration.
 
 ---
 
-# 68. Proportionality sub-score
+# 71. Mizan outcomes — non-adjudicative
 
-Possible dimensions:
+Mizan outputs MUST describe readiness, not legal guilt.
+
+```yaml
+MizanOutcome:
+  READY
+  CONDITIONAL
+  NOT_READY
+  CORRECTABLE
+  UNRESOLVED
+  REVIEW_REQUIRED
+```
+
+A legal finding such as `VIOLATION` belongs to the lawful human/institutional decision process, not the Mizan Engine itself.
+
+---
+
+# 72. Proportionality sub-score
 
 ```text
 N = necessity
 F = fit between action and objective
-L = less-restrictive-alternative assessment
+L = less-restrictive alternative assessment
 T = duration proportionality
 ```
-
-Initial formula:
 
 \[
 PS = 0.30N + 0.30F + 0.25L + 0.15T
 \]
 
-High-impact actions with poor proportionality should fail or require redesign even if other dimensions score well.
+High-impact actions with poor proportionality SHOULD fail or require redesign even if other dimensions score well.
 
 ---
 
-# 69. Mizan outcomes
+# 73. Raqib–‘Atid conceptual mapping
 
-```text
-POSITIVE
-CORRECTABLE
-VIOLATION
-UNRESOLVED
-REVIEW_REQUIRED
-```
+Philosophical accountability metaphor only.
 
-`UNRESOLVED` is a legitimate outcome. The system must not manufacture certainty.
-
----
-
-# 70. Raqib–‘Atid conceptual mapping
-
-DHGS may retain Raqib–‘Atid as a **philosophical accountability metaphor** only.
-
-Operational database labels:
-
-```text
-CONSTRUCTIVE
-CORRECTIVE
-PENDING
-```
-
-Conceptual mapping:
+Operational labels:
 
 ```text
 CONSTRUCTIVE ↔ Raqib conceptual channel
@@ -1949,17 +2025,11 @@ CORRECTIVE  ↔ ‘Atid conceptual channel
 PENDING     ↔ unresolved / pending
 ```
 
-DHGS does not claim to reproduce or replace a literal Divine record of deeds.
+DHGS does not claim to reproduce a literal Divine record.
 
 ---
 
-# PART XIII — Engines
-
-# 71. Engine architecture
-
-Engines begin as pure TypeScript packages, not separate network services.
-
-Initial registry:
+# 74. Engine registry
 
 ```yaml
 ENG-EVD:
@@ -1995,88 +2065,27 @@ ENG-MET:
   responsibility: KPI_and_health_metrics
 ```
 
-MVP priority engines:
-
-```text
-EVIDENCE
-MIZAN
-POLICY / GUARD
-LEDGER
-PUBLICATION
-```
-
-Knowledge, Rights, and Metrics engines may mature afterward.
+MVP priority: Evidence, Mizan, Policy/Guard, Ledger, Publication.
 
 ---
 
-# 72. Frontend vs backend vs engine responsibility
+# PART XIV — Policy, requirements, controls, exceptions
+
+# 75. Policy / Guard Engine
+
+MVP rules MAY be testable TypeScript functions.
+
+Examples:
 
 ```text
-FRONTEND
-→ display, collect input, show state, request actions
-
-BACKEND
-→ authorization, orchestration, state transitions, persistence, engine invocation
-
-ENGINES
-→ deterministic / explainable evaluation functions
-
-CORPUS
-→ reusable versioned knowledge
-
-DATABASE
-→ canonical transactional state
-
-LEDGER
-→ governance history
-
-AUDIT LOG
-→ software activity history
-
-OPEN BOOK
-→ public understanding
-
-HUMANS
-→ final judgment where human judgment is required
-
-LAW
-→ coercive authority
+IF formalLegalStatus == FAIL → DENY
+IF jurisdictionValid == false → DENY
+IF materialConflict == UNRESOLVED → HOLD
+IF protectedData == true → DO_NOT_PUBLISH
+IF impact == HIGH AND evidenceThresholdNotMet → HOLD_AND_REQUEST_MORE_EVIDENCE
 ```
 
-Critical governance rules must never exist only in UI code.
-
----
-
-# PART XIV — Policy, controls, exception, and override
-
-# 73. Policy / Guard Engine
-
-MVP rules may be plain, testable TypeScript functions.
-
-Conceptual examples:
-
-```text
-IF legalGate == FAIL
-→ DENY
-
-IF jurisdictionValid == false
-→ DENY
-
-IF materialConflict == UNRESOLVED
-→ HOLD
-
-IF protectedData == true
-→ DO_NOT_PUBLISH
-
-IF impact == HIGH AND evidenceThresholdNotMet
-→ HOLD_AND_REQUEST_MORE_EVIDENCE
-```
-
-Each critical rule requires a stable rule ID and tests.
-
----
-
-# 74. Policy actions
+Actions:
 
 ```yaml
 PolicyAction:
@@ -2091,49 +2100,74 @@ PolicyAction:
   REQUIRE_APPEAL_WINDOW
 ```
 
-For high-risk unknowns, the system should **fail safe, not fail open**.
+For high-risk unknowns: fail safe, not fail open.
 
 ---
 
-# 75. Exception framework
+# 76. Requirement, control, and rule registries
 
-Every exception must be explicit:
+Schemas alone are insufficient. Critical governance behavior MUST receive stable IDs.
 
-```yaml
-Exception:
-  exception_id:
-  rule_id:
-  reason:
-  requester:
-  approver:
-  legal_basis:
-  starts_at:
-  expires_at:
-  compensating_controls:
-  audit_required: true
+ID namespaces:
+
+```text
+REQ-GOV-*  governance requirements
+REQ-IDM-*  identity requirements
+REQ-KNO-*  knowledge requirements
+REQ-EVD-*  evidence requirements
+REQ-MZN-*  Mizan requirements
+REQ-RGT-*  rights requirements
+REQ-HSB-*  Hisab requirements
+REQ-OBK-*  Open Book requirements
+REQ-SEC-*  security requirements
+REQ-PRV-*  privacy requirements
+
+CTRL-*     controls
+RULE-*     executable / evaluable rules
+TEST-*     tests
+KPI-*      metrics
 ```
 
-An exception without expiry is invalid unless the underlying law expressly creates a permanent rule change, in which case the rule itself must be amended rather than treated as an exception.
+Minimum initial requirements:
 
----
-
-# 76. Override framework
-
-```yaml
-OverrideType:
-  OPERATIONAL
-  EMERGENCY
-  LEGAL
-  SECURITY
+```text
+REQ-GOV-001 Every material decision has an accountable owner.
+REQ-GOV-002 Every coercive action has a valid authority mandate.
+REQ-GOV-003 No privileged status creates a hidden parallel process.
+REQ-MZN-001 High-impact decisions complete required Mizan review.
+REQ-MZN-002 Mizan output does not determine legal guilt.
+REQ-HSB-001 Every material public-power decision produces a ledger record.
+REQ-HSB-002 Historical correction preserves prior accountable state.
+REQ-OBK-001 Eligible public decisions produce a privacy-safe public record.
+REQ-RGT-001 High-impact decisions complete rights review.
+REQ-IDM-001 Restricted actions require sufficient identity assurance.
+REQ-SEC-001 Privileged technical actions are auditable.
+REQ-SEC-002 Technical admin cannot alter governance outcome outside correction process.
+REQ-PRV-001 Protected data is not directly exposed to Open Book.
+REQ-KNO-001 Authoritative knowledge requires provenance and version.
+REQ-EVD-001 Material evidence retains provenance and challenge status.
 ```
 
-No override may bypass non-derogable red lines such as torture prohibition, core due process, ledger falsification prohibition, or explicit fundamental-rights protections under applicable law.
+Professional traceability:
+
+```text
+MISSION
+→ OBJECTIVE
+→ REQUIREMENT
+→ CONTROL
+→ RULE
+→ WORKFLOW
+→ TASK
+→ IMPLEMENTATION
+→ TEST
+→ KPI
+→ OUTCOME
+→ LEARNING
+```
 
 ---
 
 # 77. Control catalog
-
-Every critical control should have:
 
 ```yaml
 Control:
@@ -2153,7 +2187,7 @@ Control:
   failure_response:
 ```
 
-Control categories:
+Categories:
 
 ```text
 PREVENTIVE
@@ -2165,7 +2199,7 @@ PRIVACY
 SECURITY
 ```
 
-Every critical process should answer:
+Every critical process SHOULD answer:
 
 ```text
 PREVENT
@@ -2177,77 +2211,41 @@ LEARN
 
 ---
 
-# PART XV — Stakeholders, rights, obligations, decision rights
-
-# 78. Stakeholder model
-
-Contextual stakeholder roles include:
-
-```text
-CLAIMANT
-RESPONDENT
-VICTIM
-AFFECTED_PARTY
-BENEFICIARY
-WITNESS
-REPRESENTATIVE
-DECISION_OWNER
-REVIEWER
-AUDITOR
-EXECUTOR
-WHISTLEBLOWER
-PUBLIC
-MEDIA
-CIVIL_SOCIETY
-```
-
----
-
-# 79. Rights and obligations
+# 78. Exception and override
 
 ```yaml
-Right:
-  right_id:
-  holder:
+Exception:
+  exception_id:
+  rule_id:
+  reason:
+  requester:
+  approver:
   legal_basis:
-  scope:
-  limitations:
-  remedy_if_violated:
-  appeal_available:
-
-Obligation:
-  obligation_id:
-  responsible_actor:
-  legal_basis:
-  required_action:
-  deadline:
-  evidence_of_completion:
-  consequence_if_unfulfilled:
+  starts_at:
+  expires_at:
+  compensating_controls:
+  audit_required: true
 ```
 
-High-impact decisions must identify affected rights and available remedies.
+Exception without expiry is invalid unless formally converted into a rule change.
+
+```yaml
+OverrideType:
+  OPERATIONAL
+  EMERGENCY
+  LEGAL
+  SECURITY
+```
+
+No override may bypass non-derogable red lines.
 
 ---
 
-# 80. Rights impact review
+# PART XV — Decision rights, remedy, appeal, notice, finality
 
-High-impact review questions:
+# 79. RACI/RASCI and quorum
 
-```text
-WHOSE RIGHTS ARE AFFECTED?
-WHAT RIGHTS?
-WHAT LEGAL BASIS?
-IS THE RESTRICTION NECESSARY?
-IS IT PROPORTIONATE?
-IS A LESS RESTRICTIVE OPTION AVAILABLE?
-IS A REMEDY AVAILABLE?
-```
-
----
-
-# 81. RACI / RASCI and quorum
-
-Critical processes must define:
+Critical processes define:
 
 ```text
 RESPONSIBLE
@@ -2259,7 +2257,7 @@ INFORMED
 
 No undefined owner.
 
-Initial provisional quorum guidance:
+Provisional quorum:
 
 | Impact | Reviewers | Minimum approval |
 |---|---:|---:|
@@ -2268,21 +2266,23 @@ Initial provisional quorum guidance:
 | HIGH | 3 | 2 |
 | CRITICAL | 5 | 4 + independent audit |
 
-These numbers are not constitutional truths and must be calibrated during pilot design.
+Calibrate during pilot.
 
 ---
 
-# PART XVI — Decision, remedy, appeal, outcome
-
-# 82. Decision lifecycle
+# 80. Decision lifecycle
 
 ```text
 DRAFT
 → SUBMITTED
 → TRIAGE
+→ JURISDICTION_CHECK
+→ LEGAL_BASIS_PRECHECK
 → EVIDENCE
+→ RIGHTS_REVIEW
 → MIZAN
-→ LEGAL / ETHICAL REVIEW
+→ FORMAL_LEGAL_REVIEW
+→ ETHICAL_REVIEW
 → DECISION_READY
 → APPROVED / REJECTED / UNRESOLVED
 → LEDGERED
@@ -2292,7 +2292,7 @@ DRAFT
 → CLOSED
 ```
 
-Possible branches:
+Branches:
 
 ```text
 UNDER_APPEAL
@@ -2301,11 +2301,11 @@ CORRECTED
 REVERSED
 ```
 
-Illegal state jumps should be rejected and logged.
+Illegal state jumps MUST be rejected and logged.
 
 ---
 
-# 83. Remedy catalog
+# 81. Remedy catalog
 
 ```text
 NO_ACTION
@@ -2325,7 +2325,7 @@ Criminal punishment remains with legally authorized justice institutions.
 
 ---
 
-# 84. Appeal finality and reopening
+# 82. Appeal finality and reopening
 
 ```text
 PROVISIONAL
@@ -2335,7 +2335,7 @@ REOPENABLE
 EXPIRED
 ```
 
-Possible reopening conditions:
+Reopening may require:
 
 ```text
 NEW MATERIAL EVIDENCE
@@ -2347,30 +2347,14 @@ CONSTITUTIONAL CHANGE
 COURT ORDER
 ```
 
-A final decision should not be endlessly reopened without a defined legal or procedural trigger.
-
 ---
 
-# 85. Output vs outcome
-
-DHGS must distinguish:
+# 83. Output, outcome, definition of case done
 
 ```text
-OUTPUT
-= what the institution produced
-
-OUTCOME
-= what changed in reality
+OUTPUT = what the institution produced
+OUTCOME = what changed in reality
 ```
-
-Example:
-
-```text
-OUTPUT: decision published
-OUTCOME: repeat harm actually decreased
-```
-
-Canonical outcome:
 
 ```yaml
 Outcome:
@@ -2387,24 +2371,7 @@ Outcome:
   status:
 ```
 
-Outcome statuses may include:
-
-```text
-NOT_MEASURED
-ON_TRACK
-ACHIEVED
-PARTIALLY_ACHIEVED
-FAILED
-HARMFUL_UNINTENDED_OUTCOME
-```
-
----
-
-# 86. Definition of case done
-
-A case must not become closed merely because a decision was issued.
-
-Where applicable, closure requires:
+Closure, where applicable, requires:
 
 ```text
 DECISION RECORDED
@@ -2420,11 +2387,9 @@ RETENTION CLASS ASSIGNED
 
 ---
 
-# PART XVII — Events, Hisab Ledger, audit log
+# PART XVI — Events, Hisab, signing, reproducibility
 
-# 87. Canonical event model
-
-Material state changes should emit a canonical event.
+# 84. Canonical event model
 
 Representative event types:
 
@@ -2437,7 +2402,8 @@ TASK_BLOCKED
 TASK_COMPLETED
 EVIDENCE_ADDED
 EVIDENCE_VERIFIED
-EVIDENCE_REJECTED
+EVIDENCE_CHALLENGED
+EVIDENCE_EXCLUDED
 MIZAN_STARTED
 MIZAN_COMPLETED
 LEGAL_REVIEW_COMPLETED
@@ -2449,6 +2415,8 @@ LEDGER_APPENDED
 EXECUTION_STARTED
 EXECUTION_COMPLETED
 OPEN_BOOK_PUBLISHED
+NOTICE_ISSUED
+NOTICE_DELIVERED
 APPEAL_OPENED
 REMIZAN_STARTED
 CORRECTION_CREATED
@@ -2465,8 +2433,6 @@ PUBLIC_COMMENT_RECEIVED
 INCIDENT_DECLARED
 ```
 
-Canonical event shape:
-
 ```yaml
 Event:
   event_id:
@@ -2481,9 +2447,9 @@ Event:
   event_hash:
 ```
 
-MVP may store events in PostgreSQL without implementing a full event-sourcing architecture.
+MVP may use PostgreSQL without full event sourcing.
 
-Core rule:
+Rule:
 
 ```text
 NO MATERIAL STATE CHANGE WITHOUT AN AUDITABLE EVENT / RECORD.
@@ -2491,21 +2457,17 @@ NO MATERIAL STATE CHANGE WITHOUT AN AUDITABLE EVENT / RECORD.
 
 ---
 
-# 88. Hisab Ledger
+# 85. Hisab Ledger
 
 Hisab Ledger is the:
 
 # ACCOUNTABILITY RECORD OF MATERIAL PUBLIC POWER
 
-It is not total surveillance, a literal Divine record, or a permanent social label.
-
-Principle:
+Not total surveillance, a literal Divine record, or permanent social label.
 
 # IF POWER ACTS, THE LEDGER REMEMBERS.
 
-The ledger should be append-oriented.
-
-Normal governance history correction:
+Append-oriented correction:
 
 ```text
 ORIGINAL RECORD
@@ -2514,21 +2476,18 @@ ORIGINAL RECORD
 → NEW VALID STATE
 ```
 
-No silent rewrite of historical accountability.
+No silent historical rewrite.
 
 ---
 
-# 89. Hisab Ledger vs audit log
+# 86. Hisab vs audit log
 
 ```text
-HISAB LEDGER
-= governance meaning and accountability history
-
-AUDIT LOG
-= software activity and access history
+HISAB LEDGER = governance meaning and accountability history
+AUDIT LOG = software activity and access history
 ```
 
-Software audit examples:
+Audit examples:
 
 ```text
 LOGIN
@@ -2538,15 +2497,76 @@ ROLE_CHANGE
 DECISION_APPROVAL
 PUBLICATION
 ADMIN_ACTION
+BREAK_GLASS_ACCESS
 ```
-
-These two records must remain logically distinct.
 
 ---
 
-# 90. Optional tamper evidence
+# 87. Decision Context Snapshot
 
-Later phases may add hash chaining:
+Every high-impact decision SHOULD preserve enough context for future reproduction.
+
+```yaml
+DecisionContextSnapshot:
+  decision_id:
+  case_id:
+  jurisdiction:
+  event_or_conduct_date:
+  decision_date:
+
+  authority:
+    mandate_id:
+    law_source:
+    law_version:
+    law_effective_at:
+
+  governance:
+    policy_set_version:
+    rule_set_version:
+    control_set_version:
+
+  engines:
+    evidence_engine_version:
+    mizan_engine_version:
+    rights_engine_version:
+    publication_engine_version:
+
+  corpus:
+    snapshot_id:
+
+  schemas:
+    schema_version:
+
+  reviewers:
+    - reviewer_id:
+      role:
+      attestation:
+
+  created_at:
+```
+
+This snapshot answers: **what law, rules, corpus, engines, evidence context, and reviewers produced the decision at that time?**
+
+---
+
+# 88. Decision attestation and signatures
+
+High-impact decisions SHOULD support non-repudiable attestation.
+
+```yaml
+DecisionAttestation:
+  decision_id:
+  signer_id:
+  signer_role:
+  signed_at:
+  content_hash:
+  signature_or_attestation_reference:
+  verification_status:
+```
+
+The MVP MAY begin with strong authenticated attestations in the database, with cryptographic/digital signatures introduced when legal or operational need requires them.
+
+Optional later tamper evidence:
 
 \[
 H_n = Hash(H_{n-1} + Record_n)
@@ -2556,9 +2576,9 @@ Blockchain is not required.
 
 ---
 
-# 91. Audit evidence package
+# 89. Audit evidence package
 
-A high-impact decision may eventually produce a standard package such as:
+A high-impact decision may produce:
 
 ```text
 decision.json
@@ -2573,19 +2593,17 @@ public-summary.json
 manifest.json
 ```
 
-The package is an audit artifact, not necessarily public in full.
+Not necessarily public in full.
 
 ---
 
-# PART XVIII — Open Book, transparency, and public participation
+# PART XVII — Open Book, accessibility, participation, open data
 
-# 92. Open Book principle
-
-DHGS is:
+# 90. Open Book principle
 
 # OPEN BOOK BY DEFAULT, PRIVATE WHEN LEGITIMATELY REQUIRED.
 
-A disclosable material public decision should answer:
+Disclosable decisions SHOULD answer:
 
 ```text
 WHAT HAPPENED?
@@ -2603,7 +2621,7 @@ CAN IT BE APPEALED?
 
 ---
 
-# 93. Disclosure classes
+# 91. Disclosure and projection
 
 ```text
 P0 PUBLIC
@@ -2612,21 +2630,11 @@ P2 INTERNAL / RESTRICTED
 P3 PROTECTED
 ```
 
-Principle:
-
 ```text
-PUBLIC RIGHT-TO-KNOW
-≠
-UNIVERSAL ACCESS TO PRIVATE INFORMATION
+PUBLIC RIGHT-TO-KNOW != UNIVERSAL ACCESS TO PRIVATE INFORMATION
 ```
 
-Open Governance does not mean Open Vulnerability.
-
----
-
-# 94. Public projection architecture
-
-Never expose internal ledger or case tables directly to the public internet.
+Never expose internal ledger or case tables directly.
 
 ```text
 INTERNAL DATA
@@ -2636,11 +2644,11 @@ INTERNAL DATA
 → OPEN BOOK
 ```
 
-The Publication / Redaction Engine may automate safe preparation, but high-risk redaction decisions require human review until proven safe.
+High-risk redaction requires human review until automation is demonstrably safe.
 
 ---
 
-# 95. Three communication levels
+# 92. Communication and accessibility
 
 ```text
 L1 SIMPLE
@@ -2648,21 +2656,9 @@ L2 STANDARD
 L3 TECHNICAL
 ```
 
-**Simple** should answer what happened, why, and what happens next in plain language.
-
-**Standard** adds authority, law, impact, status, and appeal.
-
-**Technical** may include policy IDs, Mizan summary, audit references, structured data, and machine-readable output.
-
-Principle:
-
 # ONE VERIFIED SOURCE — MULTIPLE HUMAN-FRIENDLY FORMATS.
 
----
-
-# 96. All-age and accessible communication
-
-Open Book should be:
+Open Book SHOULD be:
 
 ```text
 MOBILE-FIRST
@@ -2673,23 +2669,21 @@ TRANSCRIBED
 READABLE
 VISUALLY CLEAR
 MULTILINGUAL WHERE REQUIRED
-LOCAL-LANGUAGE FRIENDLY WHERE PRACTICAL
+LOCAL-LANGUAGE FRIENDLY
 DOWNLOADABLE
 ```
 
-Modes may be labeled:
+Public web target:
 
-```text
-SIMPLE
-STANDARD
-PROFESSIONAL
-```
+# WCAG 2.2 LEVEL AA
+
+unless a later formally adopted accessibility baseline supersedes it.
 
 ---
 
-# 97. Correction notice
+# 93. Correction notice and anti-propaganda rule
 
-A public correction should preserve:
+Public correction preserves:
 
 ```text
 PREVIOUS INFORMATION
@@ -2701,15 +2695,20 @@ RESPONSIBLE AUTHORITY
 PREVENTIVE ACTION
 ```
 
-No silent editing of public history.
+No silent editing.
+
+Red line:
+
+```text
+NO DELIBERATE DECEPTIVE PUBLIC COMMUNICATION
+NO PROPAGANDA DESIGNED TO CONCEAL MATERIAL GOVERNANCE FAILURE
+```
 
 ---
 
-# 98. Public participation
+# 94. Public participation
 
-Open Book must not be only one-way publication.
-
-DHGS may support:
+May support:
 
 ```text
 PUBLIC COMMENT
@@ -2720,8 +2719,6 @@ CORRECTION REQUEST
 POLICY FEEDBACK
 PUBLIC HEARING
 ```
-
-Flow:
 
 ```text
 PUBLIC INPUT
@@ -2737,86 +2734,57 @@ PUBLIC INPUT
 
 ---
 
-# PART XIX — Data, privacy, retention, security
+# 95. Open-data contract
 
-# 99. Canonical data domains
+Eligible public data MAY be published through versioned machine-readable exports.
 
-Initial logical domains:
-
-```text
-identity
-cases
-tasks
-evidence
-knowledge
-governance
-ledger
-appeals
-corrections
-outcomes
-audit
-openbook
+```yaml
+OpenDataContract:
+  schema_version:
+  formats: [JSON, CSV]
+  fields:
+  privacy_class: P0_or_P1_only
+  update_frequency:
+  correction_policy:
+  license_or_terms:
 ```
 
-Initial tables may include:
+Open-data exports MUST NOT bypass Open Book privacy/redaction controls.
+
+---
+
+# PART XVIII — Data governance, privacy, retention
+
+# 96. Data roles and source of truth
 
 ```text
-profiles
-roles
-regions
-cases
-case_participants
-tasks
-evidence
-knowledge_items
-mizan_reviews
-legal_reviews
-ethical_reviews
-rights_reviews
-decisions
-ledger_entries
-appeals
-corrections
-outcomes
-public_records
-audit_logs
+CASE STATE → PostgreSQL
+EVIDENCE METADATA → PostgreSQL
+EVIDENCE FILES → private object storage
+KNOWLEDGE METADATA → PostgreSQL
+CORPUS FILES → controlled corpus storage / repository
+GOVERNANCE HISTORY → Hisab Ledger
+SOFTWARE ACTIVITY → Audit Log
+PUBLIC INFORMATION → public projection
+```
+
+Data governance SHOULD identify:
+
+```text
+DATA CONTROLLER
+DATA PROCESSOR
+DATA STEWARD
+DATA CUSTODIAN
+LAWFUL BASIS
+DATA RESIDENCY
+CROSS-BORDER TRANSFER RULE WHERE APPLICABLE
 ```
 
 ---
 
-# 100. Data source of truth
+# 97. Privacy principles
 
-```text
-CASE STATE
-→ PostgreSQL
-
-EVIDENCE METADATA
-→ PostgreSQL
-
-EVIDENCE FILES
-→ private object storage
-
-KNOWLEDGE METADATA
-→ PostgreSQL
-
-CORPUS FILES
-→ controlled corpus storage / repository
-
-GOVERNANCE HISTORY
-→ Hisab Ledger
-
-SOFTWARE ACTIVITY
-→ Audit Log
-
-PUBLIC INFORMATION
-→ public_records / public projection
-```
-
----
-
-# 101. Privacy principles
-
-High-risk processing should consider:
+High-risk processing considers:
 
 ```text
 PURPOSE
@@ -2834,7 +2802,7 @@ Collect only what is needed for a defined purpose.
 
 ---
 
-# 102. Retention classes
+# 98. Retention
 
 ```text
 R0 TEMPORARY
@@ -2845,9 +2813,9 @@ R4 LEGAL HOLD
 R5 PERMANENT PUBLIC RECORD
 ```
 
-Immutability does not mean all private data must remain forever.
+Immutability does not mean all private data remains forever.
 
-Lawful actions may include:
+Lawful lifecycle actions may include:
 
 ```text
 DELETE
@@ -2856,13 +2824,13 @@ ARCHIVE
 REDACT
 ```
 
-while preserving necessary accountability metadata.
+while preserving required accountability metadata.
 
 ---
 
-# 103. MVP security baseline
+# PART XIX — Security, supply chain, resilience, observability
 
-Minimum controls:
+# 99. MVP security baseline
 
 ```text
 AUTHENTICATION
@@ -2878,13 +2846,32 @@ RATE LIMITING WHERE NEEDED
 ENVIRONMENT SEPARATION
 ```
 
-Privileged credentials must never be embedded in client code or committed to Git.
+Secrets MUST NOT be committed to Git or exposed to client code.
 
 ---
 
-# PART XX — Resilience, incident management, DR
+# 100. Secure software supply chain
 
-# 104. Incident severity
+Production maturity SHOULD add:
+
+```text
+DEPENDENCY REVIEW
+LOCKFILE / REPRODUCIBLE INSTALLS
+VULNERABILITY SCANNING
+SOFTWARE BILL OF MATERIALS (SBOM)
+SIGNED OR VERIFIED RELEASE PRACTICES WHERE PRACTICAL
+SECRET SCANNING
+DEPENDENCY UPDATE POLICY
+SECURITY PATCH SLA
+KEY / TOKEN ROTATION
+SECURITY VULNERABILITY DISCLOSURE PROCESS
+```
+
+Supply-chain compromise MUST be part of the threat model.
+
+---
+
+# 101. Incident management
 
 ```text
 SEV1 CRITICAL
@@ -2892,8 +2879,6 @@ SEV2 HIGH
 SEV3 MODERATE
 SEV4 LOW
 ```
-
-Incident flow:
 
 ```text
 DETECT
@@ -2907,75 +2892,78 @@ DETECT
 → LEARN
 ```
 
----
-
-# 105. Initial incident-response targets
-
 Illustrative pilot targets:
 
 ```yaml
 SEV1:
   acknowledge: 15m
   containment_target: 4h
-
 SEV2:
   acknowledge: 1h
   containment_target: 12h
-
 SEV3:
   acknowledge: 8h
-
 SEV4:
   acknowledge: 2d
 ```
 
-These are operational defaults to be calibrated, not immutable governance law.
-
 ---
 
-# 106. Continuity, RTO, RPO
+# 102. SLO, observability, RTO/RPO
 
-Critical services should define Recovery Time Objective and Recovery Point Objective.
+Production planning SHOULD define:
 
-Illustrative targets for later production planning:
+```text
+AVAILABILITY
+LATENCY
+ERROR RATE
+QUEUE HEALTH
+AUDIT-LOG DELIVERY
+BACKUP SUCCESS
+RESTORE SUCCESS
+ERROR BUDGET WHERE USEFUL
+```
+
+Illustrative service-level objectives:
+
+```yaml
+open_book_availability: 99.9
+ledger_read_availability: 99.95
+audit_log_delivery: 99.99
+```
+
+Illustrative recovery targets:
 
 ```yaml
 identity:
   RTO: 2h
   RPO: 15m
-
 hisab_ledger:
   RTO: 4h
   RPO: 15m_or_better
-
 open_book:
   RTO: 8h
   RPO: 1h
 ```
 
-MVP need not implement full multi-region disaster recovery, but recovery requirements must not be forgotten.
+Backups are not sufficient unless restore procedures are tested.
 
 ---
 
-# 107. Degraded mode
-
-If critical systems are unavailable:
+# 103. Degraded mode
 
 ```text
-HIGH-RISK DECISIONS
-→ HOLD
-
-LOW-RISK REVERSIBLE OPERATIONS
-→ MAY CONTINUE MANUALLY UNDER AUTHORIZED PROCEDURE
+HIGH-RISK DECISIONS → HOLD
+LOW-RISK REVERSIBLE OPERATIONS → MAY CONTINUE MANUALLY UNDER AUTHORIZED PROCEDURE
 ```
 
-Manual actions must later be reconciled into the ledger and audit trail.
+Manual actions MUST later be reconciled into ledger and audit history.
 
 ---
 
-# PART XXI — External systems, interoperability, API
+# PART XX — External systems, funding, vendors, oversight of DHGS
 
-# 108. External system context
+# 104. External systems and jurisdiction conflict
 
 DHGS may interface with:
 
@@ -2993,10 +2981,6 @@ PUBLIC
 EXTERNAL AUDITORS
 ```
 
-Each interface must define its authority boundary; integration does not imply control.
-
-Canonical contract:
-
 ```yaml
 ExternalInterface:
   system_id:
@@ -3010,28 +2994,13 @@ ExternalInterface:
   fallback:
 ```
 
----
-
-# 109. Jurisdiction conflict
-
-Where two jurisdictions claim authority, DHGS must not silently create contradictory final states.
-
-A case should identify:
-
-```text
-PRIMARY JURISDICTION
-SECONDARY / INTERESTED JURISDICTION
-CONFLICT STATUS
-RESOLUTION AUTHORITY
-```
-
-Formal resolution follows applicable law, not software preference.
+Jurisdiction conflict MUST be resolved by applicable law, not software preference.
 
 ---
 
-# 110. Interoperability baseline
+# 105. Interoperability and API
 
-APIs should prefer:
+Prefer:
 
 ```text
 UTF-8
@@ -3042,37 +3011,20 @@ VERSIONED SCHEMAS
 EXPLICIT ERROR CODES
 ```
 
-Possible route versioning:
+Possible API versioning:
 
 ```text
 /api/v1/
 /api/v2/
 ```
 
-Breaking contracts require a major API version change.
-
-Error shape:
-
-```yaml
-Error:
-  code:
-  message:
-  correlation_id:
-  retryable:
-  details:
-```
-
-Public APIs must never expose P2/P3 data, security secrets, victim identifiers, or internal privileged metadata.
+Public APIs MUST NOT expose P2/P3 data, security secrets, victim identifiers, or privileged metadata.
 
 ---
 
-# PART XXII — Funding and vendor independence
+# 106. Funding independence
 
-# 111. Funding independence
-
-Governance independence may be undermined by financial dependency.
-
-Desired controls include:
+Controls may include:
 
 ```text
 BUDGET DISCLOSURE
@@ -3082,13 +3034,11 @@ NO PRIVATE DECISION FEE
 NO FINANCIAL DEPENDENCY ON SUPERVISED PARTY
 ```
 
-Shadow should not depend financially on a party it supervises.
+Shadow SHOULD NOT depend financially on a party it supervises.
 
 ---
 
-# 112. Vendor risk
-
-Critical vendor record:
+# 107. Vendor risk
 
 ```yaml
 Vendor:
@@ -3103,19 +3053,42 @@ Vendor:
   conflict_check:
 ```
 
-Critical systems should support data export, schema portability, key rotation, provider exit, and backup/restore where practical.
-
-Initial SaaS choices must remain replaceable.
+Critical systems SHOULD support data export, schema portability, key rotation, provider exit, and backup/restore.
 
 ---
 
-# PART XXIII — AI governance
+# 108. Independent oversight of DHGS itself
 
-# 113. AI status
+DHGS MUST be auditable as a system, not only used to audit others.
 
-AI is **optional** and not required for the core MVP.
+Independent oversight SHOULD be able to review:
 
-Potential later uses:
+```text
+SHADOW CONDUCT
+PLATFORM OPERATOR CONDUCT
+SYSTEM ADMIN ACTIONS
+MIZAN CALIBRATION
+RULE CHANGES
+CORPUS GOVERNANCE
+PRIVACY FAILURES
+SECURITY FAILURES
+APPEAL PERFORMANCE
+OPEN BOOK ACCURACY
+```
+
+There MUST be a complaint/escalation route concerning DHGS, Shadow, platform operator, or governance authority itself.
+
+No component of DHGS is exempt from review merely because it is part of the accountability system.
+
+---
+
+# PART XXI — AI governance
+
+# 109. AI status
+
+AI is optional and not required for MVP.
+
+Potential uses:
 
 ```text
 SEARCH
@@ -3128,7 +3101,7 @@ PUBLIC-LANGUAGE SIMPLIFICATION
 ANOMALY FLAGGING
 ```
 
-AI must not independently:
+AI MUST NOT independently:
 
 ```text
 CONVICT
@@ -3141,9 +3114,9 @@ EXTEND EMERGENCY POWERS
 
 ---
 
-# 114. AI model registry
+# 110. AI model governance
 
-If AI is introduced, record:
+If introduced:
 
 ```yaml
 AIModel:
@@ -3159,84 +3132,32 @@ AIModel:
   disable_switch:
 ```
 
-High-impact AI assistance should be versioned, testable, reviewable, and disable-able.
-
-Low-confidence or provenance-incomplete AI output is non-authoritative.
+High-impact AI assistance SHOULD be versioned, testable, monitored, reviewable, and disable-able. Low-confidence or provenance-incomplete AI output is non-authoritative.
 
 ---
 
-# PART XXIV — Requirements traceability and governance of governance
+# PART XXII — Change governance, calibration, KPI
 
-# 115. Professional traceability spine
+# 111. Definition of Ready
 
-```text
-MISSION
-→ OBJECTIVE
-→ REQUIREMENT
-→ CONTROL
-→ RULE
-→ WORKFLOW
-→ TASK
-→ IMPLEMENTATION
-→ TEST
-→ KPI
-→ OUTCOME
-→ LEARNING
-```
-
-If a critical link is missing:
-
-```text
-TRACEABILITY_GAP = TRUE
-```
-
----
-
-# 116. Requirement object
-
-```yaml
-Requirement:
-  requirement_id:
-  title:
-  source:
-  objective:
-  priority:
-  owner:
-  rationale:
-  acceptance_criteria:
-  controls:
-  policies:
-  tests:
-  KPIs:
-  implementation_status:
-```
-
-Critical requirement without a test is not implementation-ready.
-
----
-
-# 117. Definition of Ready
-
-Before a feature or control is built:
+Before a feature/control is built:
 
 ```text
 REQUIREMENT EXISTS
 OWNER EXISTS
 JURISDICTION / SCOPE IS KNOWN
-RIGHTS IMPACT IS CONSIDERED WHERE RELEVANT
+RIGHTS IMPACT CONSIDERED
 DATA MODEL EXISTS
 ACCESS RULE EXISTS
 CONTROL EXISTS
 ACCEPTANCE TEST EXISTS
-SECURITY / PRIVACY NEEDS ARE IDENTIFIED
-DEPENDENCIES ARE KNOWN
+SECURITY / PRIVACY NEEDS IDENTIFIED
+DEPENDENCIES KNOWN
 ```
 
 ---
 
-# 118. Definition of Done
-
-A feature is done only when applicable conditions are met:
+# 112. Definition of Done
 
 ```text
 IMPLEMENTATION COMPLETE
@@ -3254,7 +3175,7 @@ PUBLIC DOCUMENTATION UPDATED WHERE REQUIRED
 
 ---
 
-# 119. Change classes and amendment
+# 113. Versioning, amendment, ADR
 
 ```text
 PATCH
@@ -3263,7 +3184,7 @@ MAJOR
 EMERGENCY
 ```
 
-Foundational change flow:
+Foundational change:
 
 ```text
 PROPOSAL
@@ -3280,46 +3201,21 @@ PROPOSAL
 
 No secret foundational amendment.
 
----
-
-# 120. Semantic versioning and ADR
-
-Use:
+Use semantic versioning:
 
 ```text
 MAJOR.MINOR.PATCH
 ```
 
-Every major architectural decision should receive an ADR recording:
-
-```text
-CONTEXT
-DECISION
-ALTERNATIVES
-CONSEQUENCES
-OWNER
-DATE
-```
-
-Examples:
-
-```text
-Why modular monolith first?
-Why no blockchain requirement?
-Why Constructive / Corrective / Pending operational labels?
-Why Open Book uses a public projection?
-Why AI cannot finalize coercive decisions?
-```
+Major technical/architectural decisions SHOULD have ADRs documenting context, decision, alternatives, consequences, owner, date, and rollback/migration implications.
 
 ---
 
-# PART XXV — Scoring calibration, KPI, health
+# 114. Scoring calibration
 
-# 121. Scoring calibration
+ECS, DIS, MQS, priority scores, and thresholds are design instruments, not immutable truth.
 
-ECS, DIS, MQS, priority, and other numerical models are **initial design instruments**, not immutable truth.
-
-Calibration should test:
+Calibration SHOULD test:
 
 ```text
 FALSE POSITIVES
@@ -3329,9 +3225,10 @@ SENSITIVITY
 ROBUSTNESS
 THRESHOLD STABILITY
 OUTCOME CORRELATION
+INTER-RATER RELIABILITY
 ```
 
-A scoring-weight change should follow:
+Weight change:
 
 ```text
 CHANGE REQUEST
@@ -3346,130 +3243,35 @@ No silent scoring change.
 
 ---
 
-# 122. Core KPIs
-
-## Traceability Rate
-
-\[
-TR = CompleteMaterialRecords / MaterialDecisions \times 100
-\]
-
-Initial target: `>= 98%`.
-
-## Mizan Completeness
-
-Required high-impact decisions: `100%`.
-
-## Evidence Compliance
-
-Decisions meeting required threshold / applicable legal standard: target `100%`.
-
-## Appeal Access
-
-Eligible appealable decisions with valid route: target `100%`.
-
-## Conflict Disclosure
-
-Known material conflicts disclosed before participation: target `100%`.
-
-## Ledger Integrity
+# 115. Core KPIs
 
 ```text
-UNAUTHORIZED DELETION = 0
-UNTRACEABLE MATERIAL EDIT = 0
+Traceability Rate target >=98%
+Required High-Impact Mizan Completeness =100%
+Evidence Compliance target =100% against applicable standard
+Appeal Access target =100% where applicable
+Conflict Disclosure target =100%
+Unauthorized Ledger Deletion =0
+Untraceable Material Edit =0
+Shadow Undisclosed Personal Benefit =0
+Verified Whistleblower Retaliation =0
+Correction Completion target toward >=95%
+Repeat Failure = declining trend
+Open Book Coverage target >=95% eligible records
+Public Understanding target >=80% scoring >=4/5 key elements
+Task SLA Compliance initial target >=90%
+Knowledge Freshness initial target >=95%
+Critical Requirement Coverage before production =100%
+Critical Control Coverage before production =100%
 ```
 
-## Shadow Undisclosed Personal Benefit
-
-```text
-= 0
-```
-
-## Whistleblower Retaliation
-
-```text
-VERIFIED RETALIATION = 0
-```
-
-## Correction Completion Rate
-
-\[
-CCR = CorrectionsCompleted / VerifiedCorrectionsRequired \times 100
-\]
-
-Initial target toward `>=95%`.
-
-## Repeat Failure Rate
-
-Target: declining trend.
-
-## Open Book Coverage
-
-Eligible material public decisions published: initial target `>=95%`.
-
-## Public Understanding Score
-
-A respondent should identify at least four of five:
-
-```text
-WHAT
-WHY
-WHO
-LEGAL BASIS
-APPEAL PATH
-```
-
-Initial target: `>=80%`.
-
-## Task SLA Compliance
-
-\[
-TSC = TasksWithinSLA / CompletedTasks \times 100
-\]
-
-Initial target: `>=90%`.
-
-## Knowledge Freshness
-
-\[
-KF = CurrentRequiredKnowledge / RequiredKnowledge \times 100
-\]
-
-Initial target: `>=95%`.
-
-## Critical Requirement Coverage
-
-Before production: `100%` of critical requirements verified.
-
-## Critical Control Coverage
-
-Before production: `100%` of critical controls tested.
+No single KPI SHOULD independently determine institutional reward or punishment.
 
 ---
 
-# 123. KPI anti-gaming
+# 116. System health vector
 
-No single KPI should independently determine institutional reward or punishment.
-
-Balanced dimensions should include:
-
-```text
-QUALITY
-SPEED
-SAFETY
-RIGHTS
-CORRECTION
-OUTCOMES
-PUBLIC UNDERSTANDING
-```
-
-Metrics must not incentivize hiding errors merely to improve denominators.
-
----
-
-# 124. System health vector
-
-Prefer a multi-domain health view over one misleading score:
+Prefer multiple domains over one misleading average:
 
 ```yaml
 health:
@@ -3487,13 +3289,13 @@ health:
   anti_capture:
 ```
 
-A critical-domain failure prevents an overall “healthy” status even if an average score is high.
+A critical-domain failure prevents overall `HEALTHY` status regardless of average.
 
 ---
 
-# PART XXVI — Risk, testing, simulation
+# PART XXIII — Risk, testing, simulation, emergency
 
-# 125. Risk model
+# 117. Risk model
 
 ```yaml
 Risk:
@@ -3508,24 +3310,24 @@ Risk:
   status:
 ```
 
-Optional priority:
+Optional:
 
 \[
 RPS = Likelihood \times Impact \times (6 - Detectability)
 \]
 
-The score prioritizes attention; it does not replace judgment.
-
 ---
 
-# 126. Threat scenarios
+# 118. Threat and abuse scenarios
 
-The architecture must be tested against scenarios such as:
+Test against:
 
 ```text
 CORRUPT SHADOW
 COMPROMISED AUDITOR
+MALICIOUS / COMPROMISED PLATFORM ADMIN
 FALSE EVIDENCE
+ILLEGALLY OBTAINED EVIDENCE
 LEDGER MANIPULATION
 PRIVACY BREACH
 RELIGIOUS PRESSURE
@@ -3535,9 +3337,11 @@ WHISTLEBLOWER RETALIATION
 EMERGENCY ABUSE
 OPEN-BOOK DOXXING
 CYBER INCIDENT
+SUPPLY-CHAIN COMPROMISE
 AI ERROR / HALLUCINATION
 MASS MISINFORMATION
 STALE KNOWLEDGE
+WRONG LAW VERSION
 TASK STARVATION
 SLA ABUSE
 UNQUALIFIED REVIEWER
@@ -3547,13 +3351,13 @@ APPEAL REOPEN
 OUTCOME WORSE THAN BASELINE
 SYSTEM OUTAGE
 CROSS-JURISDICTION CONFLICT
+PUBLIC BRIGADING
+NOTICE DELIVERY FAILURE
 ```
 
 ---
 
-# 127. Test architecture
-
-Required layers over time:
+# 119. Test architecture
 
 ```text
 UNIT TEST
@@ -3562,16 +3366,19 @@ SCHEMA TEST
 STATE TRANSITION TEST
 INTEGRATION TEST
 RLS / AUTHORIZATION TEST
+IDENTITY-ASSURANCE TEST
 PRIVACY TEST
 SECURITY TEST
+ACCESSIBILITY TEST
 END-TO-END TEST
 POLICY REGRESSION TEST
 CONSTITUTIONAL INVARIANT TEST
 ADVERSARIAL TEST
+RESTORE TEST
 SIMULATION
 ```
 
-Examples of invariant tests:
+Examples:
 
 ```text
 coercive_decision_with_legal_fail → impossible
@@ -3579,17 +3386,17 @@ material_decision_without_owner → impossible
 conflicted_actor_self_approval → impossible
 protected_record_exposed_publicly → impossible
 closed_case_without_required_process → impossible
+system_admin_changes_decision_outside_correction → impossible
+wrong_law_version_unrecorded → impossible
 ```
 
 ---
 
-# PART XXVII — Emergency governance
-
-# 128. Emergency principle
+# 120. Emergency governance
 
 Emergency does not erase law.
 
-Emergency power must define:
+Must define:
 
 ```text
 CLEAR TRIGGER
@@ -3606,17 +3413,15 @@ POST-EVENT AUDIT
 PUBLICATION WHEN SAFE
 ```
 
-Principle:
-
 # EMERGENCY POWER MUST EXPIRE.
 
-Emergency extensions must never occur silently by inertia.
+No silent extension by inertia.
 
 ---
 
-# PART XXVIII — Red lines and system invariants
+# PART XXIV — Red lines and invariants
 
-# 129. Non-negotiable red lines
+# 121. Non-negotiable red lines
 
 DHGS does not authorize:
 
@@ -3631,7 +3436,7 @@ LEDGER FALSIFICATION
 DELIBERATE EVIDENCE DESTRUCTION
 HIDDEN MATERIAL CONFLICT
 UNLAWFUL SURVEILLANCE
-UNLAWFUL DISCLOSURE OF VICTIM / PROTECTED DATA
+UNLAWFUL DISCLOSURE OF PROTECTED DATA
 SHADOW PERSONALITY CULT
 IRREMOVABLE LEADERSHIP
 UNLIMITED EMERGENCY POWER
@@ -3639,11 +3444,13 @@ WHISTLEBLOWER RETALIATION
 HIGH-IMPACT AUTOMATED FINAL JUDGMENT
 A SCORE DEFINING HUMAN WORTH
 POWER WITHOUT REVIEW OR CORRECTION PATH
+DELIBERATE DECEPTIVE PUBLIC COMMUNICATION
+SECRET VIP / PRIVILEGED PARALLEL JUSTICE PATH
 ```
 
 ---
 
-# 130. Formal system invariants
+# 122. Formal invariants
 
 ```yaml
 INV-001: no_public_power_without_owner
@@ -3666,15 +3473,21 @@ INV-017: no_high_impact_decision_without_rights_review
 INV-018: no_internal_sensitive_data_directly_exposed_to_open_book
 INV-019: no_critical_rule_only_in_frontend
 INV-020: no_exception_without_record_and_expiry_or_formal_rule_change
+INV-021: no_system_admin_governance_override
+INV-022: no_coercive_action_without_valid_authority_mandate
+INV-023: no_high_impact_decision_without_versioned_decision_context
+INV-024: no_legal_version_change_without_record
+INV-025: no_deliberate_public_deception
+INV-026: no_hidden_VIP_parallel_process
+INV-027: no_final_legal_violation_finding_by_mizan_engine
+INV-028: no_DHGS_component_exempt_from_independent_review
 ```
 
 ---
 
-# PART XXIX — Deployment and operational environments
+# PART XXV — Environments, release, boot, roadmap
 
-# 131. Environments
-
-At minimum:
+# 123. Environments
 
 ```text
 DEV
@@ -3682,64 +3495,32 @@ STAGING
 PRODUCTION
 ```
 
-Do not use one database or storage environment for all stages.
-
-## DEV
-
-Local or development resources, synthetic data preferred.
-
-## STAGING
-
-Used for simulations, integration testing, security/privacy checks, demos, and acceptance.
-
-## PRODUCTION
-
-Only after required release gates pass.
+Do not use one database/storage environment for all stages.
 
 ---
 
-# 132. Initial physical deployment
+# 124. Release gates
 
-```text
-PUBLIC WEB
-    │
-OPERATIONS WEB
-    │
-    ▼
-BACKEND API
-    │
-    ├── Engine Packages
-    ├── Corpus Access
-    │
-    ▼
-SUPABASE
-Postgres / Auth / Storage
-```
-
-No Kubernetes or service mesh is required initially.
-
----
-
-# 133. Release gates
-
-A production release should eventually require:
+Production release SHOULD eventually require:
 
 ```text
 SCHEMAS VALID
+CRITICAL REQUIREMENTS MAPPED
 CRITICAL RULE TESTS PASS
 INVARIANT TESTS PASS
 AUTHORIZATION / RLS TESTS PASS
+IDENTITY ASSURANCE TESTS PASS
 SECURITY TESTS PASS
 PRIVACY TESTS PASS
+ACCESSIBILITY TESTS PASS
 HIGH-RISK SIMULATIONS PASS
+RESTORE TEST PASS
 ROLLBACK PATH EXISTS
 ```
 
 ---
 
-# PART XXX — Boot sequence and one-Hijri-year roadmap
-
-# 134. Boot sequence
+# 125. Boot sequence
 
 ```text
 BOOT-000 FOUNDATION
@@ -3763,7 +3544,7 @@ BOOT-800 SIMULATION
 BOOT-900 PILOT
 ```
 
-Each Boot Point should define:
+Each Boot Point defines:
 
 ```text
 ENTRY CONDITION
@@ -3775,11 +3556,11 @@ EXIT CONDITION
 NEXT STATE
 ```
 
-Readiness must be proven, not merely declared.
+Readiness must be proven, not declared.
 
 ---
 
-# 135. Product delivery phases
+# 126. Product delivery phases
 
 ## Phase 0 — Foundation
 
@@ -3802,25 +3583,31 @@ CASE TRACKING
 TASKS
 REGIONS / JURISDICTION
 ROLES
+IDENTITY ASSURANCE
+NOTICE
 ```
 
-## Phase 2 — Evidence and initial Knowledge
+## Phase 2 — Evidence and Knowledge
 
 ```text
 EVIDENCE METADATA
 PRIVATE FILE STORAGE
-EVIDENCE REVIEW
+EVIDENCE REVIEW / CHALLENGE
 BASIC KNOWLEDGE REGISTRY
+AUTHORITY MANDATE REGISTRY
 ```
 
 ## Phase 3 — Mizan and Decision
 
 ```text
+LEGAL BASIS PRECHECK
 EVIDENCE ENGINE
+RIGHTS REVIEW
 MIZAN ENGINE
 POLICY / GUARD ENGINE
-LEGAL / ETHICAL REVIEW
+FORMAL LEGAL / ETHICAL REVIEW
 DECISION
+DECISION CONTEXT SNAPSHOT
 ```
 
 ## Phase 4 — Hisab and Open Book
@@ -3852,33 +3639,38 @@ CORPUS MANAGEMENT
 METRICS
 SIMULATIONS
 SECURITY / PRIVACY REVIEW
+ACCESSIBILITY REVIEW
+SUPPLY-CHAIN CONTROLS
 ```
 
 ## Phase 7 — Controlled Pilot
-
-Start with:
 
 ```text
 LIMITED JURISDICTION
 LOW-RISK / REVERSIBLE CASES
 HIGH OBSERVABILITY
 SYNTHETIC OR CONSENTED DATA WHERE POSSIBLE
+INDEPENDENT OVERSIGHT ACTIVE
 ```
 
 ---
 
-# 136. First real end-to-end acceptance test
+# 127. First real end-to-end acceptance test
 
 ```text
 Citizen submits case
+→ identity assurance determined
 → case created
-→ jurisdiction identified
+→ jurisdiction and authority mandate identified
+→ notice obligations identified
 → stakeholders and rights mapped
 → reviewer assigned
-→ evidence added and reviewed
+→ evidence added / challenged / reviewed
+→ legal basis precheck completed
 → Mizan completed
-→ legal / ethical review completed
-→ human decision recorded
+→ formal legal / ethical review completed
+→ human decision recorded and attested
+→ decision context snapshot stored
 → Hisab Ledger entry created
 → Publication Engine creates privacy-safe public projection
 → Open Book shows public explanation where lawful
@@ -3895,60 +3687,20 @@ If this works reliably:
 
 ---
 
-# 137. One-Hijri-year governance horizon
+# 128. One-Hijri-year governance horizon
 
-The one-Hijri-year period is a stabilization and evaluation window, not a prophecy or Divine deadline.
-
-## T0 — Initialize
-
-Foundation, authority, jurisdiction, evidence, Mizan, ledger, Open Book, privacy, appeal, audit, whistleblower, security.
-
-## Days 1–30 — Foundation Lock
-
-Milestone:
-
-# M1 — THE SYSTEM CAN EXPLAIN ITSELF.
-
-It can explain authority, legitimacy, jurisdiction, limits, evidence rules, decision process, appeal, audit, and removal paths.
-
-## Days 31–90 — Controlled Pilot
-
-Milestone:
-
-# M2 — TRACEABLE GOVERNANCE.
-
-Initial traceability target: `>=98%`.
-
-## Days 91–180 — Stress & Correction
-
-Test wrong decisions, false evidence, appeals, Shadow misconduct, institutional capture, whistleblower cases, privacy incidents, conflict, emergency, misinformation, outage.
-
-Milestone:
-
-# M3 — SELF-CORRECTING SYSTEM.
-
-Required capability:
+A stabilization and evaluation window, not prophecy or Divine deadline.
 
 ```text
-DETECT
-→ ACKNOWLEDGE
-→ CORRECT
-→ RECORD
-→ PUBLISH WHERE LAWFUL
-→ LEARN
+T0 → Initialize
+Days 1–30 → Foundation Lock → M1 THE SYSTEM CAN EXPLAIN ITSELF
+Days 31–90 → Controlled Pilot → M2 TRACEABLE GOVERNANCE
+Days 91–180 → Stress & Correction → M3 SELF-CORRECTING SYSTEM
+Days 181–270 → Integration → M4 INTEGRATED ACCOUNTABILITY
+Days 271–End → System Maturity Review
 ```
 
-## Days 181–270 — Integration
-
-Milestone:
-
-# M4 — INTEGRATED ACCOUNTABILITY.
-
-## Days 271–End of Hijri Year — System Maturity Review
-
-Evaluate legality, accountability, traceability, correctability, security, privacy, public understanding, anti-capture, resilience, outcomes, and repeat harm.
-
-Final system result:
+System result:
 
 ```text
 CONTINUE
@@ -3956,15 +3708,13 @@ CORRECT
 RESET
 ```
 
-Reset is a fail-safe, not a humiliation.
+Reset is a fail-safe, not humiliation.
 
 ---
 
-# PART XXXI — Civilization maturity model
+# PART XXVI — Civilization maturity and master flows
 
-# 138. Six phases
-
-These are maturity phases, not calendar predictions.
+# 129. Six maturity phases
 
 ```text
 BLACK HOLE
@@ -3975,7 +3725,7 @@ BLACK HOLE
 → EXIT TO THE LIGHT
 ```
 
-Operational interpretation:
+Operational:
 
 ```text
 UNKNOWN
@@ -3986,24 +3736,11 @@ UNKNOWN
 → CONTINUOUSLY IMPROVING
 ```
 
-Phase exits:
-
-```text
-BLACK HOLE → problem identified
-DARKNESS → pattern recognized
-SHADOW → correction architecture ready
-RISING LIGHT → accountability reliable
-LIGHT → stable synergy
-EXIT TO THE LIGHT → continuous improvement
-```
-
-The symbolic phrase `Pre-Heaven` may describe an aspirational social condition of greater justice, knowledge, mercy, responsibility, freedom, accountability, and peace. It does not mean humans literally manufacture heaven.
+`Pre-Heaven` may describe an aspirational social condition of greater justice, knowledge, mercy, responsibility, freedom, accountability, and peace. It does not mean humans literally manufacture heaven.
 
 ---
 
-# PART XXXII — Master flows and final architecture spine
-
-# 139. Master governance flow
+# 130. Master governance flow
 
 ```text
 ETHICAL / DIVINE VALUES
@@ -4011,18 +3748,21 @@ ETHICAL / DIVINE VALUES
 → MISSION
 → KNOWLEDGE
 → CONSTITUTION & LAW
-→ LEGITIMATE AUTHORITY
+→ AUTHORITY MANDATE
 → JURISDICTION
 → CASE INTAKE
-→ STAKEHOLDER & RIGHTS MAPPING
+→ IDENTITY ASSURANCE
+→ STAKEHOLDER / RIGHTS / NOTICE MAPPING
 → TASK ASSIGNMENT
-→ EVIDENCE
+→ EVIDENCE / CHALLENGE
+→ LEGAL BASIS PRECHECK
 → EVIDENCE ENGINE
 → RIGHTS REVIEW
 → MIZAN ENGINE
-→ LEGAL + ETHICAL REVIEW
+→ FORMAL LEGAL + ETHICAL REVIEW
 → POLICY GUARDS
-→ HUMAN DECISION
+→ HUMAN DECISION + ATTESTATION
+→ DECISION CONTEXT SNAPSHOT
 → HISAB LEDGER
 → EXECUTION
 → PUBLICATION / REDACTION
@@ -4032,7 +3772,7 @@ ETHICAL / DIVINE VALUES
 → RE-MIZAN
 → CORRECTION
 → OUTCOME
-→ AUDIT
+→ AUDIT / INDEPENDENT OVERSIGHT
 → LESSON LEARNED
 → CORPUS / KNOWLEDGE UPDATE
 → POLICY / RULE UPDATE
@@ -4041,113 +3781,57 @@ ETHICAL / DIVINE VALUES
 
 ---
 
-# 140. Professional architecture spine
+# 131. Professional architecture spine
 
 ```text
-WHY
-→ MISSION
-
-WHAT
-→ REQUIREMENTS
-
-WHAT WE KNOW
-→ KNOWLEDGE / CORPUS
-
-WHO
-→ IDENTITY / STAKEHOLDERS
-
-WHO DOES WHAT
-→ WORK / TASKS / RACI
-
-WITH WHAT AUTHORITY
-→ LAW / GOVERNANCE / JURISDICTION
-
-WITH WHAT INFORMATION
-→ DATA / EVIDENCE
-
-UNDER WHICH RULES
-→ CONTROLS / POLICY
-
-HOW QUALITY IS ASSESSED
-→ MIZAN / RIGHTS / EVIDENCE ENGINES
-
-WHAT HAPPENED
-→ HISAB LEDGER / AUDIT LOG
-
-WHAT THE PUBLIC KNOWS
-→ OPEN BOOK
-
-DID IT WORK
-→ OUTCOMES / KPI
-
-WHAT DID WE LEARN
-→ KNOWLEDGE UPDATE
+WHY → MISSION
+WHAT → REQUIREMENTS
+WHAT WE KNOW → KNOWLEDGE / CORPUS
+WHO → IDENTITY / STAKEHOLDERS
+WHO DOES WHAT → WORK / TASKS / RACI
+WITH WHAT AUTHORITY → LAW / MANDATE / JURISDICTION
+WITH WHAT INFORMATION → DATA / EVIDENCE
+UNDER WHICH RULES → CONTROLS / POLICY
+HOW QUALITY IS ASSESSED → MIZAN / RIGHTS / EVIDENCE ENGINES
+WHAT HAPPENED → HISAB LEDGER / AUDIT LOG
+WHAT THE PUBLIC KNOWS → OPEN BOOK
+DID IT WORK → OUTCOMES / KPI
+WHAT DID WE LEARN → KNOWLEDGE UPDATE
 ```
 
 ---
 
-# 141. Final responsibility map
+# 132. Final responsibility map
 
 ```text
-SCRIPTURAL / ETHICAL CORPUS
-→ value reference
-
-CORPUS
-→ reusable knowledge
-
-CASE EVIDENCE
-→ case-specific factual material
-
-FRONTEND
-→ human interaction
-
-BACKEND
-→ orchestration
-
-ENGINES
-→ evaluation
-
-DATABASE
-→ current state
-
-LAW
-→ coercive authority
-
-HUMANS
-→ judgment and accountable ownership
-
-HISAB LEDGER
-→ governance memory
-
-AUDIT LOG
-→ software activity memory
-
-OPEN BOOK
-→ public understanding
-
-AUDIT
-→ verification
-
-APPEAL
-→ review / redress
-
-CORRECTION
-→ remediation
-
-KNOWLEDGE LOOP
-→ learning
+SCRIPTURAL / ETHICAL CORPUS → value reference
+CORPUS → reusable knowledge
+CASE EVIDENCE → case-specific factual material
+FRONTEND → human interaction
+BACKEND → orchestration
+ENGINES → evaluation
+DATABASE → current state
+LAW / MANDATE → coercive authority
+HUMANS → judgment and accountable ownership
+HISAB LEDGER → governance memory
+AUDIT LOG → software activity memory
+OPEN BOOK → public understanding
+AUDIT / INDEPENDENT OVERSIGHT → verification
+APPEAL → review / redress
+CORRECTION → remediation
+KNOWLEDGE LOOP → learning
+PLATFORM OPERATOR → technical operation only
 ```
 
 ---
 
-# 142. Final professional equation
-
-Conceptually:
+# 133. Final professional equation
 
 \[
 GovernanceQuality = f(
 Mission,
 Law,
+Mandate,
 Knowledge,
 Identity,
 Work,
@@ -4166,7 +3850,7 @@ Learning
 )
 \]
 
-Subject to hard constraints:
+Subject to:
 
 ```text
 HUMAN DIGNITY
@@ -4174,8 +3858,6 @@ DUE PROCESS
 FUNDAMENTAL RIGHTS
 LAWFUL AUTHORITY
 ```
-
-Self-correcting governance can be summarized as:
 
 \[
 SelfCorrectingGovernance = Traceability + Reviewability + Correctability + Learning
@@ -4185,11 +3867,12 @@ No arithmetic average may override a hard legal or rights failure.
 
 ---
 
-# 143. Final covenant
+# 134. Final covenant
 
 ```text
 SHADOW DOES NOT OWN POWER.
 LAW LIMITS POWER.
+AUTHORITY MUST BE PROVABLE.
 EVIDENCE DISCIPLINES CLAIMS.
 KNOWLEDGE PROVIDES CONTEXT.
 MIZAN WEIGHS DECISION READINESS.
@@ -4202,11 +3885,12 @@ AUDIT PROTECTS THE SYSTEM FROM ITSELF.
 APPEAL PROTECTS PEOPLE FROM UNREVIEWABLE FINALITY.
 CORRECTION PROTECTS THE FUTURE.
 LEARNING PREVENTS REPEATED FAILURE.
+TECHNOLOGY SERVES GOVERNANCE; IT DOES NOT OWN GOVERNANCE.
 ```
 
 ---
 
-# 144. Final directive
+# 135. Final directive
 
 ```text
 BE FIRM WITHOUT CRUELTY.
@@ -4222,7 +3906,7 @@ CORRECT WITHOUT HUMILIATING.
 GOVERN WITHOUT BECOMING GOD.
 ```
 
-If the system is wrong:
+If wrong:
 
 # CORRECT IT.
 
@@ -4230,35 +3914,66 @@ If correction is insufficient:
 
 # REFORM IT.
 
-If the architecture itself produces unacceptable foundational harm:
+If foundational architecture causes unacceptable harm:
 
 # RESET IT.
 
 ---
 
-# 145. Boot command
+# APPENDIX A — Historical and symbolic context
+
+This appendix preserves non-normative concepts from the early DHGS design history so they are not silently lost while remaining separate from executable governance rules.
+
+## A.1 Symbolic transformation sequence
 
 ```text
-START SIMPLE.
-
-MAKE AUTHORITY EXPLICIT.
-MAKE KNOWLEDGE TRACEABLE.
-MAKE EVIDENCE VERIFIABLE.
-MAKE TASKS OWNED.
-MAKE DECISIONS REVIEWABLE.
-MAKE POWER AUDITABLE.
-MAKE HISTORY PRESERVABLE.
-MAKE PUBLIC COMMUNICATION UNDERSTANDABLE.
-MAKE APPEAL POSSIBLE.
-MAKE CORRECTION VISIBLE.
-MAKE LEARNING CONTINUOUS.
-
 BLACK HOLE
-→ DARKNESS
-→ SHADOW
-→ RISING LIGHT
-→ LIGHT
-→ EXIT TO THE LIGHT
+DARKNESS
+SHADOW
+RISING LIGHT
+LIGHT
+EXIT TO THE LIGHT
+```
+
+## A.2 Pre-Heaven
+
+`Pre-Heaven` is an aspirational metaphor for a society moving toward greater justice, knowledge, mercy, responsibility, freedom, accountability, peace, and continuous correction. It is not a literal human-created heaven.
+
+## A.3 Raqib–‘Atid
+
+Raqib–‘Atid remains a conceptual metaphor for constructive and corrective accountability. Operational software uses neutral labels and does not claim to reproduce Divine accounting.
+
+## A.4 One-Hijri-year horizon
+
+The one-Hijri-year horizon is a governance stabilization and evaluation period. It is not an end-times prediction or Divine deadline.
+
+---
+
+# APPENDIX B — Controlled-baseline completion checklist
+
+DHGS may advance from `CONTROLLED_IMPLEMENTATION_BASELINE_CANDIDATE` to `CONTROLLED_IMPLEMENTATION_BASELINE` only when at minimum:
+
+```text
+ADOPTION MODE SELECTED FOR PILOT
+SYSTEM OPERATOR AND GOVERNANCE AUTHORITY IDENTIFIED
+DATA GOVERNANCE ROLES IDENTIFIED
+AUTHORITY MANDATE REGISTRY IMPLEMENTABLE
+TEMPORAL LAW VERSIONING IMPLEMENTABLE
+LEGAL PRECHECK / FORMAL REVIEW SEQUENCE ACCEPTED
+MIZAN NON-ADJUDICATIVE OUTPUTS ACCEPTED
+CRITICAL REQUIREMENT REGISTRY COMPLETE
+CRITICAL CONTROL / RULE REGISTRY COMPLETE
+DECISION CONTEXT SNAPSHOT SCHEMA VERIFIED
+IDENTITY ASSURANCE MODEL VERIFIED
+NOTICE / EVIDENCE CHALLENGE FLOW VERIFIED
+TECHNICAL ADMIN SEPARATION TESTED
+INDEPENDENT DHGS OVERSIGHT ROUTE DEFINED
+SECURITY SUPPLY-CHAIN CONTROLS PLANNED
+SLO / RESTORE TEST TARGETS DEFINED
+WCAG 2.2 AA ACCESSIBILITY TARGET ACCEPTED
+VULNERABLE-PERSON SAFEGUARDS DEFINED
+SCRIPTURAL CORPUS PROVENANCE MODEL VERIFIED
+HIGH-RISK END-TO-END SIMULATIONS PASS
 ```
 
 ## BIIZNILLAH.
