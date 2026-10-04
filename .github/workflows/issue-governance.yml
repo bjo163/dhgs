@@ -9,28 +9,98 @@ permissions:
   contents: read
 
 jobs:
-  validate-title:
+  govern:
     runs-on: ubuntu-latest
     steps:
-      - name: Validate implementation issue naming
+      - name: Validate and label DHGS issue
         uses: actions/github-script@v7
         with:
           script: |
             const issue = context.payload.issue;
             const title = issue.title || '';
-            const valid = /^\[(M[0-5]|MASTER|BUG|SECURITY|DOCS)\]\s+.+/i.test(title);
-            if (valid) return;
+            const body = issue.body || '';
             const marker = '<!-- dhgs-issue-governance -->';
+
+            const prefixMatch = /^\[(M[0-5]|MASTER|BUG|SECURITY|DOCS)\]\s+.+/i.exec(title);
             const comments = await github.paginate(github.rest.issues.listComments, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issue.number,
               per_page: 100,
             });
-            if (comments.some(c => (c.body || '').includes(marker))) return;
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue.number,
-              body: `${marker}\nDHGS implementation issues should use a controlled prefix: \`[M0]\` … \`[M5]\`, \`[MASTER]\`, \`[BUG]\`, \`[SECURITY]\`, or \`[DOCS]\`. Please also include objective, scope/non-scope, dependencies, acceptance criteria, required tests, and definition of done.`,
-            });
+
+            if (!prefixMatch) {
+              if (!comments.some(c => (c.body || '').includes(marker))) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `${marker}\nDHGS implementation issues should use a controlled prefix: \`[M0]\` … \`[M5]\`, \`[MASTER]\`, \`[BUG]\`, \`[SECURITY]\`, or \`[DOCS]\`. Please also include objective, scope/non-scope, dependencies, acceptance criteria, required tests, and definition of done.`,
+                });
+              }
+              core.setFailed(`Invalid DHGS issue title: ${title}`);
+              return;
+            }
+
+            const prefix = prefixMatch[1].toUpperCase();
+            const labelSpec = {
+              M0: ['milestone:M0', '5319E7', 'Foundation kernel'],
+              M1: ['milestone:M1', '1D76DB', 'Case, identity, knowledge and intake spine'],
+              M2: ['milestone:M2', '0E8A16', 'Decision spine'],
+              M3: ['milestone:M3', 'FBCA04', 'Execution, accountability and public'],
+              M4: ['milestone:M4', 'D93F0B', 'Assurance and hardening'],
+              M5: ['milestone:M5', 'B60205', 'Deployment, controlled pilot and year-one'],
+              MASTER: ['type:master', '000000', 'Master program/control issue'],
+              BUG: ['type:bug', 'D73A4A', 'Software defect'],
+              SECURITY: ['type:security', '8B0000', 'Security issue'],
+              DOCS: ['type:docs', '0075CA', 'Documentation issue'],
+            }[prefix];
+
+            async function ensureLabel(name, color, description) {
+              try {
+                await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name });
+              } catch (error) {
+                if (error.status !== 404) throw error;
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name,
+                  color,
+                  description,
+                });
+              }
+            }
+
+            if (labelSpec) {
+              const [name, color, description] = labelSpec;
+              await ensureLabel(name, color, description);
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: [name],
+              });
+            }
+
+            const qualityChecks = [
+              ['objective', /(^|\n)#{1,3}\s+Objective\b/i],
+              ['scope', /(^|\n)#{1,3}\s+Scope\b/i],
+              ['acceptance criteria', /Acceptance criteria/i],
+              ['tests/verification', /(Required tests|Required verification|Required evidence)/i],
+              ['done definition', /(Done means|Definition of Done)/i],
+            ];
+            const missing = qualityChecks.filter(([, regex]) => !regex.test(body)).map(([name]) => name);
+
+            // MASTER and very small BUG/SECURITY reports may intentionally use different structure.
+            const enforceDetailedBody = /^M[0-5]$/.test(prefix);
+            if (enforceDetailedBody && missing.length) {
+              const qualityMarker = '<!-- dhgs-issue-quality -->';
+              if (!comments.some(c => (c.body || '').includes(qualityMarker))) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `${qualityMarker}\nImplementation issue quality check: missing or unrecognized section(s): **${missing.join(', ')}**. This is a governance warning; refine the issue before implementation if the information is materially required.`,
+                });
+              }
+            }
