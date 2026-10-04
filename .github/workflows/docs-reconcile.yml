@@ -1,0 +1,58 @@
+name: Documentation Reconcile
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/docs/reconcile-blueprint.mjs'
+      - '.github/workflows/docs-reconcile.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Apply deterministic documentation migration
+        run: node scripts/docs/reconcile-blueprint.mjs
+
+      - name: Validate implementation-governance markers
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F '# DHGS v15.1.1' BLUEPRINT.md
+          grep -F 'M5 — DEPLOYMENT, GOVERNANCE-OF-SOFTWARE & CONTROLLED PILOT' BLUEPRINT.md
+          grep -F '# 203. Repository delivery and version-stream contract' BLUEPRINT.md
+          grep -F 'GitHub issue #6' BLUEPRINT.md
+          grep -F '**Blueprint document baseline:** `DHGS v15.1.1`' README.md
+          grep -F 'M5 — DEPLOYMENT, GOVERNANCE-OF-SOFTWARE & CONTROLLED PILOT' README.md
+          grep -F 'Issue #77' README.md
+          if grep -F 'M4 — ASSURANCE & PILOT' BLUEPRINT.md; then
+            echo 'Stale M4 milestone block remains in BLUEPRINT.md' >&2
+            exit 1
+          fi
+
+      - name: Commit reconciled documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- BLUEPRINT.md README.md; then
+            echo 'Documentation already reconciled.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add BLUEPRINT.md README.md
+          git commit -m 'docs(blueprint): reconcile M0-M5 implementation governance'
+          git push origin HEAD:dev
