@@ -1,0 +1,14 @@
+{
+  "manifestVersion": "0.1.0",
+  "assets": [
+    {"asset_id":"AST-BRAND-001","path":"assets/brand/dhgs-mark.svg","type":"brand","version":"0.1.0","status":"exploratory","license":"project-original","ai_generated":false,"decorative":false,"alt_text":"DHGS balanced horizon mark"},
+    {"asset_id":"AST-BRAND-002","path":"assets/brand/dhgs-lockup.svg","type":"brand","version":"0.1.0","status":"exploratory","license":"project-original","ai_generated":false,"decorative":false,"alt_text":"DHGS wordmark with balanced horizon mark"},
+    {"asset_id":"AST-BRAND-003","path":"assets/brand/dhgs-mark-mono.svg","type":"brand","version":"0.1.0","status":"exploratory","license":"project-original","ai_generated":false,"decorative":false,"alt_text":"Monochrome DHGS balanced horizon mark"},
+    {"asset_id":"AST-BRAND-004","path":"assets/brand/favicon.svg","type":"brand","version":"0.1.0","status":"exploratory","license":"project-original","ai_generated":false,"decorative":false,"alt_text":"Compact DHGS mark"},
+    {"asset_id":"AST-DIAG-001","path":"assets/diagrams/system-architecture.svg","type":"diagram","version":"0.1.0","status":"draft","license":"project-original","ai_generated":false,"decorative":false,"alt_text":"DHGS logical product architecture"},
+    {"asset_id":"AST-DIAG-002","path":"assets/diagrams/maturity-path.svg","type":"diagram","version":"0.1.0","status":"draft","license":"project-original","ai_generated":false,"decorative":false,"alt_text":"DHGS six-phase maturity path"},
+    {"asset_id":"AST-BAN-001","path":"assets/banners/open-book-banner.svg","type":"banner","version":"0.1.0","status":"draft","license":"project-original","ai_generated":false,"decorative":false,"alt_text":"Open Book transparency banner"},
+    {"asset_id":"AST-CHART-001","path":"assets/charts/chart-template.svg","type":"chart","version":"0.1.0","status":"draft","license":"project-original","ai_generated":false,"decorative":false,"alt_text":"Accessible DHGS chart template"},
+    {"asset_id":"AST-SOC-001","path":"assets/social/og-default.svg","type":"social","version":"0.1.0","status":"draft","license":"project-original","ai_generated":false,"decorative":false,"alt_text":"DHGS Open Graph default artwork"}
+  ]
+}
