@@ -1,12 +1,17 @@
 {
   "name": "dhgs",
+  "version": "0.0.0",
   "private": true,
   "scripts": {
     "dev:public": "pnpm --filter @dhgs/public-web dev",
     "dev:ops": "pnpm --filter @dhgs/ops-web dev",
     "dev:api": "pnpm --filter @dhgs/api dev",
     "build": "pnpm -r --if-present build",
-    "test": "pnpm -r --if-present test"
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "check": "pnpm typecheck && pnpm test && pnpm build",
+    "version:check": "node scripts/release/version-check.mjs",
+    "release:plan": "node scripts/release/plan.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
