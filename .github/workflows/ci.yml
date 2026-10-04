@@ -105,6 +105,11 @@ jobs:
 
           echo "Blueprint/README contract aligned at document version $blueprint_version"
 
+      - name: Validate governance registry
+        run: |
+          pnpm --filter @dhgs/governance-registry typecheck
+          pnpm --filter @dhgs/governance-registry test
+
       - name: Generate reproducibility provenance
         run: pnpm --silent release:provenance
 
