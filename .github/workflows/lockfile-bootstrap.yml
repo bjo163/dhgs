@@ -1,0 +1,43 @@
+name: Lockfile Bootstrap
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/lockfile-bootstrap.yml'
+      - '.node-version'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+      - 'apps/*/package.json'
+      - 'packages/*/package.json'
+      - 'engines/*/package.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.3
+      - name: Enable pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.18.0 --activate
+          pnpm --version
+      - name: Verify toolchain
+        run: pnpm toolchain:check
+      - name: Generate candidate lockfile
+        run: pnpm install --lockfile-only --no-frozen-lockfile
+      - name: Upload candidate lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnpm-lock-candidate
+          path: pnpm-lock.yaml
+          if-no-files-found: error
+          retention-days: 1
