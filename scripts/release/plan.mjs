@@ -38,6 +38,7 @@ try {
   latestTag = '';
 }
 
+const isInitialRelease = !latestTag && !forced;
 const baseVersion = latestTag ? latestTag.replace(/^v/, '') : currentVersion;
 parseVersion(baseVersion);
 const range = latestTag ? `${latestTag}..HEAD` : 'HEAD';
@@ -73,7 +74,9 @@ if (bump && !['major', 'minor', 'patch'].includes(bump)) {
   throw new Error(`--force must be major, minor, patch, or none; received ${bump}`);
 }
 
-if (!bump) {
+if (isInitialRelease) {
+  bump = 'initial';
+} else if (!bump) {
   let rank = 0;
   for (const commit of commits) {
     const parsed = commitType(commit.subject);
@@ -86,7 +89,11 @@ if (!bump) {
 }
 
 const shouldRelease = Boolean(bump);
-const nextVersion = shouldRelease ? bumpVersion(baseVersion, bump) : baseVersion;
+const nextVersion = bump === 'initial'
+  ? currentVersion
+  : shouldRelease
+    ? bumpVersion(baseVersion, bump)
+    : baseVersion;
 
 const categoryNames = {
   feat: 'Features',
@@ -147,6 +154,7 @@ const summary = {
   baseVersion,
   currentVersion,
   bump,
+  initialRelease: isInitialRelease,
   shouldRelease,
   nextVersion,
   commitCount: commits.length,
@@ -159,6 +167,7 @@ if (process.env.GITHUB_OUTPUT) {
     `version=${nextVersion}`,
     `bump=${bump ?? 'none'}`,
     `tag=v${nextVersion}`,
+    `initial_release=${isInitialRelease}`,
   ].join('\n');
   fs.appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
 }
