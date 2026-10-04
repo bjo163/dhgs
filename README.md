@@ -1,9 +1,9 @@
 # DHGS — Divine–Human Governance System
 
-> **Digital Governance Assurance Platform** for lawful, evidence-based, accountable, reviewable, correctable, privacy-preserving, and publicly understandable governance.
+> **Digital Governance Assurance Platform** for lawful, evidence-based, accountable, reviewable, correctable, privacy-preserving, accessible, and publicly understandable governance.
 
 **Status:** Controlled implementation blueprint candidate  
-**Current baseline:** `DHGS v14.0.0`  
+**Current baseline:** `DHGS v15.0.0`  
 **Primary document:** [`BLUEPRINT.md`](./BLUEPRINT.md)
 
 ---
@@ -45,6 +45,8 @@ Its North Star is:
 - **Corpus** — curated, versioned, reusable knowledge separated from case-specific evidence.
 - **Authority Mandate Registry** — machine-readable record of who may lawfully do what, where, when, and under which legal source.
 - **Decision Context Snapshot** — preserved record of the law, policy, rule, corpus, engine, schema, and reviewer versions used for a high-impact decision.
+- **Product Experience Plane** — human-facing layer for information architecture, journeys, accessibility, interaction safety, content design, and usability.
+- **Visual / Asset Governance** — rules for logos, icons, SVG/vector assets, charts, banners, illustrations, images, print/PDF assets, and synthetic-media disclosure.
 - **Correction** — first-class governance capability: detect → acknowledge → correct → record → learn.
 
 ---
@@ -108,6 +110,40 @@ Logical separation does **not** require microservices.
 
 ---
 
+## Product experience and visual system
+
+v15 treats UI/UX as part of governance safety rather than decoration.
+
+The blueprint now defines:
+
+- public and operations information architecture;
+- stable screen IDs and screen contracts;
+- citizen, reviewer, auditor, Shadow, evidence, Mizan, appeal, and Open Book journeys;
+- high-stakes interaction patterns and deliberate confirmation;
+- Mizan reviewer score-blinding / independence controls;
+- evidence provenance and challenge states in the UI;
+- no-dark-pattern appeal and correction UX;
+- Open Book Simple / Standard / Technical content modes;
+- role-specific dashboards;
+- notifications, search, drafts/autosave, session recovery, error/degraded states;
+- localization, translation versioning, date/time rules;
+- plain-language content standards;
+- WCAG 2.2 AA accessibility target and real-user testing;
+- DHGS design tokens and component system;
+- logo and visual-identity rules;
+- icon and sanitized SVG/vector rules;
+- chart/graph truthfulness and accessibility rules;
+- illustration, banner, image, and synthetic-media policies;
+- asset manifest, licensing, consent, provenance, hashing, and performance rules;
+- print/PDF/QR document-output standards;
+- user research and usability/comprehension metrics.
+
+A central design rule is:
+
+> **Design must clarify power, not glorify it.**
+
+---
+
 ## Simple-first technology direction
 
 The initial implementation remains deliberately simple:
@@ -131,9 +167,9 @@ Not required for the MVP: Kubernetes, Kafka, blockchain, Temporal, OPA, OpenFGA,
 
 ---
 
-## Important v14 controls
+## Important v15 controls
 
-v14 closes several implementation gaps that were not explicit enough in earlier versions:
+The current baseline includes or strengthens:
 
 - deployment/adoption mode;
 - Governance Authority vs Platform Operator separation;
@@ -158,7 +194,12 @@ v14 closes several implementation gaps that were not explicit enough in earlier 
 - capacity and operating-cost planning;
 - public open-data contract;
 - `CORPUS-RIGHTS` and `CORPUS-SCIENCE`;
-- explicit prohibition on deceptive public communication and hidden VIP parallel process.
+- explicit prohibition on deceptive public communication and hidden VIP parallel process;
+- product-experience safety invariants;
+- screen/journey/design-system governance;
+- brand/logo/icon/SVG/chart/banner/image/print asset governance;
+- synthetic-media disclosure and evidence separation;
+- user research and comprehension testing.
 
 ---
 
@@ -188,9 +229,9 @@ Citizen submits case
 → accountable human decision and attestation
 → Decision Context Snapshot
 → Hisab Ledger
-→ privacy-safe Open Book publication
-→ appeal / Re-Mizan
-→ correction preserving original history
+→ privacy-safe and understandable Open Book publication
+→ appeal / Re-Mizan without dark-pattern obstruction
+→ correction preserving original history and visible version diff
 → outcome review
 → lesson learned / knowledge update
 ```
@@ -210,6 +251,8 @@ README.md
 BLUEPRINT.md
 ```
 
-The full governance, product, engine, corpus, security, privacy, rights, audit, KPI, testing, institutional, and implementation specification is in:
+Future implementation may introduce governed directories for applications, engines, corpus, design system, and assets, but they are not created by this documentation update.
+
+The full governance, product, UX/UI, visual identity, asset, engine, corpus, security, privacy, rights, audit, KPI, testing, institutional, and implementation specification is in:
 
 **[`BLUEPRINT.md`](./BLUEPRINT.md)**
