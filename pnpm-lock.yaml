@@ -129,6 +129,19 @@ importers:
         specifier: ^3.2.0
         version: 3.2.7(@types/node@24.19.1)(tsx@4.23.15)
 
+  packages/orm-base:
+    dependencies:
+      '@dhgs/orm':
+        specifier: workspace:*
+        version: link:../orm
+    devDependencies:
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.0
+        version: 3.2.7(@types/node@24.19.1)(tsx@4.23.15)
+
   packages/ui:
     dependencies:
       react:
