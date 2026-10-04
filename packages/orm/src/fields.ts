@@ -25,6 +25,8 @@ export interface FieldDefinition {
   default?: unknown | (() => unknown);
   sensitive?: boolean;
   public?: boolean;
+  hidden?: boolean;
+  writeOnly?: boolean;
   mutable?: boolean;
   queryable?: boolean;
   sortable?: boolean;

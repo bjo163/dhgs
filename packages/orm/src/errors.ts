@@ -14,3 +14,5 @@ export class VersionConflictError extends OrmError {}
 export class ImmutableFieldError extends OrmError {}
 export class HookConfigurationError extends OrmError {}
 export class ValidationError extends OrmError {}
+export class GeneratedUiError extends OrmError {}
+export class AdminAuthorizationError extends OrmError {}

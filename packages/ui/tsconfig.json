@@ -1,0 +1,5 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "incremental": false, "types": ["react", "react-dom"] },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}
