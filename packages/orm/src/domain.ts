@@ -20,13 +20,17 @@ export interface QueryOptions {
   includeArchived?: boolean;
 }
 
+function isClause(node: DomainNode): node is DomainClause {
+  return Array.isArray(node);
+}
+
 export function validateDomain(model: ModelDefinition, domain: Domain, context: ModelContext): void {
   for (const node of domain) validateNode(model, node, context);
 }
 
 function validateNode(model: ModelDefinition, node: DomainNode, context: ModelContext): void {
-  if (Array.isArray(node)) {
-    const [field, operator, value] = node as DomainClause;
+  if (isClause(node)) {
+    const [field, operator, value] = node;
     const definition = model.fields[field];
     if (!definition && !BASE_RECORD_FIELDS.has(field)) {
       throw new QueryValidationError(`Unknown query field: ${model.name}.${field}`);
@@ -60,8 +64,8 @@ export function evaluateDomain(record: BaseRecord, domain: Domain): boolean {
 }
 
 function evaluateNode(record: BaseRecord, node: DomainNode): boolean {
-  if (Array.isArray(node)) {
-    const [field, operator, expected] = node as DomainClause;
+  if (isClause(node)) {
+    const [field, operator, expected] = node;
     const actual = (record as unknown as Record<string, unknown>)[field];
     switch (operator) {
       case '=': return actual === expected;
