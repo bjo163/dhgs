@@ -28,6 +28,7 @@ type TagRecord = BaseRecord & {
 const InstitutionModel = Institution as ModelDefinition<InstitutionRecord>;
 const registry = new ModelRegistry();
 for (const model of baseModels) registry.register(model);
+let recordSequence = 0;
 
 const adminUrl = process.env.PG_ADMIN_URL;
 const appUrl = process.env.PG_APP_URL ?? 'postgres://dhgs_app:dhgs_app@127.0.0.1:5432/dhgs';
@@ -103,7 +104,7 @@ suite('@dhgs/orm-postgres integration', () => {
       context: { actorId: 'ACTOR-1', purpose: 'TEST', requestId: 'REQ-TX', jurisdictionIds: ['J-1'] },
       runtime: {
         now: () => new Date().toISOString(),
-        id: () => `TAG-${Math.random()}`,
+        id: () => `TAG-${++recordSequence}`,
         audit: (event) => { audit.push(event); }
       }
     });
@@ -117,11 +118,10 @@ suite('@dhgs/orm-postgres integration', () => {
 
 function fixture(pool: Pool, jurisdictionIds: string[]) {
   const audit: MutationEvent[] = [];
-  let id = 0;
   const context = {
     actorId: 'ACTOR-1',
     purpose: 'TEST',
-    requestId: `REQ-${jurisdictionIds.join('-')}`,
+    requestId: `REQ-${jurisdictionIds.join('-')}-${++recordSequence}`,
     jurisdictionIds
   };
   const adapter = new PostgresAdapter(pool);
@@ -131,7 +131,7 @@ function fixture(pool: Pool, jurisdictionIds: string[]) {
     context,
     runtime: {
       now: () => new Date().toISOString(),
-      id: () => `ID-${jurisdictionIds.join('-')}-${++id}`,
+      id: () => `ID-${jurisdictionIds.join('-')}-${++recordSequence}`,
       audit: (event) => { audit.push(event); },
       ledger: (event) => { audit.push(event); }
     }
