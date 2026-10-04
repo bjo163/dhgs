@@ -1,20 +1,41 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Pool } from 'pg';
-import { createEnvironment, ModelRegistry, type MutationEvent } from '@dhgs/orm';
-import { Institution, Tag, baseModels } from '@dhgs/orm-base';
+import {
+  createEnvironment,
+  ModelRegistry,
+  type BaseRecord,
+  type ModelDefinition,
+  type MutationEvent
+} from '@dhgs/orm';
+import { Institution, baseModels } from '@dhgs/orm-base';
 import { applyMigrations, currentMigrationState } from '../migration.js';
 import { PostgresAdapter } from '../postgres-adapter.js';
 
+type InstitutionRecord = BaseRecord & {
+  code: string;
+  name: string;
+  kind: 'GOVERNANCE' | 'OVERSIGHT' | 'OPERATOR' | 'AUDIT' | 'OTHER';
+  parentInstitutionId?: string | null;
+  status: 'ACTIVE' | 'INACTIVE' | 'SANDBOX';
+};
+
+type TagRecord = BaseRecord & {
+  code: string;
+  name: string;
+  description?: string | null;
+};
+
+const InstitutionModel = Institution as ModelDefinition<InstitutionRecord>;
+const registry = new ModelRegistry();
+for (const model of baseModels) registry.register(model);
+
 const adminUrl = process.env.PG_ADMIN_URL;
 const appUrl = process.env.PG_APP_URL ?? 'postgres://dhgs_app:dhgs_app@127.0.0.1:5432/dhgs';
-
 const suite = adminUrl ? describe : describe.skip;
 
 suite('@dhgs/orm-postgres integration', () => {
   const admin = new Pool({ connectionString: adminUrl });
   const app = new Pool({ connectionString: appUrl });
-  const registry = new ModelRegistry();
-  for (const model of baseModels) registry.register(model);
 
   beforeAll(async () => {
     await resetDatabase(admin);
@@ -59,11 +80,15 @@ suite('@dhgs/orm-postgres integration', () => {
     });
 
     const crossContext = { ...context, jurisdictionIds: ['J-2'], requestId: 'REQ-CROSS' };
-    const directRead = await adapter.findMany(Institution, { domain: [['id', '=', created.id]], includeArchived: true }, crossContext);
+    const directRead = await adapter.findMany(
+      InstitutionModel,
+      { domain: [['id', '=', created.id]], includeArchived: true },
+      crossContext
+    );
     expect(directRead).toEqual([]);
 
     const now = new Date().toISOString();
-    await expect(adapter.insert(Institution, {
+    await expect(adapter.insert(InstitutionModel, {
       id: 'RLS-DENIED', createdAt: now, updatedAt: now, createdBy: 'ACTOR-1', updatedBy: 'ACTOR-1',
       version: 1, archivedAt: null, jurisdictionId: 'J-2', institutionId: null,
       code: 'DENIED', name: 'Denied', kind: 'OTHER', parentInstitutionId: null, status: 'SANDBOX'
@@ -73,32 +98,45 @@ suite('@dhgs/orm-postgres integration', () => {
   it('rolls back ORM transactions on failure', async () => {
     const audit: MutationEvent[] = [];
     const env = createEnvironment({
-      adapter: new PostgresAdapter(app), registry,
+      adapter: new PostgresAdapter(app),
+      registry,
       context: { actorId: 'ACTOR-1', purpose: 'TEST', requestId: 'REQ-TX', jurisdictionIds: ['J-1'] },
-      runtime: { now: () => new Date().toISOString(), id: () => `TAG-${Math.random()}`, audit: (event) => audit.push(event) }
+      runtime: {
+        now: () => new Date().toISOString(),
+        id: () => `TAG-${Math.random()}`,
+        audit: (event) => { audit.push(event); }
+      }
     });
     await expect(env.transaction(async (trx) => {
-      await trx.model('base.tag').create({ code: 'TX-ROLLBACK', name: 'Rollback tag' });
+      await trx.model<TagRecord>('base.tag').create({ code: 'TX-ROLLBACK', name: 'Rollback tag' });
       throw new Error('rollback');
     })).rejects.toThrow('rollback');
-    expect(await env.model('base.tag').count([['code', '=', 'TX-ROLLBACK']])).toBe(0);
+    expect(await env.model<TagRecord>('base.tag').count([['code', '=', 'TX-ROLLBACK']])).toBe(0);
   });
 });
 
 function fixture(pool: Pool, jurisdictionIds: string[]) {
   const audit: MutationEvent[] = [];
   let id = 0;
-  const context = { actorId: 'ACTOR-1', purpose: 'TEST', requestId: `REQ-${jurisdictionIds.join('-')}`, jurisdictionIds };
+  const context = {
+    actorId: 'ACTOR-1',
+    purpose: 'TEST',
+    requestId: `REQ-${jurisdictionIds.join('-')}`,
+    jurisdictionIds
+  };
   const adapter = new PostgresAdapter(pool);
   const env = createEnvironment({
-    adapter, registry,
+    adapter,
+    registry,
     context,
     runtime: {
-      now: () => new Date().toISOString(), id: () => `ID-${jurisdictionIds.join('-')}-${++id}`,
-      audit: (event) => audit.push(event), ledger: (event) => audit.push(event)
+      now: () => new Date().toISOString(),
+      id: () => `ID-${jurisdictionIds.join('-')}-${++id}`,
+      audit: (event) => { audit.push(event); },
+      ledger: (event) => { audit.push(event); }
     }
   });
-  return { env, repo: env.model('base.institution'), adapter, context };
+  return { env, repo: env.model<InstitutionRecord>('base.institution'), adapter, context };
 }
 
 async function resetDatabase(pool: Pool): Promise<void> {
