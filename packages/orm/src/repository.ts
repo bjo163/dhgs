@@ -1,10 +1,10 @@
-import type { OrmAdapter, AdapterQuery } from './adapter.js';
-import type { Domain, QueryOptions } from './domain.js';
-import { validateDomain } from './domain.js';
-import type { ModelDefinition } from './model.js';
-import type { BaseRecord, ModelContext, MutationEvent, MutationSink } from './types.js';
-import { applyDefaults, validateModelValues } from './fields.js';
-import { HookConfigurationError, ImmutableFieldError, MutationContextError, ScopeError } from './errors.js';
+import type { OrmAdapter, AdapterQuery } from './adapter';
+import type { Domain, QueryOptions } from './domain';
+import { validateDomain } from './domain';
+import type { ModelDefinition } from './model';
+import type { BaseRecord, ModelContext, MutationEvent, MutationSink } from './types';
+import { applyDefaults, validateModelValues } from './fields';
+import { HookConfigurationError, ImmutableFieldError, MutationContextError, ScopeError } from './errors';
 
 export interface RepositoryRuntime {
   now: () => string;

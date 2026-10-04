@@ -1,6 +1,6 @@
-import type { BaseRecord } from './types.js';
-import type { ModelDefinition } from './model.js';
-import { ModelRegistrationError, UnknownModelError } from './errors.js';
+import type { BaseRecord } from './types';
+import type { ModelDefinition } from './model';
+import { ModelRegistrationError, UnknownModelError } from './errors';
 
 export class ModelRegistry {
   private readonly models = new Map<string, ModelDefinition>();

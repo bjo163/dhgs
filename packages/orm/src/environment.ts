@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import type { OrmAdapter } from './adapter.js';
-import type { BaseRecord, ModelContext, MutationSink } from './types.js';
-import { ModelRegistry } from './registry.js';
-import { Repository } from './repository.js';
+import type { OrmAdapter } from './adapter';
+import type { BaseRecord, ModelContext, MutationSink } from './types';
+import { ModelRegistry } from './registry';
+import { Repository } from './repository';
 
 export interface OrmRuntime {
   now?: () => string;

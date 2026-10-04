@@ -1,6 +1,6 @@
-import type { BaseRecord, ModelContext } from './types.js';
-import type { ModelDefinition } from './model.js';
-import type { Domain, QueryOptions } from './domain.js';
+import type { BaseRecord, ModelContext } from './types';
+import type { ModelDefinition } from './model';
+import type { Domain, QueryOptions } from './domain';
 
 export interface AdapterQuery extends QueryOptions {
   domain?: Domain;

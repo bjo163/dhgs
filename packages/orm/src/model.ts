@@ -1,6 +1,6 @@
-import type { FieldDefinition } from './fields.js';
-import type { BaseRecord } from './types.js';
-import { ModelRegistrationError } from './errors.js';
+import type { FieldDefinition } from './fields';
+import type { BaseRecord } from './types';
+import { ModelRegistrationError } from './errors';
 
 export interface ModelGovernance {
   jurisdictionScoped?: boolean;

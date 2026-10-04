@@ -1,5 +1,5 @@
-import type { ModelDefinition } from './model.js';
-import { ValidationError } from './errors.js';
+import type { ModelDefinition } from './model';
+import { ValidationError } from './errors';
 
 export type FieldKind =
   | 'string'

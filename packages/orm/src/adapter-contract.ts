@@ -1,7 +1,7 @@
-import type { OrmAdapter } from './adapter.js';
-import type { ModelDefinition } from './model.js';
-import type { BaseRecord, ModelContext } from './types.js';
-import { VersionConflictError } from './errors.js';
+import type { OrmAdapter } from './adapter';
+import type { ModelDefinition } from './model';
+import type { BaseRecord, ModelContext } from './types';
+import { VersionConflictError } from './errors';
 
 export interface AdapterContractFixture<T extends BaseRecord> {
   adapter: OrmAdapter;

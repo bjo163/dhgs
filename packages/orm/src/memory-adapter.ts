@@ -1,8 +1,8 @@
-import type { OrmAdapter, AdapterQuery } from './adapter.js';
-import type { ModelDefinition } from './model.js';
-import type { BaseRecord, ModelContext } from './types.js';
-import { compare, evaluateDomain } from './domain.js';
-import { VersionConflictError } from './errors.js';
+import type { OrmAdapter, AdapterQuery } from './adapter';
+import type { ModelDefinition } from './model';
+import type { BaseRecord, ModelContext } from './types';
+import { compare, evaluateDomain } from './domain';
+import { VersionConflictError } from './errors';
 
 export class MemoryAdapter implements OrmAdapter {
   private readonly tables = new Map<string, Map<string, BaseRecord>>();

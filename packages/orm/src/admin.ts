@@ -1,13 +1,13 @@
-import type { AddonManifest } from './addon.js';
-import type { Domain } from './domain.js';
-import { validateDomain } from './domain.js';
-import type { Environment } from './environment.js';
-import { AdminAuthorizationError, GeneratedUiError } from './errors.js';
-import type { FieldDefinition, FieldKind } from './fields.js';
-import type { ModelDefinition } from './model.js';
-import type { ModelRegistry } from './registry.js';
-import type { BaseRecord, ModelContext } from './types.js';
-import type { GeneratedUiMode, MenuSpec, ViewKind } from './metadata.js';
+import type { AddonManifest } from './addon';
+import type { Domain } from './domain';
+import { validateDomain } from './domain';
+import type { Environment } from './environment';
+import { AdminAuthorizationError, GeneratedUiError } from './errors';
+import type { FieldDefinition, FieldKind } from './fields';
+import type { ModelDefinition } from './model';
+import type { ModelRegistry } from './registry';
+import type { BaseRecord, ModelContext } from './types';
+import type { GeneratedUiMode, MenuSpec, ViewKind } from './metadata';
 
 export interface GeneratedAdminField {
   name: string;

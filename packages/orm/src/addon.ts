@@ -1,10 +1,10 @@
-import type { ModelDefinition } from './model.js';
-import type { BaseRecord } from './types.js';
-import type { AccessSpec, ActionSpec, MenuSpec, UiPolicy, ViewSpec } from './metadata.js';
-import type { SeedRecord } from './seed.js';
-import { collectSeedReferences } from './seed.js';
-import { ModelRegistry } from './registry.js';
-import { ModelRegistrationError, ValidationError } from './errors.js';
+import type { ModelDefinition } from './model';
+import type { BaseRecord } from './types';
+import type { AccessSpec, ActionSpec, MenuSpec, UiPolicy, ViewSpec } from './metadata';
+import type { SeedRecord } from './seed';
+import { collectSeedReferences } from './seed';
+import { ModelRegistry } from './registry';
+import { ModelRegistrationError, ValidationError } from './errors';
 
 export interface AddonManifest {
   name: string;

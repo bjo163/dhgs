@@ -1,7 +1,7 @@
 import { defineAddon } from '@dhgs/orm';
-import { baseModels } from './models.js';
-import { baseData } from './data.js';
-import { baseAccess, baseMenus, baseUiPolicies, baseViews } from './metadata.js';
+import { baseModels } from './models';
+import { baseData } from './data';
+import { baseAccess, baseMenus, baseUiPolicies, baseViews } from './metadata';
 
 export const manifest = defineAddon({
   name: 'base',

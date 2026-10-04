@@ -1,7 +1,7 @@
-import type { BaseRecord, ModelContext } from './types.js';
-import type { ModelDefinition } from './model.js';
-import { BASE_RECORD_FIELDS } from './fields.js';
-import { QueryValidationError } from './errors.js';
+import type { BaseRecord, ModelContext } from './types';
+import type { ModelDefinition } from './model';
+import { BASE_RECORD_FIELDS } from './fields';
+import { QueryValidationError } from './errors';
 
 export type DomainOperator = '=' | '!=' | 'in' | 'not in' | '<' | '<=' | '>' | '>=' | 'contains';
 export type DomainClause = readonly [field: string, operator: DomainOperator, value: unknown];

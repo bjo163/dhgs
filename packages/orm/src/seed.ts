@@ -1,4 +1,4 @@
-import { ValidationError } from './errors.js';
+import { ValidationError } from './errors';
 
 export interface SeedReference {
   readonly __dhgsRef: string;
