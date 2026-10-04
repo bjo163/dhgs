@@ -40,6 +40,9 @@ jobs:
       - name: Validate software version files
         run: pnpm version:check
 
+      - name: Test software version mismatch fixture
+        run: node scripts/release/version-check-fixture.mjs
+
       - name: Validate Blueprint and README implementation contract
         shell: bash
         run: |
