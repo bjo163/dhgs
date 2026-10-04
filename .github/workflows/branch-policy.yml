@@ -1,0 +1,70 @@
+name: Branch and PR Policy
+
+on:
+  create:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: read
+  issues: read
+
+jobs:
+  guard-created-branch:
+    if: github.event_name == 'create' && github.event.ref_type == 'branch' && github.event.ref != 'main' && github.event.ref != 'dev'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove unauthorized branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          BRANCH: ${{ github.event.ref }}
+        run: |
+          echo "Branch '$BRANCH' is not allowed. DHGS permits only dev and main."
+          encoded=$(python3 - <<'PY'
+          import os, urllib.parse
+          print(urllib.parse.quote(os.environ['BRANCH'], safe=''))
+          PY
+          )
+          gh api --method DELETE "repos/$REPOSITORY/git/refs/heads/$encoded"
+
+  validate-main-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require dev to main only
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          test "$BASE_REF" = "main" || { echo "Only main is a PR target."; exit 1; }
+          test "$HEAD_REF" = "dev" || { echo "Only dev may be promoted to main; got $HEAD_REF -> $BASE_REF."; exit 1; }
+
+      - name: Validate conventional PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          node - <<'NODE'
+          const title = process.env.PR_TITLE || '';
+          const allowed = /^(feat|fix|perf|revert|refactor|docs|test|build|ci|chore)(\([a-z0-9._/-]+\))?(!)?: .+/i;
+          if (!allowed.test(title)) {
+            console.error(`Invalid PR title: ${title}`);
+            console.error('Use Conventional Commit style, e.g. feat(orm): add model registry');
+            process.exit(1);
+          }
+          NODE
+
+      - name: Require linked implementation issue
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          node - <<'NODE'
+          const body = process.env.PR_BODY || '';
+          const linked = /(close[sd]?|fix(e[sd])?|resolve[sd]?)\s+#\d+|(?:issue|ref|refs|relates to)\s*#\d+|#\d+/i.test(body);
+          if (!linked) {
+            console.error('PR body must reference at least one GitHub issue such as Closes #1 or Refs #1.');
+            process.exit(1);
+          }
+          NODE
