@@ -123,6 +123,18 @@ importers:
         specifier: ^3.2.0
         version: 3.2.7(@types/node@24.19.1)(tsx@4.23.15)
 
+  packages/governance-registry:
+    devDependencies:
+      '@types/node':
+        specifier: ^24.0.0
+        version: 24.19.1
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.0
+        version: 3.2.7(@types/node@24.19.1)(tsx@4.23.15)
+
   packages/orm:
     devDependencies:
       '@types/node':
