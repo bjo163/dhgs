@@ -8,3 +8,6 @@ export * from './adapter.js';
 export * from './repository.js';
 export * from './environment.js';
 export * from './memory-adapter.js';
+export * from './metadata.js';
+export * from './seed.js';
+export * from './addon.js';
