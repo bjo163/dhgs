@@ -2,17 +2,19 @@
 
 > **Digital Governance Assurance Platform** for lawful, evidence-based, accountable, reviewable, correctable, privacy-preserving, accessible, and publicly understandable governance.
 
-**Status:** Controlled implementation blueprint candidate  
-**Current baseline:** `DHGS v15.0.0`  
-**Primary document:** [`BLUEPRINT.md`](./BLUEPRINT.md)
+**Blueprint baseline:** `DHGS v15.0.0`  
+**Blueprint status:** Controlled implementation baseline candidate  
+**Primary specification:** [`BLUEPRINT.md`](./BLUEPRINT.md)
 
 ---
 
-## What DHGS is
+## North Star
 
-DHGS is a proposed **governance assurance infrastructure**. It is not a replacement for a constitution, court, legislature, executive government, religion, or accountable human judgment.
+> **No material public power without lawful authority, accountable ownership, sufficient evidence, traceable record, reviewability, and a correction path.**
 
-Its operational loop is:
+DHGS is governance-assurance infrastructure. It is not a replacement for a constitution, court, legislature, executive government, religion, or accountable human judgment.
+
+Its operating loop is:
 
 ```text
 RECEIVE
@@ -30,113 +32,20 @@ RECEIVE
 → LEARN
 ```
 
-Its North Star is:
-
-> **No material public power without lawful authority, accountable ownership, sufficient evidence, traceable record, reviewability, and a correction path.**
-
 ---
 
 ## Core concepts
 
 - **Shadow** — independent supervisory, mediation, and accountability function. Shadow supervises power; Shadow does not own power.
-- **Mizan** — decision-readiness and balancing engine. It does not determine human worth or legal guilt.
+- **Mizan** — non-adjudicative decision-readiness and balancing engine. It does not determine legal guilt or human worth.
 - **Hisab Ledger** — append-oriented accountability history for material uses of public power.
 - **Open Book** — privacy-safe public communication and transparency layer.
 - **Corpus** — curated, versioned, reusable knowledge separated from case-specific evidence.
 - **Authority Mandate Registry** — machine-readable record of who may lawfully do what, where, when, and under which legal source.
-- **Decision Context Snapshot** — preserved record of the law, policy, rule, corpus, engine, schema, and reviewer versions used for a high-impact decision.
-- **Product Experience Plane** — human-facing layer for information architecture, journeys, accessibility, interaction safety, content design, and usability.
-- **Visual / Asset Governance** — rules for logos, icons, SVG/vector assets, charts, banners, illustrations, images, print/PDF assets, and synthetic-media disclosure.
-- **Correction** — first-class governance capability: detect → acknowledge → correct → record → learn.
-
----
-
-## Real-world operating modes
-
-DHGS must declare how it is being used:
-
-```text
-SANDBOX
-VOLUNTARY
-INSTITUTIONAL
-STATUTORY
-```
-
-Sandbox and voluntary deployments do not acquire statutory or coercive authority merely by using DHGS software.
-
----
-
-## Product architecture
-
-DHGS keeps responsibility logically separated while remaining simple to deploy at first:
-
-```text
-PUBLIC WEB                  OPERATIONS WEB
-     │                            │
-     └────────────┬───────────────┘
-                  ▼
-             BACKEND API
-                  │
-      ┌───────────┼────────────┐
-      ▼           ▼            ▼
- DOMAIN        ENGINES       CORPUS
- SERVICES
-      └───────────┼────────────┘
-                  ▼
-             DATA LAYER
-          /       |        \
- POSTGRES     STORAGE     AUDIT LOG
-                  │
-                  ▼
-           PUBLIC PROJECTION
-                  │
-                  ▼
-              OPEN BOOK
-```
-
-Important boundaries:
-
-```text
-FRONTEND != BACKEND
-BACKEND != ENGINES
-ENGINES != CORPUS
-CORPUS != CASE EVIDENCE
-HISAB LEDGER != AUDIT LOG
-INTERNAL DATA != PUBLIC DATA
-TECHNICAL ADMIN != GOVERNANCE AUTHORITY
-```
-
-Logical separation does **not** require microservices.
-
----
-
-## Product experience and visual system
-
-v15 treats UI/UX as part of governance safety rather than decoration.
-
-The blueprint now defines:
-
-- public and operations information architecture;
-- stable screen IDs and screen contracts;
-- citizen, reviewer, auditor, Shadow, evidence, Mizan, appeal, and Open Book journeys;
-- high-stakes interaction patterns and deliberate confirmation;
-- Mizan reviewer score-blinding / independence controls;
-- evidence provenance and challenge states in the UI;
-- no-dark-pattern appeal and correction UX;
-- Open Book Simple / Standard / Technical content modes;
-- role-specific dashboards;
-- notifications, search, drafts/autosave, session recovery, error/degraded states;
-- localization, translation versioning, date/time rules;
-- plain-language content standards;
-- WCAG 2.2 AA accessibility target and real-user testing;
-- DHGS design tokens and component system;
-- logo and visual-identity rules;
-- icon and sanitized SVG/vector rules;
-- chart/graph truthfulness and accessibility rules;
-- illustration, banner, image, and synthetic-media policies;
-- asset manifest, licensing, consent, provenance, hashing, and performance rules;
-- print/PDF/QR document-output standards;
-- user research and usability/comprehension metrics.
+- **Decision Context Snapshot** — preserves the law, policy, rule, corpus, engine, schema, and reviewer versions used for a high-impact decision.
+- **Product Experience Plane** — information architecture, journeys, interaction safety, accessibility, content design, and usability.
+- **Visual / Asset Governance** — logos, icons, SVG/vector assets, diagrams, charts, banners, images, print/PDF assets, provenance, licensing, and synthetic-media disclosure.
+- **Correction** — detect → acknowledge → correct → record → learn.
 
 A central design rule is:
 
@@ -144,62 +53,202 @@ A central design rule is:
 
 ---
 
-## Simple-first technology direction
+## Repository status
 
-The initial implementation remains deliberately simple:
+The repository has now moved from documentation-only into a **design-foundation and prototype-shell stage**. The governance blueprint remains canonical; code and visual artifacts are implementation experiments until their requirements and tests are satisfied.
 
-- **TypeScript**
-- **Next.js + React** for Public Web and Operations Web
-- **Node.js + Fastify** for the API
-- **Pure TypeScript packages** for engines
-- **Supabase PostgreSQL** for transactional data
-- **Supabase Auth** for authentication
-- **PostgreSQL RLS + application roles** for authorization
-- **Supabase Storage** for private evidence and corpus files
-- **Zod** for runtime validation
-- **Vitest + Playwright** for testing
-- **GitHub Actions** for CI
-- **Vercel + Supabase** for the initial deployment stages
+```text
+dhgs/
+├── README.md
+├── BLUEPRINT.md
+├── design/
+│   ├── README.md
+│   ├── tokens.json
+│   ├── sitemap.md
+│   ├── screen-map.md
+│   ├── wireframes.md
+│   ├── visual-identity.md
+│   ├── content-style.md
+│   └── asset-manifest.json
+├── assets/
+│   ├── brand/
+│   ├── icons/
+│   ├── diagrams/
+│   ├── banners/
+│   ├── charts/
+│   └── social/
+├── apps/
+│   ├── public-web/
+│   ├── ops-web/
+│   └── api/
+├── packages/
+│   └── ui/
+├── engines/
+│   ├── evidence-engine/
+│   ├── mizan-engine/
+│   ├── policy-engine/
+│   ├── ledger-engine/
+│   └── publication-engine/
+└── corpus/
+    ├── governance/
+    ├── ethical/
+    ├── scriptural/
+    └── lessons/
+```
 
-Not required for the MVP: Kubernetes, Kafka, blockchain, Temporal, OPA, OpenFGA, vector databases, native mobile apps, or autonomous AI agents.
-
-> **Complexity must be earned.** New technology should solve a documented problem.
+The blueprint describes additional future modules. Their absence in the prototype does not remove the blueprint requirement.
 
 ---
 
-## Important v15 controls
+## Product surfaces
 
-The current baseline includes or strengthens:
+### Public Web
 
-- deployment/adoption mode;
-- Governance Authority vs Platform Operator separation;
-- Data Controller / Processor responsibility;
-- Authority Mandate Registry;
-- temporal law and policy versioning;
-- Legal Basis Precheck before Mizan and Formal Legal Review afterward;
-- non-adjudicative Mizan outputs;
-- identity-assurance levels;
-- notice/service-of-process records;
-- evidence challenge, privilege, sealing, and exclusion;
-- technical-admin break-glass and two-person controls;
-- Decision Context Snapshot and decision attestation;
-- actual requirement/control/rule ID namespaces;
-- independent oversight of DHGS itself;
-- secure software supply-chain controls;
-- SLO and restore-test planning;
-- WCAG 2.2 AA public-web accessibility target;
-- vulnerable-person safeguards;
-- reviewer calibration/inter-rater consistency;
-- intake abuse/brigading controls;
-- capacity and operating-cost planning;
-- public open-data contract;
-- `CORPUS-RIGHTS` and `CORPUS-SCIENCE`;
-- explicit prohibition on deceptive public communication and hidden VIP parallel process;
-- product-experience safety invariants;
-- screen/journey/design-system governance;
-- brand/logo/icon/SVG/chart/banner/image/print asset governance;
-- synthetic-media disclosure and evidence separation;
-- user research and comprehension testing.
+Prototype for:
+
+```text
+OPEN BOOK
+PUBLIC EXPLANATION
+CITIZEN PORTAL
+APPEAL / CORRECTION DISCOVERABILITY
+PUBLIC KNOWLEDGE
+```
+
+### Operations Web
+
+Prototype for:
+
+```text
+REVIEWER DASHBOARD
+MIZAN REVIEW
+AUDIT TIMELINE
+DECISION CONTEXT VISIBILITY
+```
+
+### API
+
+The initial Fastify API exposes only basic technical health/meta endpoints. It explicitly identifies the prototype as `SANDBOX` and has no statutory/coercive authority.
+
+---
+
+## Visual identity and assets
+
+The first exploratory asset set implements a neutral **balanced horizon** concept:
+
+```text
+BOUNDARY / ACCOUNTABILITY
++
+MIZAN / BALANCE
++
+ACCOUNTABLE DECISION POINT
++
+MOVEMENT TOWARD CLARITY
+```
+
+The logo does not depict Allah, a prophet, a political leader, or an invented governmental seal.
+
+Initial governed assets include:
+
+- primary logo mark and lockup;
+- monochrome mark and favicon;
+- balance, Open Book, ledger, correction, and audit icons;
+- product-architecture diagram;
+- six-phase maturity diagram;
+- Open Book banner;
+- truthful-chart template;
+- default social / Open Graph artwork;
+- machine-readable asset manifest.
+
+See [`design/visual-identity.md`](./design/visual-identity.md) and [`design/asset-manifest.json`](./design/asset-manifest.json).
+
+---
+
+## UX foundation
+
+The repository now contains concrete starting artifacts for:
+
+- public and operations information architecture;
+- stable screen IDs;
+- low-fidelity wireframe contracts;
+- high-stakes interaction patterns;
+- Mizan reviewer score blinding;
+- evidence status/provenance visibility;
+- appeal and correction discoverability;
+- role-focused dashboards;
+- save/recovery and error-state principles;
+- WCAG 2.2 AA target;
+- content/plain-language rules;
+- shared design tokens and core UI components.
+
+See [`design/`](./design/).
+
+---
+
+## Simple-first technical direction
+
+The prototype deliberately avoids premature infrastructure complexity.
+
+- **TypeScript**
+- **Next.js + React** — Public Web and Operations Web
+- **Node.js + Fastify** — API
+- **Pure TypeScript packages** — governance engines
+- **Supabase PostgreSQL / Auth / Storage** — planned transactional identity/data layer
+- **PostgreSQL RLS** — planned authorization enforcement
+- **Vitest** — engine tests
+- **Playwright** — planned E2E/accessibility journey tests
+- **GitHub Actions** — planned CI
+- **Vercel + Supabase** — intended initial hosted environments
+
+Not required for the MVP: Kubernetes, Kafka, blockchain, Temporal, OPA, OpenFGA, vector databases, native mobile apps, or autonomous AI agents.
+
+> **Complexity must be earned.**
+
+---
+
+## Engine boundary
+
+Current engine packages are deliberately small and advisory:
+
+```text
+Evidence Engine
+→ evidence quality / confidence only
+
+Mizan Engine
+→ decision readiness only
+→ never legal guilt
+
+Policy Engine
+→ explicit guard actions
+
+Ledger Engine
+→ append/correction record helpers
+
+Publication Engine
+→ P0/P1 public-projection guard
+```
+
+The corpus remains separate from case evidence. Scriptural/ethical references remain reference material and do not automatically create coercive authority.
+
+---
+
+## Run the prototype locally
+
+Prerequisite: Node.js and pnpm.
+
+```bash
+pnpm install
+pnpm dev:public   # http://localhost:3000
+pnpm dev:ops      # http://localhost:3001
+pnpm dev:api      # http://localhost:4000
+```
+
+Run available tests:
+
+```bash
+pnpm test
+```
+
+This is still a **sandbox prototype**. Do not use it for real coercive or high-impact decisions.
 
 ---
 
@@ -209,50 +258,12 @@ DHGS may use scriptural and prophetic references as an **ethical reference profi
 
 The design may seek compatibility with values such as truth, justice, rahmah, mercy, guidance, consultation, accountability, correction, and human dignity. It does **not** claim Divine certification, prophetic ownership, or knowledge of a future prophetic implementation.
 
-The symbolic maturity direction **Exit to the Light** is a maturity metaphor, not a prophecy date, legal rule, or software feature.
+`EXIT_TO_THE_LIGHT` remains a symbolic maturity direction, not a prophecy date, legal rule, or software feature.
 
 ---
 
-## First meaningful implementation
+## Canonical specification
 
-The first complete flow should prove:
-
-```text
-Citizen submits case
-→ identity assurance determined
-→ jurisdiction and authority mandate identified
-→ notice / rights obligations identified
-→ evidence submitted, challenged, and reviewed
-→ legal basis precheck
-→ Evidence / Rights / Mizan review
-→ formal legal and ethical review
-→ accountable human decision and attestation
-→ Decision Context Snapshot
-→ Hisab Ledger
-→ privacy-safe and understandable Open Book publication
-→ appeal / Re-Mizan without dark-pattern obstruction
-→ correction preserving original history and visible version diff
-→ outcome review
-→ lesson learned / knowledge update
-```
-
-If this works reliably, the core DHGS governance loop is alive.
-
----
-
-## Current repository scope
-
-The repository is intentionally still documentation-only while the controlled baseline is being locked.
-
-The current root baseline consists of:
-
-```text
-README.md
-BLUEPRINT.md
-```
-
-Future implementation may introduce governed directories for applications, engines, corpus, design system, and assets, but they are not created by this documentation update.
-
-The full governance, product, UX/UI, visual identity, asset, engine, corpus, security, privacy, rights, audit, KPI, testing, institutional, and implementation specification is in:
+The full governance, institutional, product, UX/UI, visual identity, asset, engine, corpus, security, privacy, rights, audit, KPI, testing, and implementation requirements remain in:
 
 **[`BLUEPRINT.md`](./BLUEPRINT.md)**
