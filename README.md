@@ -101,7 +101,7 @@ The blueprint describes additional future modules. Their absence in the prototyp
 
 The following board is a **non-canonical visual exploration**. It helps communicate the direction of the brand and interface language, but it is not itself a logo specification, legal seal, or approved final UI.
 
-![DHGS visual exploration styleboard](./assets/images/dhgs-styleboard-exploration-v1.jpg)
+![DHGS visual exploration styleboard](./assets/images/dhgs-styleboard-exploration-v1.png)
 
 Canonical vector assets and their provenance remain governed through the asset manifest and design documentation.
 
