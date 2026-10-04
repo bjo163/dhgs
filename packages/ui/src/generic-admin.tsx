@@ -1,3 +1,4 @@
+import React from 'react';
 import type { GeneratedAdminField, GeneratedAdminMetadata } from '@dhgs/orm';
 
 export interface GenericAdminShellProps {
