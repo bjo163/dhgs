@@ -23,19 +23,43 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup pinned Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.23.3
 
-      - name: Enable pnpm
+      - name: Enable pinned pnpm
         run: |
           corepack enable
           corepack prepare pnpm@10.18.0 --activate
           pnpm --version
 
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+      - name: Validate toolchain
+        run: pnpm toolchain:check
+
+      - name: Install dependencies from canonical lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Prove frozen lockfile rejects manifest drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp package.json /tmp/dhgs-package.json
+          trap 'cp /tmp/dhgs-package.json package.json' EXIT
+          node - <<'NODE'
+          const fs = require('fs')
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+          pkg.devDependencies.vitest = '0.0.0-drift-fixture'
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n')
+          NODE
+          if pnpm install --frozen-lockfile --ignore-scripts >/tmp/dhgs-lock-drift.log 2>&1; then
+            echo 'Frozen install unexpectedly accepted manifest/lockfile drift.' >&2
+            cat /tmp/dhgs-lock-drift.log >&2
+            exit 1
+          fi
+          cp /tmp/dhgs-package.json package.json
+          trap - EXIT
+          echo 'Frozen lockfile correctly rejected manifest drift.'
 
       - name: Validate software version files
         run: pnpm version:check
@@ -80,6 +104,9 @@ jobs:
           fi
 
           echo "Blueprint/README contract aligned at document version $blueprint_version"
+
+      - name: Generate reproducibility provenance
+        run: pnpm --silent release:provenance
 
       - name: Typecheck
         run: pnpm typecheck
