@@ -1,0 +1,17 @@
+{
+  "name": "dhgs",
+  "private": true,
+  "scripts": {
+    "dev:public": "pnpm --filter @dhgs/public-web dev",
+    "dev:ops": "pnpm --filter @dhgs/ops-web dev",
+    "dev:api": "pnpm --filter @dhgs/api dev",
+    "build": "pnpm -r --if-present build",
+    "test": "pnpm -r --if-present test"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.9.0"
+  }
+}
