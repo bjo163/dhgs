@@ -3,9 +3,10 @@ import type { GeneratedAdminField, GeneratedAdminMetadata } from '@dhgs/orm';
 export interface GenericAdminShellProps {
   metadata: GeneratedAdminMetadata;
   rows?: readonly Readonly<Record<string, unknown>>[];
+  mutationsConnected?: boolean;
 }
 
-export function GenericAdminShell({ metadata, rows = [] }: GenericAdminShellProps) {
+export function GenericAdminShell({ metadata, rows = [], mutationsConnected = false }: GenericAdminShellProps) {
   const listView = metadata.views.find((view) => view.kind === 'list');
   const formView = metadata.views.find((view) => view.kind === 'form');
   const searchView = metadata.views.find((view) => view.kind === 'search');
@@ -13,6 +14,7 @@ export function GenericAdminShell({ metadata, rows = [] }: GenericAdminShellProp
   const formFields = formView
     ? [...formView.fields, ...formView.sections.flatMap((section) => section.fields)]
     : [];
+  const createEnabled = metadata.capabilities.create && mutationsConnected;
 
   return <section className="dhgs-admin" aria-labelledby="dhgs-admin-title">
     <header className="dhgs-admin__header">
@@ -48,8 +50,10 @@ export function GenericAdminShell({ metadata, rows = [] }: GenericAdminShellProp
           return field ? <AdminField key={name} field={field} /> : null;
         })}</div>
       </fieldset>
-      <p id="dhgs-admin-auth-note" className="dhgs-meta">Mutations are fail-closed until a backend authorizer approves the operation. Menu visibility is not authorization.</p>
-      <button className="dhgs-button dhgs-button--primary" type="button" disabled={!metadata.capabilities.create} aria-describedby="dhgs-admin-auth-note">Create</button>
+      <p id="dhgs-admin-auth-note" className="dhgs-meta">{mutationsConnected
+        ? 'Mutations still require backend authorization for every operation. Menu visibility is not authorization.'
+        : 'Mutation controls are disabled until an authenticated backend authorizer is connected. Menu visibility is not authorization.'}</p>
+      <button className="dhgs-button dhgs-button--primary" type="button" disabled={!createEnabled} aria-describedby="dhgs-admin-auth-note">Create</button>
     </form> : null}
   </section>;
 }
