@@ -76,6 +76,7 @@ export function resolveGeneratedAdminMetadata(
   if (!policy || policy.generated === 'prohibited') {
     throw new GeneratedUiError(`Generic admin is prohibited for ${modelName}`);
   }
+  const mode: Exclude<GeneratedUiMode, 'prohibited'> = policy.generated;
 
   const sourceViews = manifest.views.filter((view) => view.model === modelName);
   if (sourceViews.length === 0) throw new GeneratedUiError(`No generated-admin views defined for ${modelName}`);
@@ -87,7 +88,7 @@ export function resolveGeneratedAdminMetadata(
     const sectionFields = (view.sections ?? []).flatMap((section) => [...section.fields]);
     const allViewFields = [...direct, ...sectionFields];
     for (const field of allViewFields) {
-      resolveSafeField(model, field, policy.generated);
+      resolveSafeField(model, field, mode);
       fieldNames.add(field);
     }
     for (const filter of view.filters ?? []) {
@@ -103,10 +104,9 @@ export function resolveGeneratedAdminMetadata(
     });
   }
 
-  const fields = [...fieldNames].map((field) => resolveSafeField(model, field, policy.generated));
+  const fields = [...fieldNames].map((field) => resolveSafeField(model, field, mode));
   const viewIds = new Set(sourceViews.map((view) => view.id));
   const menus = manifest.menus.filter((menu) => menu.viewId && viewIds.has(menu.viewId));
-  const mode = policy.generated;
 
   return Object.freeze({
     model: model.name,
