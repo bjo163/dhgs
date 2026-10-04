@@ -40,6 +40,44 @@ jobs:
       - name: Validate software version files
         run: pnpm version:check
 
+      - name: Validate Blueprint and README implementation contract
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -s BLUEPRINT.md
+          test -s README.md
+
+          blueprint_version="$(sed -n 's/^\*\*Version:\*\* `\([^`]*\)`.*/\1/p' BLUEPRINT.md | head -n1)"
+          readme_blueprint_version="$(sed -n 's/^\*\*Blueprint document baseline:\*\* `DHGS v\([^`]*\)`.*/\1/p' README.md | head -n1)"
+
+          if [ -z "$blueprint_version" ] || [ -z "$readme_blueprint_version" ]; then
+            echo 'Unable to read Blueprint document versions from BLUEPRINT.md / README.md.' >&2
+            exit 1
+          fi
+
+          if [ "$blueprint_version" != "$readme_blueprint_version" ]; then
+            echo "Blueprint version drift: BLUEPRINT=$blueprint_version README=$readme_blueprint_version" >&2
+            exit 1
+          fi
+
+          grep -F 'M0 — FOUNDATION KERNEL' BLUEPRINT.md >/dev/null
+          grep -F 'M5 — DEPLOYMENT, GOVERNANCE-OF-SOFTWARE & CONTROLLED PILOT' BLUEPRINT.md >/dev/null
+          grep -F '# 203. Repository delivery and version-stream contract' BLUEPRINT.md >/dev/null
+          grep -F 'GitHub issue #6' BLUEPRINT.md >/dev/null
+
+          grep -F 'M0 — FOUNDATION KERNEL — ACTIVE' README.md >/dev/null
+          grep -F 'M5 — DEPLOYMENT, GOVERNANCE-OF-SOFTWARE & CONTROLLED PILOT' README.md >/dev/null
+          grep -F 'github.com/bjo163/dhgs/issues/6' README.md >/dev/null
+          grep -F 'server-side GitHub Rulesets are not yet considered active/verified' README.md >/dev/null
+
+          if grep -F 'M4 — ASSURANCE & PILOT' BLUEPRINT.md >/dev/null; then
+            echo 'Stale implementation milestone found: M4 — ASSURANCE & PILOT' >&2
+            exit 1
+          fi
+
+          echo "Blueprint/README contract aligned at document version $blueprint_version"
+
       - name: Typecheck
         run: pnpm typecheck
 
@@ -48,11 +86,6 @@ jobs:
 
       - name: Build
         run: pnpm build
-
-      - name: Verify blueprint and README exist
-        run: |
-          test -s BLUEPRINT.md
-          test -s README.md
 
       - name: Check for accidentally committed secrets
         shell: bash
