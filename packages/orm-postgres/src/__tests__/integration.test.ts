@@ -68,7 +68,7 @@ suite('@dhgs/orm-postgres integration', () => {
       model: InstitutionModel,
       context: { actorId: 'ACTOR-1', purpose: 'CONTRACT', requestId: 'REQ-PG-CONTRACT', jurisdictionIds: ['J-1'] },
       prefix: 'PG-CONTRACT',
-      makeRecord: (id) => ({
+      makeRecord: (id): InstitutionRecord => ({
         id,
         code: id,
         name: 'Contract Institution',
