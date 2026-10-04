@@ -1,0 +1,3 @@
+export type DisclosureLevel='P0_PUBLIC'|'P1_PUBLIC_REDACTED'|'P2_RESTRICTED'|'P3_PROTECTED';
+export type PublicationInput={id:string;title:string;summary:string;disclosure:DisclosureLevel;protectedFields?:string[]};
+export function createPublicProjection(input:PublicationInput){if(input.disclosure==='P2_RESTRICTED'||input.disclosure==='P3_PROTECTED')return {publishable:false as const,reason:'protected-disclosure-level'};return {publishable:true as const,record:{id:input.id,title:input.title,summary:input.summary,disclosure:input.disclosure},humanReviewRequired:input.disclosure==='P1_PUBLIC_REDACTED'};}
