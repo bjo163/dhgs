@@ -1,0 +1,109 @@
+name: Version and Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force_bump:
+        description: Optional semantic-version override for recovery/manual release
+        required: true
+        default: none
+        type: choice
+        options:
+          - none
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dhgs-release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.actor != 'github-actions[bot]' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Plan and apply semantic version
+        id: plan
+        env:
+          FORCE_BUMP: ${{ github.event_name == 'workflow_dispatch' && inputs.force_bump || 'none' }}
+        run: node scripts/release/plan.mjs --apply --force="$FORCE_BUMP"
+
+      - name: Verify generated version metadata
+        if: steps.plan.outputs.should_release == 'true'
+        run: node scripts/release/version-check.mjs
+
+      - name: Commit version and changelog
+        if: steps.plan.outputs.should_release == 'true'
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json VERSION CHANGELOG.md
+          if git diff --cached --quiet; then
+            echo "No release metadata changes to commit."
+          else
+            git commit -m "chore(release): v${VERSION} [skip ci]"
+          fi
+
+      - name: Create release tag
+        if: steps.plan.outputs.should_release == 'true'
+        env:
+          TAG: ${{ steps.plan.outputs.tag }}
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists; refusing duplicate release."
+            exit 1
+          fi
+          git tag -a "$TAG" -m "DHGS $TAG"
+          git push origin HEAD:main --follow-tags
+
+      - name: Fast-forward dev to released main when safe
+        if: steps.plan.outputs.should_release == 'true'
+        run: |
+          git fetch origin dev
+          if git merge-base --is-ancestor origin/dev HEAD; then
+            git push origin HEAD:dev
+          else
+            echo "dev advanced while release was running; leaving it untouched. Reconcile main into dev before the next promotion."
+          fi
+
+      - name: Create GitHub Release
+        if: steps.plan.outputs.should_release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.plan.outputs.tag }}
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "GitHub Release $TAG already exists; refusing duplicate."
+            exit 1
+          fi
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "DHGS v${VERSION}" \
+            --generate-notes \
+            --verify-tag
+
+      - name: No release required
+        if: steps.plan.outputs.should_release != 'true'
+        run: echo "No feat/fix/perf/revert/breaking change detected; no software release created."
