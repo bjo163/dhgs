@@ -66,11 +66,7 @@ Current software milestone:
 
 # **M0 — FOUNDATION KERNEL — ACTIVE**
 
-Current primary implementation target:
-
-# **Issue #1 — stabilize `@dhgs/orm` kernel first**
-
-Supporting repository/release/documentation work may progress in parallel only where it does not destabilize the primary foundation path.
+`@dhgs/orm` kernel issue **#1 is complete**. The next foundation work remains inside M0; M1 is not unlocked until exit gate #5 passes.
 
 The milestone exit chain is:
 
@@ -96,6 +92,27 @@ The complete operational backlog lives in **master issue #6**. GitHub issue numb
 
 ---
 
+## Reproducible toolchain and dependencies
+
+The controlled baseline is pinned to:
+
+```text
+Node.js 22.23.3
+pnpm 10.18.0
+pnpm-lock.yaml (committed canonical dependency graph)
+```
+
+Normal CI/security installs use `pnpm install --frozen-lockfile`. A manifest change without a matching lockfile change is expected to fail. Toolchain and lockfile provenance can be inspected with:
+
+```bash
+pnpm toolchain:check
+pnpm release:provenance
+```
+
+Dependency-update procedure is documented in [`docs/dependency-management.md`](./docs/dependency-management.md).
+
+---
+
 ## Repository and delivery model
 
 Long-lived branches under the current architecture:
@@ -118,37 +135,23 @@ CHANGELOG.md
   ↓
 vX.Y.Z tag
   ↓
-GitHub Release
-  ↓
-controlled deployment
+GitHub Release + release-provenance.json
 ```
 
-Rules:
+`dev` is the active integration branch. `main` is the controlled release branch. Persistent feature/release/hotfix branches are outside the current two-branch architecture.
 
-- `dev` is the active integration/development branch.
-- `main` is the controlled release branch.
-- Persistent `feature/*`, `release/*`, and `hotfix/*` branches are not part of the current architecture.
-- Pull requests to `main` must originate from `dev`.
-- Conventional PR/commit release semantics are used after the baseline software release exists.
-- The first no-tag release must publish the current software baseline version exactly once rather than inferring a spurious bump from bootstrap history.
-- Release automation owns software version/changelog/tag/release metadata; normal feature PRs should not manually edit `CHANGELOG.md`.
-
-### Current branch-protection limitation
-
-Actions-based branch/PR guards are present, but **server-side GitHub Rulesets are not yet considered active/verified**. This is tracked by **Issue #77** and remains an M0 blocker.
-
-Until #77 is completed and verified, repository automation is defense-in-depth rather than a substitute for GitHub server-side branch protection.
+Server-side GitHub Rulesets are **not yet considered active/verified**; issue **#77** remains the blocking control for server-side branch/tag enforcement. GitHub Actions guards are defense-in-depth, not a substitute for server-side protection.
 
 ---
 
-## Repository layout
+## Repository status
+
+The repository is in a **design-foundation, architecture-kernel, and prototype-shell stage**. The governance blueprint remains canonical; code and visual artifacts are implementation experiments until their requirements and tests are satisfied.
 
 ```text
 dhgs/
 ├── README.md
 ├── BLUEPRINT.md
-├── VERSION
-├── CHANGELOG.md
 ├── design/
 ├── assets/
 │   ├── brand/
@@ -164,9 +167,9 @@ dhgs/
 │   └── api/
 ├── packages/
 │   ├── ui/
-│   ├── data/              # current prototype/spike; migrate or formally deprecate in M0
-│   ├── orm/               # M0 kernel target
-│   └── orm-base/          # M0 base addon target
+│   ├── data/              # deprecated M0 spike; do not expand
+│   ├── orm/               # stable M0 kernel established by issue #1
+│   └── orm-base/          # next foundational addon
 ├── engines/
 │   ├── evidence-engine/
 │   ├── mizan-engine/
@@ -180,7 +183,7 @@ dhgs/
     └── lessons/
 ```
 
-The Blueprint describes additional required modules and engines. Their absence in the current prototype does not remove the requirement; implementation must be mapped through the issue-led program and milestone gates.
+The blueprint describes additional future modules. Their absence in the prototype does not remove the blueprint requirement.
 
 ---
 
@@ -190,7 +193,7 @@ The following board is a **non-canonical visual exploration**. It helps communic
 
 ![DHGS visual exploration styleboard](./assets/images/dhgs-styleboard-exploration-v1.png)
 
-Canonical visual identity work is tracked separately and remains governed by the asset manifest and design documentation. The exploratory styleboard must remain visibly non-canonical until the relevant visual-identity acceptance gate is complete.
+Canonical vector assets and their provenance remain governed through the asset manifest and design documentation.
 
 ---
 
@@ -227,7 +230,7 @@ The initial Fastify API exposes only basic technical health/meta endpoints. It e
 
 ## Visual identity and assets
 
-The exploratory asset direction uses a neutral **balanced horizon** concept:
+The first exploratory asset set implements a neutral **balanced horizon** concept:
 
 ```text
 BOUNDARY / ACCOUNTABILITY
@@ -239,22 +242,22 @@ ACCOUNTABLE DECISION POINT
 MOVEMENT TOWARD CLARITY
 ```
 
-The visual identity must not depict Allah, a prophet, a political leader as system authority, or an invented governmental seal.
+The logo does not depict Allah, a prophet, a political leader, or an invented governmental seal.
 
-Governed asset classes include:
+Initial governed assets include:
 
-- primary logo/wordmark/logomark variants;
-- monochrome/reverse/compact/PWA/print variants;
-- domain and status icons;
-- product/process diagrams;
-- banners and correction/emergency notices;
-- truthful accessible chart templates;
-- social/Open Graph artwork;
-- print/PDF assets;
+- primary logo mark and lockup;
+- monochrome mark and favicon;
+- balance, Open Book, ledger, correction, and audit icons;
+- product-architecture diagram;
+- six-phase maturity diagram;
+- Open Book banner;
+- truthful-chart template;
+- default social / Open Graph artwork;
 - machine-readable asset manifest;
-- explicitly non-canonical exploration assets.
+- non-canonical visual exploration/styleboard.
 
-See [`design/visual-identity.md`](./design/visual-identity.md) and [`design/asset-manifest.json`](./design/asset-manifest.json) for the current design artifacts.
+See [`design/visual-identity.md`](./design/visual-identity.md) and [`design/asset-manifest.json`](./design/asset-manifest.json).
 
 ---
 
@@ -295,7 +298,7 @@ PostgreSQL / Supabase
 
 ### `@dhgs/orm` — framework kernel
 
-M0 responsibilities include:
+Implemented M0 responsibilities include:
 
 ```text
 FIELD DEFINITIONS
@@ -304,27 +307,26 @@ MODEL REGISTRY
 ENVIRONMENT / REQUEST CONTEXT
 DOMAIN / FILTER AST
 REPOSITORY / MODEL METHODS
-MANIFEST / ADDON LOADING
-VIEW METADATA
-ACTION / COMMAND REGISTRY
-ADAPTER CONTRACT
+ADAPTER / TRANSACTION CONTRACT
 AUDIT / LEDGER HOOKS
 ```
+
+Manifest/addon loading and metadata-driven UI remain separate M0 work items rather than being silently declared complete by the kernel.
 
 Target ergonomic API:
 
 ```ts
-const env = dhgsEnv(context)
+const env = createEnvironment({ adapter, registry, context })
 const Cases = env.model('case.case')
 
 const rows = await Cases.search([
   ['status', '=', 'submitted'],
-  ['jurisdiction_id', '=', context.jurisdictionId]
+  ['jurisdictionId', 'in', context.jurisdictionIds]
 ])
 
 const record = await Cases.create(values)
-await record.write({ title: 'Corrected title' })
-await record.archive()
+await Cases.write(record.id, { title: 'Corrected title' }, { expectedVersion: record.version })
+await Cases.archive(record.id, { expectedVersion: record.version + 1 })
 ```
 
 There is **no unrestricted hard-delete API** for governance records.
@@ -412,7 +414,6 @@ Explicit screens/workflows remain mandatory for:
 MIZAN
 LEGAL / RIGHTS REVIEW
 DECISION AUTHORIZATION
-DECISION EXECUTION WHERE HIGH-IMPACT
 APPEAL
 CORRECTION
 EMERGENCY POWER
@@ -421,7 +422,7 @@ HIGH-IMPACT PUBLICATION
 
 ### Governance-aware context
 
-Every material model operation should be capable of carrying:
+Every material model mutation carries:
 
 ```text
 actor_id
@@ -431,29 +432,28 @@ identity_assurance
 jurisdiction
 institution
 roles / permissions
-transaction
+correlation context
 ```
 
-PostgreSQL RLS remains authoritative for row access; application/ORM authorization adds defense-in-depth and does not replace RLS.
+PostgreSQL RLS remains authoritative; ORM scope checks add defense-in-depth, not a replacement for RLS.
 
-The existing `packages/data` package is a **prototype of this direction**. It must be migrated/refactored or formally deprecated through M0 rather than expanded ad hoc.
+The existing `packages/data` package is a **deprecated prototype** retained temporarily for migration evidence. New development must target `@dhgs/orm`.
 
 ---
 
 ## Simple-first technical direction
 
-DHGS deliberately avoids premature infrastructure complexity.
+The prototype deliberately avoids premature infrastructure complexity.
 
 - **TypeScript**
 - **Next.js + React** — Public Web and Operations Web
 - **Node.js + Fastify** — API
 - **Pure TypeScript packages** — governance engines and ORM kernel
-- **Supabase PostgreSQL / Auth / Storage** — intended transactional identity/data layer
-- **PostgreSQL RLS** — authoritative row-access boundary on exposed data
-- **PostgreSQL-backed jobs/outbox first** — intended asynchronous-work foundation before introducing specialized infrastructure
+- **Supabase PostgreSQL / Auth / Storage** — planned transactional identity/data layer
+- **PostgreSQL RLS** — planned authorization enforcement
 - **Vitest** — unit / rule / ORM tests
 - **Playwright** — planned E2E/accessibility journey tests
-- **GitHub Actions** — CI, policy, security, release, and roadmap automation
+- **GitHub Actions** — CI/release/security automation
 - **Vercel + Supabase** — intended initial hosted environments
 
 Not required for the MVP: Kubernetes, Kafka, blockchain, Temporal, OPA, OpenFGA, vector databases, native mobile apps, or autonomous AI agents.
@@ -464,35 +464,24 @@ Not required for the MVP: Kubernetes, Kafka, blockchain, Temporal, OPA, OpenFGA,
 
 ## Engine boundary
 
-Engine packages remain advisory or narrowly authoritative only within their explicit software responsibility:
+Current engine packages are deliberately small and advisory:
 
 ```text
 Evidence Engine
-→ evidence quality / uncertainty / gaps
+→ evidence quality / confidence only
 
 Mizan Engine
 → decision readiness only
 → never legal guilt
 
-Policy / Guard Engine
-→ explicit testable guard actions
-
-Rights Impact Engine
-→ rights impact / remedy assessment
-
-Knowledge Retrieval Engine
-→ relevant versioned contextual knowledge
-→ never a universal truth score
+Policy Engine
+→ explicit guard actions
 
 Ledger Engine
-→ append/correction accountability history
+→ append/correction record helpers
 
-Publication / Redaction Engine
-→ P0/P1 privacy-safe public projection
-
-Metrics Engine
-→ versioned governance KPI / health calculations
-→ never human-worth scoring
+Publication Engine
+→ P0/P1 public-projection guard
 ```
 
 The corpus remains separate from case evidence. Scriptural/ethical references remain reference material and do not automatically create coercive authority.
@@ -501,50 +490,49 @@ The corpus remains separate from case evidence. Scriptural/ethical references re
 
 ## Issue-led implementation discipline
 
-Non-trivial implementation is **issue-first**.
+From this point, implementation is **issue-first**.
 
 ```text
-BLUEPRINT CAPABILITY
-→ REQ / CTRL / RULE / INV / KPI where critical
+BLUEPRINT REQUIREMENT
 → MILESTONE
 → GITHUB ISSUE
 → IMPLEMENTATION
 → TEST
-→ CI / SECURITY EVIDENCE
 → ACCEPTANCE
 → CLOSE
 ```
 
 Rules:
 
-1. **Only one implementation milestone should be active at a time.**
-2. Non-trivial implementation must have an issue before code is expanded.
-3. Every implementation issue should state objective, scope/non-scope, dependencies, acceptance criteria, required tests, and Definition of Done.
+1. **Only one milestone is active at a time.**
+2. Non-trivial implementation MUST have an issue before code is expanded.
+3. Every implementation issue MUST state scope, non-scope, dependencies, linked blueprint requirements, acceptance criteria, and tests.
 4. A new idea that does not belong to the active milestone goes to the master backlog; it does not interrupt current work.
 5. Scope growth during implementation requires updating the issue or creating a follow-up issue.
 6. A closed issue must satisfy its acceptance criteria; “code exists” is not enough.
-7. Critical behavior must have tests/evidence before its milestone can exit.
-8. Foundational architecture changes require Blueprint/ADR reconciliation before implementation continues.
-9. GitHub issue numbers are operational references, not substitutes for stable requirement/control/rule/invariant IDs.
+7. Critical behavior must have tests before its milestone can exit.
 
 ### Milestone sequence
 
 ```text
 M0 — FOUNDATION KERNEL
      ORM / ORM-BASE / DB-RLS / schemas-events / async-outbox
-     UI contracts / repository automation / rulesets / reproducible dependencies
+     UI contracts / repository automation / server-side rulesets
+     pinned toolchain / reproducible dependency baseline / documentation alignment
 
 M1 — CASE, IDENTITY, KNOWLEDGE & INTAKE SPINE
      authentication / authorization / mandate / case / work / notice
-     privacy-noticed intake / secure evidence / corpus / knowledge retrieval
+     privacy-noticed intake / secure evidence-file boundary
+     corpus lifecycle / knowledge retrieval / protected reporting
 
 M2 — DECISION SPINE
      legal precheck / rights / evidence engine / Mizan / policy guard
      legal-ethical review / conflict / human decision / context snapshot
 
 M3 — EXECUTION, ACCOUNTABILITY & PUBLIC
-     decision execution / remedy verification / Hisab / Audit / publication
-     Open Book / budget-resource context / appeal / correction / public interfaces
+     decision execution / remedy verification / Hisab / software Audit
+     publication-redaction / Open Book / resource context
+     appeal / correction / public interfaces
 
 M4 — ASSURANCE & HARDENING
      security / privacy / resilience / accessibility / independent oversight
@@ -552,72 +540,30 @@ M4 — ASSURANCE & HARDENING
 
 M5 — DEPLOYMENT, GOVERNANCE-OF-SOFTWARE & CONTROLLED PILOT
      separated environments / migrations / controlled production release
-     external boundaries / operating modes / optional AI/signature controls
-     pilot gate / year-one evidence package
+     external boundaries / operating modes / optional AI-signature controls
+     pilot go-no-go / year-one evidence and system review
 ```
 
-Only **M0** is active now. Later milestones remain planned and intentionally blocked until the previous milestone exit gate closes with evidence.
-
-For the authoritative operational checklist and current issue ordering, use **GitHub Issue #6** rather than duplicating every work-item checklist here.
-
----
-
-## Software versioning and releases
-
-The software release source is the root `VERSION` file plus the matching root `package.json` version.
-
-Expected release behavior:
-
-```text
-NO EXISTING v* TAG
-→ publish current baseline software version once
-
-fix: / perf: / revert:
-→ PATCH
-
-feat:
-→ MINOR
-
-BREAKING CHANGE / !
-→ MAJOR
-
-non-release-only changes
-→ no meaningless automatic bump
-```
-
-Automation is expected to keep these aligned for a release:
-
-```text
-VERSION
-root package.json version
-CHANGELOG heading
-vX.Y.Z tag
-GitHub Release version
-```
-
-Dependency/toolchain reproducibility is an explicit M0 requirement. Until the canonical lockfile/toolchain baseline is complete, CI passing does not by itself prove a fully reproducible dependency graph.
+Only **M0** should be actively implemented now. Later milestones remain planned but intentionally blocked until the previous exit gate passes.
 
 ---
 
 ## Run the prototype locally
 
-Prerequisite: use the repository-supported Node.js and pnpm toolchain. M0 issue #95 owns the final pinned toolchain and frozen-lockfile baseline.
-
-Current bootstrap commands:
+Prerequisites: Node `22.23.3` and pnpm `10.18.0`.
 
 ```bash
-pnpm install
+pnpm toolchain:check
+pnpm install --frozen-lockfile
 pnpm dev:public   # http://localhost:3000
 pnpm dev:ops      # http://localhost:3001
 pnpm dev:api      # http://localhost:4000
 ```
 
-Run available checks:
+Run available tests:
 
 ```bash
-pnpm typecheck
-pnpm test
-pnpm build
+pnpm check
 ```
 
 This is still a **sandbox prototype**. Do not use it for real coercive or high-impact decisions.
@@ -634,26 +580,10 @@ The design may seek compatibility with values such as truth, justice, rahmah, me
 
 ---
 
-## Canonical sources
+## Canonical specification
 
-Architectural authority:
+The full governance, institutional, product, UX/UI, visual identity, asset, engine, corpus, ORM/model-layer, security, privacy, rights, audit, KPI, testing, and implementation requirements remain in:
 
 **[`BLUEPRINT.md`](./BLUEPRINT.md)**
 
-Operational software roadmap:
-
-**[GitHub Issue #6 — DHGS implementation roadmap and milestone control](https://github.com/bjo163/dhgs/issues/6)**
-
-Repository/release automation:
-
-- Issue #44 — Actions / branch-policy / release automation.
-- Issue #77 — server-side GitHub Rulesets.
-- Issue #95 — pinned toolchain / lockfile / frozen installs.
-
-Implementation progress is tracked through GitHub Issues and evidence gates rather than by continuously expanding undocumented scope inside code.
-
----
-
-## Documentation reconciliation status
-
-Blueprint/README roadmap reconciliation is complete for Blueprint `v15.1.1`. Permanent CI checks enforce Blueprint↔README document-version alignment, M0–M5 roadmap markers, master issue #6 linkage, explicit #77 ruleset limitation, and software VERSION↔`package.json` consistency. M0 remains active until the separate foundation exit requirements pass.
+Implementation progress is tracked through GitHub Issues rather than by continuously expanding scope inside code.
