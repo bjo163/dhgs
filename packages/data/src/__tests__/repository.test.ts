@@ -39,8 +39,12 @@ describe('@dhgs/data', () => {
     }, {
       now: () => '2026-10-04T10:00:00.000Z',
       idFactory: () => `ID-${++id}`,
-      audit: (event) => audit.push(event),
-      ledger: (event) => ledger.push(event)
+      audit: (event) => {
+        audit.push(event);
+      },
+      ledger: (event) => {
+        ledger.push(event);
+      }
     });
 
     const cases = session.model<CaseRecord>('case');

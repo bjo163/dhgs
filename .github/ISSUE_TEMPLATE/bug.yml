@@ -1,0 +1,69 @@
+name: DHGS bug report
+description: Report a reproducible software defect. Do not disclose exploitable security vulnerabilities publicly.
+title: "[BUG] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For suspected security vulnerabilities, follow `SECURITY.md` instead of posting sensitive exploit details in a public issue.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened and what should have happened?
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Software version / commit
+      placeholder: "v0.1.0 / commit SHA"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - DEV
+        - STAGING
+        - PRODUCTION / controlled pilot
+        - Local
+        - Unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Governance / security / privacy / accessibility impact
+      description: Include whether this could affect authorization, evidence, decision, ledger, appeal, protected data, accessibility, or public communication.
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs / screenshots / correlation IDs
+      description: Remove secrets and protected personal data before posting.
+
+  - type: textarea
+    id: regression
+    attributes:
+      label: Required regression test
+      description: Describe the automated/manual test that should prevent recurrence.
+    validations:
+      required: true

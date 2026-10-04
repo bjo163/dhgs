@@ -1,0 +1,12 @@
+# DHGS repository ownership
+# Update via controlled governance if ownership changes.
+
+* @bjo163
+
+# Critical governance/release surfaces
+/BLUEPRINT.md @bjo163
+/.github/ @bjo163
+/scripts/release/ @bjo163
+/packages/orm/ @bjo163
+/packages/orm-base/ @bjo163
+/engines/ @bjo163

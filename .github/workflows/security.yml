@@ -1,0 +1,73 @@
+name: Security
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [dev, main]
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: read
+
+jobs:
+  dependency-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.18.0 --activate
+      - name: Install dependency graph
+        run: pnpm install --no-frozen-lockfile
+      - name: Audit high/critical vulnerabilities
+        run: pnpm audit --audit-level high
+
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Review dependency changes
+        id: dependency_review
+        continue-on-error: true
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+      - name: Explain non-blocking dependency-review limitation
+        if: steps.dependency_review.outcome == 'failure'
+        run: |
+          echo '::warning::GitHub Dependency Review did not complete successfully. On this repository the current known cause is that Dependency Graph is not enabled. pnpm audit and CodeQL remain blocking. Enable Dependency Graph and make this step blocking under supply-chain hardening issue #49.'
+
+  codeql:
+    name: CodeQL TypeScript/JavaScript
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.18.0 --activate
+      - name: Install
+        run: pnpm install --no-frozen-lockfile
+      - name: Build
+        run: pnpm build
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
