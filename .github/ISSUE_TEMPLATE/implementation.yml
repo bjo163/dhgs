@@ -1,0 +1,96 @@
+name: DHGS implementation task
+description: Create a software implementation issue tied to the blueprint and milestone plan.
+title: "[M?] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form only for technical/software implementation. Keep work within the active milestone unless the issue is being captured as future backlog.
+
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Milestone
+      options:
+        - M0 — Foundation Kernel
+        - M1 — Case Spine
+        - M2 — Decision Spine
+        - M3 — Accountability & Public
+        - M4 — Assurance & Hardening
+        - M5 — Deployment & Controlled Pilot
+    validations:
+      required: true
+
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective / problem
+      description: What exact software problem must be solved and why now?
+    validations:
+      required: true
+
+  - type: textarea
+    id: blueprint
+    attributes:
+      label: Blueprint / requirement links
+      description: Reference BLUEPRINT sections and REQ/CTRL/RULE/INV IDs where available.
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: List blocking/related issue numbers and external prerequisites.
+      placeholder: "Blocked by #1, #2"
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Detailed implementation checklist.
+      placeholder: "- [ ] ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: nonscope
+    attributes:
+      label: Explicit non-scope
+      description: Name tempting adjacent work that must not be included.
+    validations:
+      required: true
+
+  - type: textarea
+    id: impacts
+    attributes:
+      label: Security / privacy / authorization / accessibility / data impacts
+      description: State relevant impacts or explicitly say none with rationale.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: "- [ ] ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: tests
+    attributes:
+      label: Required tests / verification
+      description: Automated and manual verification expected before closure.
+    validations:
+      required: true
+
+  - type: textarea
+    id: done
+    attributes:
+      label: Definition of done
+      description: What evidence proves this issue is actually complete?
+    validations:
+      required: true
