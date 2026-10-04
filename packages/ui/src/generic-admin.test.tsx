@@ -29,10 +29,21 @@ describe('GenericAdminShell accessibility', () => {
     expect(html).not.toContain('tabindex="-1"');
   });
 
-  it('disables the form and mutation control in read-only mode', () => {
-    const html = renderToStaticMarkup(<GenericAdminShell metadata={{ ...metadata, mode: 'read_only', capabilities: { create: false, write: false, archive: false } }} />);
+  it('keeps mutation controls disabled until a backend authorizer is connected', () => {
+    const html = renderToStaticMarkup(<GenericAdminShell metadata={metadata} />);
+    expect(html).toContain('Mutation controls are disabled until an authenticated backend authorizer is connected.');
+    expect(html).toMatch(/<button[^>]*disabled=""/);
+  });
+
+  it('can enable an allowed control only when the mutation backend is connected', () => {
+    const html = renderToStaticMarkup(<GenericAdminShell metadata={metadata} mutationsConnected />);
+    expect(html).toContain('Mutations still require backend authorization for every operation.');
+    expect(html).not.toMatch(/<button[^>]*disabled=""/);
+  });
+
+  it('disables the form and mutation control in read-only mode even when mutation backend is connected', () => {
+    const html = renderToStaticMarkup(<GenericAdminShell metadata={{ ...metadata, mode: 'read_only', capabilities: { create: false, write: false, archive: false } }} mutationsConnected />);
     expect(html).toContain('<fieldset disabled="">');
-    expect(html).toContain('<button');
-    expect(html).toContain('disabled=""');
+    expect(html).toMatch(/<button[^>]*disabled=""/);
   });
 });
