@@ -1,11 +1,11 @@
-# DHGS v14.0.0 — Controlled Implementation Blueprint
+# DHGS v15.0.0 — Controlled Implementation & Product Experience Blueprint
 
 ## Divine–Human Governance System
 
 **Document ID:** `DHGS-BP-001`  
-**Version:** `14.0.0`  
+**Version:** `15.0.0`  
 **Status:** `CONTROLLED_IMPLEMENTATION_BASELINE_CANDIDATE`  
-**Document type:** Governance + Product + Engine + Corpus + Technical + Institutional Architecture Blueprint  
+**Document type:** Governance + Product + UX/UI + Visual Identity + Asset + Engine + Corpus + Technical + Institutional Architecture Blueprint  
 **Product type:** Digital Governance Assurance Platform  
 **Architecture strategy:** Logical separation, simple deployment, modular monolith first  
 **Primary evaluation horizon:** `1 Hijri Year`  
@@ -15,9 +15,9 @@
 
 # 0. Document control, scope, and normative language
 
-This document is the **single source of truth** for the DHGS foundational and implementation architecture. It consolidates the governance, Shadow, Mizan, Hisab Ledger, Open Book, knowledge/corpus, work, identity, product, technical, control, security, privacy, audit, and implementation principles developed in earlier versions.
+This document is the **single source of truth** for the DHGS foundational and implementation architecture. It consolidates the governance, Shadow, Mizan, Hisab Ledger, Open Book, knowledge/corpus, work, identity, product, product-experience, visual-asset, technical, control, security, privacy, audit, and implementation principles developed in earlier versions.
 
-The intent of v14 is **lossless consolidation plus gap closure**. Concepts from earlier baselines are retained unless explicitly superseded in this document.
+The intent of v15 is **lossless consolidation plus product-experience and visual-system gap closure**. Concepts from earlier baselines are retained unless explicitly superseded in this document.
 
 Normative language:
 
@@ -616,6 +616,8 @@ RESILIENCE
 CHANGE MANAGEMENT
 AI GOVERNANCE
 ACCESSIBILITY
+PRODUCT EXPERIENCE
+VISUAL / ASSET GOVERNANCE
 ```
 
 ---
@@ -807,6 +809,16 @@ dhgs/
 │   ├── auth/
 │   ├── events/
 │   └── ui/
+├── assets/                  # future implementation phase
+│   ├── brand/
+│   ├── icons/
+│   ├── illustrations/
+│   ├── banners/
+│   ├── images/
+│   ├── charts/
+│   ├── social/
+│   └── print/
+├── design/                  # future design source / prototypes
 ├── supabase/
 ├── controls/
 ├── tests/
@@ -2121,6 +2133,8 @@ REQ-HSB-*  Hisab requirements
 REQ-OBK-*  Open Book requirements
 REQ-SEC-*  security requirements
 REQ-PRV-*  privacy requirements
+REQ-UX-*   product-experience requirements
+REQ-AST-*  visual-asset requirements
 
 CTRL-*     controls
 RULE-*     executable / evaluable rules
@@ -2146,6 +2160,11 @@ REQ-SEC-002 Technical admin cannot alter governance outcome outside correction p
 REQ-PRV-001 Protected data is not directly exposed to Open Book.
 REQ-KNO-001 Authoritative knowledge requires provenance and version.
 REQ-EVD-001 Material evidence retains provenance and challenge status.
+REQ-UX-001 High-impact actions use deliberate confirmation and visible basis.
+REQ-UX-002 Appeal interfaces MUST NOT use dark patterns or hidden deadlines.
+REQ-UX-003 Mizan independent reviewers MUST NOT see aggregate peer scores before individual submission where independence is required.
+REQ-AST-001 Informative visual assets require accessible text alternatives or equivalent explanation.
+REQ-AST-002 Synthetic/AI visual media MUST NOT be presented as case evidence unless its synthetic provenance is explicit and legally relevant.
 ```
 
 Professional traceability:
@@ -2197,6 +2216,8 @@ RECOVERY
 GOVERNANCE
 PRIVACY
 SECURITY
+UX_SAFETY
+VISUAL_INTEGRITY
 ```
 
 Every critical process SHOULD answer:
@@ -3287,6 +3308,8 @@ health:
   knowledge:
   outcomes:
   anti_capture:
+  accessibility:
+  usability:
 ```
 
 A critical-domain failure prevents overall `HEALTHY` status regardless of average.
@@ -3353,6 +3376,10 @@ SYSTEM OUTAGE
 CROSS-JURISDICTION CONFLICT
 PUBLIC BRIGADING
 NOTICE DELIVERY FAILURE
+DARK_PATTERN_DISCOURAGING_APPEAL
+MISLEADING_CHART_OR_VISUALIZATION
+SYNTHETIC_MEDIA_MISREPRESENTED_AS_EVIDENCE
+ACCESSIBILITY_FAILURE_BLOCKING_DUE_PROCESS
 ```
 
 ---
@@ -3370,6 +3397,8 @@ IDENTITY-ASSURANCE TEST
 PRIVACY TEST
 SECURITY TEST
 ACCESSIBILITY TEST
+VISUAL-REGRESSION TEST
+CONTENT / COMPREHENSION TEST
 END-TO-END TEST
 POLICY REGRESSION TEST
 CONSTITUTIONAL INVARIANT TEST
@@ -3388,6 +3417,8 @@ protected_record_exposed_publicly → impossible
 closed_case_without_required_process → impossible
 system_admin_changes_decision_outside_correction → impossible
 wrong_law_version_unrecorded → impossible
+appeal_hidden_or_dark_patterned → impossible
+protected_information_visible_in_public_preview → impossible
 ```
 
 ---
@@ -3446,6 +3477,9 @@ A SCORE DEFINING HUMAN WORTH
 POWER WITHOUT REVIEW OR CORRECTION PATH
 DELIBERATE DECEPTIVE PUBLIC COMMUNICATION
 SECRET VIP / PRIVILEGED PARALLEL JUSTICE PATH
+DARK PATTERNS THAT OBSTRUCT APPEAL OR CORRECTION
+MISLEADING DATA VISUALIZATION DESIGNED TO MANIPULATE PUBLIC UNDERSTANDING
+SYNTHETIC MEDIA PRESENTED AS AUTHENTIC EVIDENCE WITHOUT DISCLOSURE
 ```
 
 ---
@@ -3481,6 +3515,13 @@ INV-025: no_deliberate_public_deception
 INV-026: no_hidden_VIP_parallel_process
 INV-027: no_final_legal_violation_finding_by_mizan_engine
 INV-028: no_DHGS_component_exempt_from_independent_review
+INV-029: no_irreversible_high_impact_action_with_single_click
+INV-030: no_status_meaning_by_color_alone
+INV-031: no_ui_implying_guilt_before_lawful_determination
+INV-032: no_dark_pattern_obstructing_appeal_or_correction
+INV-033: no_unlabeled_synthetic_visual_presented_as_authentic_evidence
+INV-034: no_public_visualization_without_source_period_and_unit_where_applicable
+INV-035: no_sensitive_session_replay_by_default
 ```
 
 ---
@@ -3513,6 +3554,9 @@ IDENTITY ASSURANCE TESTS PASS
 SECURITY TESTS PASS
 PRIVACY TESTS PASS
 ACCESSIBILITY TESTS PASS
+CRITICAL USER-JOURNEY TESTS PASS
+HIGH-STAKES UI SAFETY TESTS PASS
+VISUAL-ASSET LICENSE / PROVENANCE CHECKS PASS
 HIGH-RISK SIMULATIONS PASS
 RESTORE TEST PASS
 ROLLBACK PATH EXISTS
@@ -3524,6 +3568,8 @@ ROLLBACK PATH EXISTS
 
 ```text
 BOOT-000 FOUNDATION
+↓
+BOOT-050 PRODUCT EXPERIENCE & DESIGN FOUNDATION
 ↓
 BOOT-100 KNOWLEDGE
 ↓
@@ -3573,6 +3619,11 @@ SUPABASE
 AUTH
 DATABASE
 CI
+PRODUCT EXPERIENCE PRINCIPLES
+INFORMATION ARCHITECTURE
+SCREEN INVENTORY
+DESIGN TOKENS
+CORE BRAND / ASSET SPEC
 ```
 
 ## Phase 1 — Case and Work
@@ -3585,6 +3636,9 @@ REGIONS / JURISDICTION
 ROLES
 IDENTITY ASSURANCE
 NOTICE
+CITIZEN JOURNEY
+SAVE DRAFT / RESUME
+NOTIFICATION CENTER
 ```
 
 ## Phase 2 — Evidence and Knowledge
@@ -3595,6 +3649,8 @@ PRIVATE FILE STORAGE
 EVIDENCE REVIEW / CHALLENGE
 BASIC KNOWLEDGE REGISTRY
 AUTHORITY MANDATE REGISTRY
+EVIDENCE UX
+SEARCH / DISCOVERY BASELINE
 ```
 
 ## Phase 3 — Mizan and Decision
@@ -3608,6 +3664,8 @@ POLICY / GUARD ENGINE
 FORMAL LEGAL / ETHICAL REVIEW
 DECISION
 DECISION CONTEXT SNAPSHOT
+MIZAN SCORE-BLINDING UX
+HIGH-STAKES DECISION CONFIRMATION
 ```
 
 ## Phase 4 — Hisab and Open Book
@@ -3618,6 +3676,9 @@ PUBLICATION / REDACTION ENGINE
 PUBLIC PROJECTION
 OPEN BOOK
 CORRECTION HISTORY
+PUBLIC CONTENT MODES
+PRINT / PDF / QR VIEW
+CHART / GRAPH SYSTEM
 ```
 
 ## Phase 5 — Appeal and Correction
@@ -3627,6 +3688,8 @@ APPEAL
 RE-MIZAN
 CORRECTION
 VERSION HISTORY
+NO-DARK-PATTERN APPEAL UX
+CORRECTION DIFF UX
 ```
 
 ## Phase 6 — Assurance and Knowledge expansion
@@ -3641,6 +3704,9 @@ SIMULATIONS
 SECURITY / PRIVACY REVIEW
 ACCESSIBILITY REVIEW
 SUPPLY-CHAIN CONTROLS
+DESIGN-SYSTEM REVIEW
+ASSET-GOVERNANCE REVIEW
+USER RESEARCH / USABILITY TESTING
 ```
 
 ## Phase 7 — Controlled Pilot
@@ -3651,6 +3717,7 @@ LOW-RISK / REVERSIBLE CASES
 HIGH OBSERVABILITY
 SYNTHETIC OR CONSENTED DATA WHERE POSSIBLE
 INDEPENDENT OVERSIGHT ACTIVE
+REAL-USER USABILITY / ACCESSIBILITY OBSERVATION
 ```
 
 ---
@@ -3667,16 +3734,17 @@ Citizen submits case
 → reviewer assigned
 → evidence added / challenged / reviewed
 → legal basis precheck completed
-→ Mizan completed
+→ Mizan completed using independence-preserving UX
 → formal legal / ethical review completed
-→ human decision recorded and attested
+→ human decision recorded and deliberately attested
 → decision context snapshot stored
 → Hisab Ledger entry created
 → Publication Engine creates privacy-safe public projection
-→ Open Book shows public explanation where lawful
-→ citizen can appeal
+→ Open Book shows understandable public explanation where lawful
+→ public record is accessible, searchable, printable, and linkable
+→ citizen can appeal without dark-pattern obstruction
 → Re-Mizan can occur
-→ correction preserves original history
+→ correction preserves original history and visual diff
 → outcome is reviewed
 → lesson learned updates knowledge
 ```
@@ -3793,6 +3861,8 @@ WITH WHAT AUTHORITY → LAW / MANDATE / JURISDICTION
 WITH WHAT INFORMATION → DATA / EVIDENCE
 UNDER WHICH RULES → CONTROLS / POLICY
 HOW QUALITY IS ASSESSED → MIZAN / RIGHTS / EVIDENCE ENGINES
+HOW HUMANS INTERACT → PRODUCT EXPERIENCE / UI / CONTENT / ACCESSIBILITY
+HOW TRUST IS VISUALIZED → DESIGN SYSTEM / VISUAL IDENTITY / ASSET GOVERNANCE
 WHAT HAPPENED → HISAB LEDGER / AUDIT LOG
 WHAT THE PUBLIC KNOWS → OPEN BOOK
 DID IT WORK → OUTCOMES / KPI
@@ -3808,6 +3878,9 @@ SCRIPTURAL / ETHICAL CORPUS → value reference
 CORPUS → reusable knowledge
 CASE EVIDENCE → case-specific factual material
 FRONTEND → human interaction
+PRODUCT EXPERIENCE → safe and understandable interaction
+DESIGN SYSTEM → consistent accessible presentation rules
+VISUAL ASSETS → governed communication artifacts
 BACKEND → orchestration
 ENGINES → evaluation
 DATABASE → current state
@@ -3839,6 +3912,9 @@ Evidence,
 Rights,
 Mizan,
 Controls,
+ProductExperience,
+Accessibility,
+VisualIntegrity,
 Accountability,
 Transparency,
 Security,
@@ -3885,6 +3961,7 @@ AUDIT PROTECTS THE SYSTEM FROM ITSELF.
 APPEAL PROTECTS PEOPLE FROM UNREVIEWABLE FINALITY.
 CORRECTION PROTECTS THE FUTURE.
 LEARNING PREVENTS REPEATED FAILURE.
+DESIGN MUST CLARIFY POWER, NOT GLORIFY IT.
 TECHNOLOGY SERVES GOVERNANCE; IT DOES NOT OWN GOVERNANCE.
 ```
 
@@ -3903,6 +3980,8 @@ RECORD WITHOUT BECOMING SURVEILLANCE.
 DISCLOSE WITHOUT ENDANGERING PEOPLE.
 PROTECT GOOD-FAITH REPORTING.
 CORRECT WITHOUT HUMILIATING.
+DESIGN WITHOUT MANIPULATING.
+VISUALIZE WITHOUT MISLEADING.
 GOVERN WITHOUT BECOMING GOD.
 ```
 
@@ -3917,6 +3996,1100 @@ If correction is insufficient:
 If foundational architecture causes unacceptable harm:
 
 # RESET IT.
+
+---
+
+# PART XXVII — Product Experience, UI/UX, visual identity, and asset governance
+
+# 136. Product Experience Plane
+
+DHGS treats human-system interaction as a governance control, not decoration.
+
+```text
+GOVERNANCE RULE
+→ INTERACTION DESIGN
+→ HUMAN UNDERSTANDING
+→ HUMAN ACTION
+→ ACCOUNTABLE OUTCOME
+```
+
+A confusing or manipulative interface can undermine due process even when backend rules are correct.
+
+The Product Experience Plane covers:
+
+```text
+INFORMATION ARCHITECTURE
+USER JOURNEYS
+SCREEN CONTRACTS
+INTERACTION SAFETY
+CONTENT DESIGN
+ACCESSIBILITY
+LOCALIZATION
+DESIGN SYSTEM
+VISUAL IDENTITY
+ASSET GOVERNANCE
+SEARCH
+NOTIFICATIONS
+DOCUMENT OUTPUT
+USER RESEARCH
+```
+
+---
+
+# 137. Product experience principles
+
+```text
+CLARITY BEFORE DENSITY
+REASON BEFORE ACTION
+SAFETY BEFORE SPEED FOR HIGH-STAKES ACTIONS
+PROGRESSIVE DISCLOSURE
+NO HIDDEN DEADLINES
+NO DARK PATTERNS
+NO MORAL LABELING OF PEOPLE
+NO COLOR-ONLY MEANING
+NO SINGLE-CLICK IRREVERSIBLE HIGH-IMPACT ACTION
+PUBLIC LANGUAGE BEFORE INTERNAL JARGON
+SAVE WORK BEFORE FAILURE
+CORRECTION MUST BE VISIBLE
+ACCESSIBILITY IS PART OF DUE PROCESS
+```
+
+---
+
+# 138. Experience actors and research profiles
+
+Product design MUST account for at least:
+
+```text
+ORDINARY CITIZEN
+LOW DIGITAL-LITERACY USER
+OLDER PERSON
+PERSON WITH DISABILITY
+MINOR / REPRESENTED PERSON WHERE LAWFUL
+CLAIMANT / RESPONDENT
+WHISTLEBLOWER
+CASE REVIEWER
+LEGAL REVIEWER
+ETHICS / RIGHTS REVIEWER
+AUDITOR
+SHADOW OVERSIGHT USER
+JOURNALIST / RESEARCHER
+PLATFORM ADMINISTRATOR
+```
+
+User research MUST NOT assume all citizens are legally trained, highly literate, continuously connected, or using desktop devices.
+
+---
+
+# 139. Public information architecture
+
+Target public navigation:
+
+```text
+HOME
+
+OPEN BOOK
+├── Decisions
+├── Public Cases where lawful
+├── Corrections
+├── Public KPI
+└── Public Data
+
+SUBMIT
+├── Case / Complaint
+├── Correction Request
+├── Appeal
+└── Feedback
+
+KNOWLEDGE
+├── How DHGS Works
+├── Rights
+├── Process
+└── Public Corpus
+
+MY PORTAL
+├── My Cases
+├── Action Required
+├── Evidence
+├── Appeals
+└── Notifications
+
+ABOUT
+├── Authority
+├── Shadow
+├── Mizan
+├── Privacy
+├── Audit
+└── Help / Contact
+```
+
+---
+
+# 140. Operations information architecture
+
+```text
+DASHBOARD
+CASES
+TASKS
+EVIDENCE
+MIZAN
+LEGAL REVIEW
+ETHICAL / RIGHTS REVIEW
+DECISIONS
+APPEALS
+CORRECTIONS
+KNOWLEDGE / CORPUS
+OPEN BOOK PUBLISHING
+AUDIT
+SHADOW OVERSIGHT
+REPORTS
+ADMIN
+```
+
+Navigation visibility MUST follow authorization. Hiding a menu item is not authorization; backend and RLS enforcement remain mandatory.
+
+---
+
+# 141. Canonical screen inventory
+
+Initial screen namespaces:
+
+```text
+PUB-*    public Open Book
+CIT-*    citizen portal
+OPS-*    operations
+MZN-*    Mizan
+AUD-*    audit
+SHD-*    Shadow oversight
+KNO-*    knowledge / corpus
+ADM-*    administration
+```
+
+Initial screens SHOULD include:
+
+```text
+PUB-001 Home
+PUB-010 Open Book Search
+PUB-020 Public Decision Detail
+PUB-030 Correction History
+PUB-040 Public KPI / Data
+
+CIT-001 Citizen Dashboard
+CIT-010 Submit Case
+CIT-020 Case Detail
+CIT-030 Evidence Upload
+CIT-040 Appeal / Correction Request
+CIT-050 Notifications
+
+OPS-001 Operations Dashboard
+OPS-010 Case Workspace
+OPS-020 Task Workspace
+OPS-030 Evidence Workspace
+OPS-040 Decision Preparation
+
+MZN-001 Individual Mizan Review
+MZN-010 Reviewer Comparison / Consensus
+MZN-020 Mizan Summary
+
+AUD-001 Audit Dashboard
+AUD-010 Chronological Audit Timeline
+AUD-020 Decision Context Snapshot
+
+SHD-001 Systemic Oversight Dashboard
+SHD-010 Systemic Risk / Repeat Failure
+
+KNO-001 Knowledge Search
+KNO-010 Knowledge Detail / Provenance
+
+ADM-001 Publication Review
+ADM-010 Redaction Preview
+```
+
+---
+
+# 142. Screen contract
+
+Every material screen SHOULD define:
+
+```yaml
+ScreenContract:
+  screen_id:
+  purpose:
+  primary_users: []
+  allowed_roles: []
+  minimum_identity_assurance:
+  required_data: []
+  primary_actions: []
+  dangerous_actions: []
+  states: []
+  permissions: []
+  content_level:
+  accessibility_notes: []
+  audit_events: []
+  linked_requirements: []
+  linked_tests: []
+```
+
+No high-stakes screen should be implemented without a documented purpose, actor, authority, and safe-state model.
+
+---
+
+# 143. Core human journeys
+
+At minimum model and test:
+
+```text
+JNY-CIT-001 Submit and track a case
+JNY-CIT-002 Upload / challenge evidence
+JNY-CIT-003 Receive notice and respond
+JNY-CIT-004 Appeal a decision
+JNY-CIT-005 Understand a correction
+
+JNY-REV-001 Receive and triage work
+JNY-REV-002 Review evidence
+JNY-REV-003 Complete independent Mizan review
+JNY-REV-004 Prepare accountable decision
+
+JNY-AUD-001 Reconstruct a decision
+JNY-AUD-002 Inspect privileged/admin activity
+
+JNY-PUB-001 Find and understand a public decision
+JNY-PUB-002 Compare original and corrected public record
+```
+
+Each journey SHOULD define happy path, failure path, accessibility path, timeout/session recovery, and escalation.
+
+---
+
+# 144. High-stakes interaction pattern
+
+High-impact authorization MUST display the basis before the final action.
+
+Minimum pattern:
+
+```text
+DECISION SUMMARY
+LEGAL BASIS STATUS
+RIGHTS REVIEW STATUS
+CONFLICT STATUS
+EVIDENCE STATUS
+MIZAN STATUS
+REQUIRED QUORUM
+AFFECTED PARTIES / RIGHTS
+REVERSIBILITY
+REMAINING UNCERTAINTY
+MANDATORY REASON FIELD
+CONFIRMATION / ATTESTATION
+```
+
+For irreversible or critical actions, second review / quorum controls MUST be visible and enforced.
+
+Do not use a generic one-click `APPROVE` or `PUNISH` interaction for critical decisions.
+
+---
+
+# 145. Mizan UX and cognitive-bias controls
+
+Where independent review is required, reviewer independence SHOULD be protected through score blinding.
+
+```text
+REVIEWER COMPLETES OWN MIZAN
+→ SUBMITS / LOCKS INDIVIDUAL REVIEW
+→ AGGREGATE / PEER SCORES BECOME VISIBLE
+→ CONSENSUS / DISAGREEMENT REVIEW
+```
+
+The interface SHOULD highlight material disagreement rather than silently averaging it away.
+
+Mizan UI MUST NOT label a person as good/bad, green/red, worthy/unworthy, or morally scored.
+
+Colors and scores refer to **process readiness, evidence quality, uncertainty, and risk**, never human worth.
+
+---
+
+# 146. Evidence UX
+
+A material evidence item SHOULD visibly expose:
+
+```text
+EVIDENCE ID
+TITLE / TYPE
+SOURCE
+SUBMITTED BY / SOURCE SYSTEM
+SUBMITTED / COLLECTED TIME
+VERIFICATION STATUS
+ADMISSIBILITY STATUS
+PROVENANCE / CHAIN OF CUSTODY
+CONFIDENTIALITY
+CHALLENGE STATUS
+TRANSFORMATIONS
+```
+
+Statuses such as:
+
+```text
+CHALLENGED
+SEALED
+PRIVILEGED
+EXCLUDED
+REJECTED
+```
+
+MUST be visually and textually explicit.
+
+Evidence previews MUST preserve original-file access rules. Redacted/public derivatives MUST NOT replace the canonical original.
+
+---
+
+# 147. Decision explanation and reason tree
+
+Decision UX SHOULD explain reasoning structurally:
+
+```text
+DECISION
+├── Authority / jurisdiction
+├── Legal basis
+├── Evidence basis
+├── Rights impact
+├── Mizan readiness
+├── Proportionality
+├── Remaining uncertainty
+├── Remedy / execution
+└── Appeal / correction path
+```
+
+A decision interface SHOULD distinguish:
+
+```text
+WHAT WAS DECIDED
+WHY
+WHAT WAS NOT DECIDED
+WHAT REMAINS UNKNOWN
+WHAT CAN BE CHALLENGED
+WHAT HAPPENS NEXT
+```
+
+---
+
+# 148. Appeal and correction UX
+
+Appeal and correction pathways MUST NOT be visually buried, harder to access than the original action, or framed to shame/discourage lawful use.
+
+Minimum appeal interface:
+
+```text
+ELIGIBILITY
+DEADLINE
+CURRENT DECISION
+WHAT MAY BE CHALLENGED
+NEW EVIDENCE OPTION
+PROCEDURAL ERROR OPTION
+SUBMISSION RECEIPT
+STATUS TRACKING
+```
+
+Correction UX SHOULD support a readable version comparison:
+
+```text
+ORIGINAL
+→ WHAT CHANGED
+→ WHY IT CHANGED
+→ CURRENT VALID STATE
+```
+
+---
+
+# 149. Open Book content model
+
+Open Book is not a read-only clone of Operations Web.
+
+Public decision pages SHOULD prioritize:
+
+```text
+WHAT HAPPENED?
+WHY WAS THIS DECISION MADE?
+WHAT DOES THIS MEAN FOR YOU?
+WHO WAS RESPONSIBLE?
+WHAT LAW / AUTHORITY APPLIED?
+WHAT INFORMATION WAS CONSIDERED?
+WHAT COULD NOT BE PUBLISHED AND WHY?
+WHAT HAS CHANGED?
+HOW CAN THIS BE CHALLENGED?
+```
+
+Provide:
+
+```text
+SIMPLE
+STANDARD
+TECHNICAL
+```
+
+views from the same verified source.
+
+---
+
+# 150. Role-specific dashboards
+
+Avoid one universal super-dashboard.
+
+```text
+CITIZEN
+→ my cases, action required, deadlines, appeals, notifications
+
+REVIEWER
+→ assigned work, overdue tasks, missing evidence, high-impact reviews
+
+LEGAL / RIGHTS REVIEWER
+→ review queue, applicable-law/version issues, unresolved rights concerns
+
+AUDITOR
+→ control failures, overrides, privileged actions, ledger anomalies
+
+SHADOW
+→ systemic patterns, repeat failures, institutional delays, capture indicators, correction backlog
+```
+
+Shadow dashboards SHOULD emphasize system-level patterns rather than encouraging informal intervention in individual cases.
+
+---
+
+# 151. Notifications and canonical communication
+
+Notification classes:
+
+```text
+INFORMATION
+ACTION_REQUIRED
+DEADLINE
+NOTICE
+DECISION
+APPEAL
+CORRECTION
+SECURITY
+SYSTEM
+```
+
+A notification SHOULD state:
+
+```text
+WHAT HAPPENED
+WHY THE USER RECEIVED IT
+WHAT ACTION IS REQUIRED
+DEADLINE IF ANY
+CANONICAL RECORD LINK
+```
+
+Delivery may include in-app and email initially. SMS/WhatsApp may follow where lawful and useful.
+
+Notifications are pointers; the canonical record remains DHGS/Open Book or the authenticated portal.
+
+Critical deadlines MUST NOT rely on a single unreliable notification channel where applicable law requires stronger notice.
+
+---
+
+# 152. Search and discovery
+
+Search is a core capability for Open Book and Corpus.
+
+Public search SHOULD support filters such as:
+
+```text
+KEYWORD
+DATE
+REGION / JURISDICTION
+INSTITUTION
+STATUS
+DECISION TYPE
+CORRECTION STATUS
+```
+
+Authorized internal search MAY include:
+
+```text
+CASE ID
+TASK
+EVIDENCE
+DECISION
+LEDGER REFERENCE
+KNOWLEDGE / CORPUS
+```
+
+Sensitive people/entity search MUST follow access controls and audit requirements.
+
+PostgreSQL search is sufficient initially; specialized search infrastructure is deferred until justified.
+
+---
+
+# 153. Draft, autosave, session recovery, and low-connectivity behavior
+
+Long forms and case submissions SHOULD support:
+
+```text
+SAVE DRAFT
+AUTOSAVE WHERE SAFE
+RETURN LATER
+VISIBLE SAVE STATUS
+RECOVERY AFTER VALIDATION ERROR
+UPLOAD RETRY
+```
+
+Validation failure MUST NOT silently destroy valid user input.
+
+Sensitive drafts require appropriate retention, encryption/access controls, and expiry.
+
+Low-connectivity design SHOULD minimize payload, avoid unnecessary media, and preserve textual core functionality.
+
+---
+
+# 154. Error, empty, loading, degraded, and offline states
+
+Every critical screen SHOULD define:
+
+```text
+LOADING
+EMPTY
+PARTIAL DATA
+VALIDATION ERROR
+PERMISSION DENIED
+SERVICE ERROR
+DEGRADED MODE
+STALE DATA
+OFFLINE / RECONNECTING WHERE RELEVANT
+```
+
+Errors MUST distinguish:
+
+```text
+USER-CORRECTABLE ERROR
+from
+SYSTEM / SERVICE FAILURE
+```
+
+Do not blame a user for a platform failure.
+
+Critical errors SHOULD include correlation/reference IDs for support without exposing sensitive technical details.
+
+---
+
+# 155. Localization, translation, and time display
+
+Initial language targets:
+
+```text
+id-ID
+English where required
+```
+
+Architecture SHOULD be ready for additional local languages.
+
+Translated official content SHOULD preserve:
+
+```yaml
+TranslationRecord:
+  source_content_id:
+  source_version:
+  locale:
+  translated_version:
+  translator_or_provider:
+  reviewer:
+  status:
+```
+
+Canonical machine time is UTC. User interfaces display jurisdiction-local time with timezone label.
+
+Hijri governance horizon MUST remain distinct from operational timestamps and statutory deadlines.
+
+Avoid ambiguous date formats.
+
+---
+
+# 156. Content design and plain-language standard
+
+Every public-facing technical term SHOULD have a plain-language equivalent or explanation.
+
+Examples:
+
+```text
+Technical: Jurisdiction invalid.
+Simple: This office does not have authority to decide this case.
+
+Technical: Evidence threshold not met.
+Simple: There is not enough verified information to make this decision yet.
+```
+
+Content rules:
+
+```text
+USE DIRECT LANGUAGE
+EXPLAIN CONSEQUENCES
+EXPLAIN NEXT STEP
+DO NOT HIDE RIGHTS IN FOOTNOTES
+DO NOT USE SHAMING LANGUAGE
+DO NOT CLAIM CERTAINTY WHEN STATUS IS UNRESOLVED
+DISTINGUISH SYSTEM FAILURE FROM USER ERROR
+```
+
+Legal precision MAY coexist with plain-language summaries; the authoritative legal text remains accessible.
+
+---
+
+# 157. Accessibility acceptance standard
+
+Target:
+
+# WCAG 2.2 LEVEL AA
+
+Critical acceptance checks SHOULD include:
+
+```text
+KEYBOARD-ONLY OPERATION
+VISIBLE FOCUS
+SCREEN-READER LABELS / LANDMARKS
+VALID HEADING HIERARCHY
+200% ZOOM / REFLOW
+NO COLOR-ONLY MEANING
+SUFFICIENT TARGET SIZE
+ERROR ASSOCIATED WITH FIELD
+CAPTIONS / TRANSCRIPTS FOR MEDIA
+REDUCED-MOTION SUPPORT
+MEANINGFUL ALT TEXT / EQUIVALENT FOR INFORMATIVE VISUALS
+```
+
+Accessibility testing SHOULD combine:
+
+```text
+AUTOMATED TESTS
+MANUAL KEYBOARD TESTS
+SCREEN-READER TESTS
+ZOOM / REFLOW TESTS
+REAL-USER TESTING INCLUDING PEOPLE WITH DISABILITIES
+```
+
+A component library claiming accessibility does not eliminate page/journey testing.
+
+---
+
+# 158. DHGS Design System
+
+DHGS SHOULD define reusable design tokens:
+
+```text
+COLOR
+TYPOGRAPHY
+SPACING
+SIZE
+RADIUS
+BORDER
+ELEVATION
+BREAKPOINT
+MOTION
+Z-INDEX
+```
+
+Core components SHOULD include:
+
+```text
+Button
+Link
+Input
+Textarea
+Select
+Checkbox
+Radio
+Date / Time Input
+File Upload
+Search
+Pagination
+
+Alert
+Banner
+Status Badge
+Callout
+
+Card
+Table
+Timeline
+Tabs
+Accordion
+Dialog
+Drawer
+
+Case Header
+Evidence Card
+Mizan Gate
+Rights Review Summary
+Decision Summary
+Correction Diff
+Audit Event
+Public Record
+```
+
+Design tokens SHOULD eventually be machine-readable and shared by both frontends.
+
+---
+
+# 159. Visual identity and logo system
+
+DHGS SHOULD have a neutral, trustworthy visual identity that represents balance, accountability, openness, correction, and movement toward light without glorifying any office-holder.
+
+Potential abstract motifs MAY explore:
+
+```text
+BALANCE / MIZAN
+OPEN HORIZON / LIGHT
+OPEN BOOK / TRANSPARENCY
+LAYER / LEDGER / TRACE
+SHADOW-TO-LIGHT TRANSITION
+```
+
+The identity MUST NOT depict Allah, a prophet, or a claimed Divine form. Sacred scripture/calligraphy SHOULD NOT be reduced to decorative branding where this could be disrespectful or misleading.
+
+No portrait of Shadow or political leader SHOULD function as the primary system brand.
+
+Required future variants:
+
+```text
+PRIMARY LOGO
+HORIZONTAL WORDMARK
+COMPACT LOGOMARK
+MONOCHROME
+REVERSE / DARK-BACKGROUND
+SMALL-SIZE MARK
+FAVICON / APP ICON
+PRINT MARK
+```
+
+A governmental seal/crest variant requires actual lawful institutional authority and MUST NOT be invented in sandbox/voluntary mode.
+
+---
+
+# 160. Asset taxonomy
+
+Future governed asset classes:
+
+```text
+AST-BRAND-*    logo / wordmark / identity
+AST-ICON-*     interface icons
+AST-ILL-*      illustrations
+AST-BAN-*      banners / notices
+AST-IMG-*      editorial / contextual images
+AST-CHART-*    chart / graph templates
+AST-DIAG-*     architecture / process diagrams
+AST-SOC-*      social / Open Graph media
+AST-PRINT-*    print / PDF assets
+AST-BG-*       backgrounds / non-semantic decoration
+```
+
+Evidence files are NOT marketing/design assets and remain governed by Evidence rules.
+
+---
+
+# 161. SVG, vector, and icon rules
+
+SVG is preferred for scalable brand marks, icons, diagrams, and simple illustrations.
+
+SVG requirements SHOULD include:
+
+```text
+VALID viewBox
+NO SCRIPT
+NO UNTRUSTED EXTERNAL REFERENCES
+SANITIZED CONTENT
+OPTIMIZED PATHS WITHOUT DESTROYING EDITABILITY SOURCE
+TEXT CONVERTED OR PROVIDED ACCESSIBLY WHEN REQUIRED
+TITLE / DESCRIPTION OR EXTERNAL TEXT EQUIVALENT FOR INFORMATIVE SVG
+```
+
+UI icons SHOULD follow a consistent grid and stroke/fill language. A baseline such as 24×24 may be used.
+
+Status MUST NOT be communicated by icon or color alone; visible text or accessible labels are required.
+
+Decorative SVGs SHOULD be hidden from assistive technology.
+
+---
+
+# 162. Charts, graphs, and data visualization
+
+DHGS visualizations MUST prioritize truthful comprehension over visual drama.
+
+Every material chart SHOULD identify:
+
+```text
+TITLE
+METRIC / UNIT
+TIME PERIOD
+DATA SOURCE
+LAST UPDATED
+FILTER / POPULATION
+UNCERTAINTY OR MISSING DATA WHERE MATERIAL
+CORRECTION / REVISION STATUS WHERE RELEVANT
+```
+
+Rules:
+
+```text
+NO MISLEADING 3D CHARTS
+NO TRUNCATED AXES WHEN THEY MATERIALLY DISTORT INTERPRETATION
+NO DUAL AXIS BY DEFAULT
+NO DECORATIVE AREA THAT IMPLIES FALSE MAGNITUDE
+NO COLOR-ONLY SERIES DISTINCTION
+SHOW RAW / TABULAR DATA OPTION FOR IMPORTANT PUBLIC CHARTS
+```
+
+Charts used to communicate uncertainty SHOULD show uncertainty rather than hiding it behind a single precise number.
+
+---
+
+# 163. Illustration, image, banner, and synthetic-media policy
+
+Images and illustrations MUST NOT become propaganda or emotional manipulation designed to bypass evidence/reasoning.
+
+Asset rules SHOULD include:
+
+```text
+KNOWN SOURCE / CREATOR
+LICENSE / PERMISSION
+CONSENT WHERE PEOPLE ARE IDENTIFIABLE AND REQUIRED
+NO UNNECESSARY VICTIM EXPOSURE
+NO HERO-WORSHIP PORTRAITURE OF SHADOW
+NO DECEPTIVE CROPPING / COMPOSITING
+NO GENERATED IMAGE PRESENTED AS REAL EVENT DOCUMENTATION
+```
+
+Synthetic / AI-generated media used for illustration MUST be labeled where a reasonable viewer could mistake it for documentary material.
+
+Synthetic media MUST NOT be admitted as authentic evidence merely because it resembles reality.
+
+Evidence transformations such as redaction/cropping follow evidence provenance and derivative rules, not ordinary creative-asset rules.
+
+Banner classes MAY include:
+
+```text
+INFORMATION
+ACTION_REQUIRED
+WARNING
+CRITICAL
+CORRECTION
+EMERGENCY
+MAINTENANCE
+PRIVACY / SECURITY NOTICE
+```
+
+Banner severity MUST include text, not color alone.
+
+---
+
+# 164. Asset manifest, provenance, licensing, security, and performance
+
+Every governed production asset SHOULD be representable by metadata:
+
+```yaml
+AssetManifest:
+  asset_id:
+  asset_type:
+  name:
+  source_file:
+  delivery_files: []
+  creator:
+  source_or_origin:
+  license:
+  consent_reference:
+  version:
+  created_at:
+  reviewed_by:
+  approval_status:
+  accessibility:
+    alt_text:
+    decorative:
+  sensitive: false
+  ai_generated: false
+  content_hash:
+```
+
+Preferred delivery:
+
+```text
+SVG → icons / marks / diagrams
+AVIF or WebP → web raster imagery where supported
+PNG → fallback / transparency use where justified
+PDF → print/document snapshot, not canonical live source
+```
+
+Security and privacy:
+
+```text
+SANITIZE SVG
+STRIP UNNECESSARY EXIF / LOCATION METADATA
+DO NOT EMBED SECRETS / INTERNAL PATHS
+DO NOT PUBLISH ORIGINAL SENSITIVE IMAGE WHEN REDACTED DERIVATIVE IS REQUIRED
+```
+
+Performance budgets SHOULD eventually cap hero/image weight, icon payload, font payload, and unnecessary animation.
+
+---
+
+# 165. Print, PDF, QR, and document-generation system
+
+DHGS SHOULD support formal document outputs where useful:
+
+```text
+CASE RECEIPT
+NOTICE
+DECISION LETTER
+APPEAL RECEIPT
+CORRECTION NOTICE
+PUBLIC DECISION SUMMARY
+AUDIT PACKAGE INDEX
+ANNUAL / PERIODIC PUBLIC REPORT
+```
+
+Generated documents SHOULD include:
+
+```text
+DOCUMENT ID
+VERSION
+ISSUED DATE/TIME
+ISSUING AUTHORITY
+CANONICAL URL / RECORD REFERENCE
+QR CODE WHERE USEFUL
+PAGE NUMBER / CLASSIFICATION WHERE RELEVANT
+CORRECTION / SUPERSESSION STATUS
+```
+
+A PDF/print document is a snapshot. The canonical digital record remains the versioned system record unless applicable law specifies otherwise.
+
+---
+
+# 166. User research, usability, and comprehension
+
+Before high-impact production use, DHGS SHOULD conduct structured testing with representative users.
+
+Test profiles SHOULD include ordinary citizens, low-digital-literacy users, older users, people with disabilities, reviewers, lawyers/legal specialists, auditors, journalists/researchers, and where relevant represented/vulnerable users.
+
+Product-experience metrics MAY include:
+
+```text
+TASK SUCCESS RATE
+TIME ON CRITICAL TASK
+ERROR / REVERSAL RATE
+FORM ABANDONMENT
+APPEAL DISCOVERABILITY
+PUBLIC COMPREHENSION
+ACCESSIBILITY DEFECT RATE
+SUPPORT REQUEST RATE
+MIZAN REVIEWER DISAGREEMENT
+```
+
+User research MUST NOT expose real protected case data unnecessarily.
+
+---
+
+# 167. Design-artifact lifecycle and source of truth
+
+Design artifacts MAY be created in Figma or another design tool later, but a design file is not a governance authority.
+
+Lifecycle:
+
+```text
+DESIGN PROPOSAL
+→ PRODUCT / ACCESSIBILITY REVIEW
+→ GOVERNANCE / RIGHTS REVIEW WHERE HIGH-STAKES
+→ APPROVED DESIGN
+→ IMPLEMENTATION
+→ ACCESSIBILITY / UX VERIFICATION
+→ PRODUCTION
+→ OUTCOME / FEEDBACK
+→ REVISION
+```
+
+Design decisions affecting due process, appeal, publication, Mizan, privacy, or high-impact action SHOULD be traceable to requirements and tests.
+
+Canonical design tokens/components should ultimately be represented in code; external design tools remain collaboration/reference systems.
+
+---
+
+# 168. UX and visual safety invariants
+
+```yaml
+UX-INV-001: no_irreversible_high_impact_action_with_one_click
+UX-INV-002: no_high_impact_approval_without_visible_basis_and_reason
+UX-INV-003: no_protected_data_in_public_preview
+UX-INV-004: no_peer_or_aggregate_mizan_scores_before_independent_submission_where_blinding_required
+UX-INV-005: no_status_meaning_by_color_alone
+UX-INV-006: no_delete_style_UI_for_immutable_governance_history
+UX-INV-007: no_hidden_material_deadline
+UX-INV-008: no_loss_of_valid_form_data_due_to_validation_error
+UX-INV-009: no_dark_pattern_discouraging_appeal_or_correction
+UX-INV-010: no_UI_implying_guilt_before_lawful_determination
+UX-INV-011: no_sensitive_session_replay_by_default
+UX-INV-012: no_visual_asset_used_to_glorify_Shadow_or_bypass_reasoned_governance
+UX-INV-013: no_misleading_chart_or_graph
+UX-INV-014: no_unlabeled_synthetic_media_that_could_be_mistaken_for_documentary_evidence
+UX-INV-015: no_critical_journey_without_keyboard_access
+UX-INV-016: no_public_correction_without_visible_version_history
+```
+
+---
+
+# 169. Product-experience and asset requirements
+
+Initial requirements:
+
+```text
+REQ-UX-001 Public and internal information architecture is documented.
+REQ-UX-002 Critical screens have stable Screen IDs and Screen Contracts.
+REQ-UX-003 Critical journeys define happy, failure, accessibility, and recovery paths.
+REQ-UX-004 High-impact actions require deliberate confirmation and reason capture.
+REQ-UX-005 Mizan review UI protects reviewer independence where required.
+REQ-UX-006 Evidence status, admissibility, confidentiality, and challenge are visible to authorized users.
+REQ-UX-007 Appeal and correction paths are clearly discoverable.
+REQ-UX-008 Long submissions support draft/save/recovery.
+REQ-UX-009 Public content supports Simple, Standard, and Technical modes where appropriate.
+REQ-UX-010 Public web targets WCAG 2.2 AA.
+REQ-UX-011 Official translations are versioned and reviewable.
+REQ-UX-012 Sensitive areas disable invasive analytics/session replay by default.
+REQ-AST-001 Brand and assets use documented identity rules.
+REQ-AST-002 Every production asset has source/license/provenance metadata where applicable.
+REQ-AST-003 Informative visuals have accessible equivalents.
+REQ-AST-004 SVG assets are sanitized before production use.
+REQ-AST-005 Public charts disclose source, unit, and time period.
+REQ-AST-006 Synthetic imagery is labeled when it could be mistaken for documentary reality.
+REQ-AST-007 Evidence imagery remains governed by evidence provenance, not creative asset workflows.
+REQ-AST-008 Logo/brand MUST NOT depict or claim representation of Allah or a prophet.
+```
+
+---
+
+# 170. Product-experience completion gate
+
+Before a controlled pilot, at minimum:
+
+```text
+PUBLIC IA REVIEWED
+OPERATIONS IA REVIEWED
+CRITICAL SCREEN INVENTORY DEFINED
+CRITICAL SCREEN CONTRACTS DEFINED
+CITIZEN CASE JOURNEY TESTED
+APPEAL JOURNEY TESTED
+EVIDENCE JOURNEY TESTED
+MIZAN REVIEW JOURNEY TESTED
+HIGH-STAKES ACTION PATTERN TESTED
+OPEN BOOK COMPREHENSION TESTED
+WCAG 2.2 AA CRITICAL-JOURNEY TESTS PASS
+CONTENT STYLE / PLAIN-LANGUAGE STANDARD ACCEPTED
+NOTIFICATION MODEL DEFINED
+SEARCH BASELINE DEFINED
+SAVE-DRAFT / RECOVERY BEHAVIOR DEFINED
+CORE DESIGN TOKENS DEFINED
+LOGO / VISUAL IDENTITY SPEC APPROVED
+ICON / SVG RULES ACCEPTED
+CHART / GRAPH RULES ACCEPTED
+ASSET MANIFEST SCHEMA ACCEPTED
+SYNTHETIC-MEDIA POLICY ACCEPTED
+PRINT / PDF / QR POLICY ACCEPTED
+USER-RESEARCH PLAN ACCEPTED
+```
 
 ---
 
@@ -3973,6 +5146,8 @@ SLO / RESTORE TEST TARGETS DEFINED
 WCAG 2.2 AA ACCESSIBILITY TARGET ACCEPTED
 VULNERABLE-PERSON SAFEGUARDS DEFINED
 SCRIPTURAL CORPUS PROVENANCE MODEL VERIFIED
+PRODUCT EXPERIENCE COMPLETION GATE PASS
+CORE VISUAL / ASSET GOVERNANCE ACCEPTED
 HIGH-RISK END-TO-END SIMULATIONS PASS
 ```
 
