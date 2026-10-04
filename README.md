@@ -2,7 +2,7 @@
 
 > **Digital Governance Assurance Platform** for lawful, evidence-based, accountable, reviewable, correctable, privacy-preserving, accessible, and publicly understandable governance.
 
-**Blueprint baseline:** `DHGS v15.0.0`  
+**Blueprint baseline:** `DHGS v15.1.0`  
 **Blueprint status:** Controlled implementation baseline candidate  
 **Primary specification:** [`BLUEPRINT.md`](./BLUEPRINT.md)
 
@@ -45,6 +45,7 @@ RECEIVE
 - **Decision Context Snapshot** — preserves the law, policy, rule, corpus, engine, schema, and reviewer versions used for a high-impact decision.
 - **Product Experience Plane** — information architecture, journeys, interaction safety, accessibility, content design, and usability.
 - **Visual / Asset Governance** — logos, icons, SVG/vector assets, diagrams, charts, banners, images, print/PDF assets, provenance, licensing, and synthetic-media disclosure.
+- **DHGS ORM / Model Layer** — a small Odoo-inspired, governance-aware model framework for typed models, manifests, repositories, metadata-driven views, access context, audit hooks, and ledger integration.
 - **Correction** — detect → acknowledge → correct → record → learn.
 
 A central design rule is:
@@ -55,34 +56,30 @@ A central design rule is:
 
 ## Repository status
 
-The repository has now moved from documentation-only into a **design-foundation and prototype-shell stage**. The governance blueprint remains canonical; code and visual artifacts are implementation experiments until their requirements and tests are satisfied.
+The repository is in a **design-foundation, architecture-kernel, and prototype-shell stage**. The governance blueprint remains canonical; code and visual artifacts are implementation experiments until their requirements and tests are satisfied.
 
 ```text
 dhgs/
 ├── README.md
 ├── BLUEPRINT.md
 ├── design/
-│   ├── README.md
-│   ├── tokens.json
-│   ├── sitemap.md
-│   ├── screen-map.md
-│   ├── wireframes.md
-│   ├── visual-identity.md
-│   ├── content-style.md
-│   └── asset-manifest.json
 ├── assets/
 │   ├── brand/
 │   ├── icons/
 │   ├── diagrams/
 │   ├── banners/
 │   ├── charts/
-│   └── social/
+│   ├── social/
+│   └── images/
 ├── apps/
 │   ├── public-web/
 │   ├── ops-web/
 │   └── api/
 ├── packages/
-│   └── ui/
+│   ├── ui/
+│   ├── data/              # current prototype/spike; not the final ORM contract
+│   ├── orm/               # planned M0 kernel
+│   └── orm-base/          # planned M0 base addon
 ├── engines/
 │   ├── evidence-engine/
 │   ├── mizan-engine/
@@ -97,6 +94,16 @@ dhgs/
 ```
 
 The blueprint describes additional future modules. Their absence in the prototype does not remove the blueprint requirement.
+
+---
+
+## Visual exploration
+
+The following board is a **non-canonical visual exploration**. It helps communicate the direction of the brand and interface language, but it is not itself a logo specification, legal seal, or approved final UI.
+
+![DHGS visual exploration styleboard](./assets/images/dhgs-styleboard-exploration-v1.jpg)
+
+Canonical vector assets and their provenance remain governed through the asset manifest and design documentation.
 
 ---
 
@@ -157,7 +164,8 @@ Initial governed assets include:
 - Open Book banner;
 - truthful-chart template;
 - default social / Open Graph artwork;
-- machine-readable asset manifest.
+- machine-readable asset manifest;
+- non-canonical visual exploration/styleboard.
 
 See [`design/visual-identity.md`](./design/visual-identity.md) and [`design/asset-manifest.json`](./design/asset-manifest.json).
 
@@ -165,7 +173,7 @@ See [`design/visual-identity.md`](./design/visual-identity.md) and [`design/asse
 
 ## UX foundation
 
-The repository now contains concrete starting artifacts for:
+The repository contains concrete starting artifacts for:
 
 - public and operations information architecture;
 - stable screen IDs;
@@ -184,6 +192,166 @@ See [`design/`](./design/).
 
 ---
 
+## DHGS ORM and data-driven module architecture
+
+DHGS will use a **small Odoo-inspired model/addon pattern**, adapted for governance rather than copied wholesale.
+
+```text
+packages/orm
+    ↓ framework kernel
+packages/orm-base
+    ↓ foundational manifest + base models
+addon/domain packages
+    ↓ cases / evidence / knowledge / governance / openbook / audit
+PostgreSQL / Supabase
+```
+
+### `@dhgs/orm` — framework kernel
+
+Planned responsibilities:
+
+```text
+FIELD DEFINITIONS
+MODEL DEFINITIONS
+MODEL REGISTRY
+ENVIRONMENT / REQUEST CONTEXT
+DOMAIN / FILTER AST
+REPOSITORY / MODEL METHODS
+MANIFEST / ADDON LOADING
+VIEW METADATA
+ACTION / COMMAND REGISTRY
+ADAPTER CONTRACT
+AUDIT / LEDGER HOOKS
+```
+
+Target ergonomic API:
+
+```ts
+const env = dhgsEnv(context)
+const Cases = env.model('case.case')
+
+const rows = await Cases.search([
+  ['status', '=', 'submitted'],
+  ['jurisdiction_id', '=', context.jurisdictionId]
+])
+
+const record = await Cases.create(values)
+await record.write({ title: 'Corrected title' })
+await record.archive()
+```
+
+There is **no unrestricted hard-delete API** for governance records.
+
+### `@dhgs/orm-base` — foundational addon
+
+The base addon should contain only reusable platform models, not Mizan/decision business logic.
+
+Initial model candidates:
+
+```text
+base.jurisdiction
+base.institution
+base.party
+base.user_profile
+base.access_group
+base.group_membership
+base.authority_mandate
+base.delegation
+base.sequence
+base.attachment
+base.tag
+base.tag_link
+base.activity
+base.notification
+base.translation
+base.external_id
+base.audit_reference
+```
+
+Domain-specific models belong in domain addons, for example:
+
+```text
+case.*
+evidence.*
+knowledge.*
+governance.*
+ledger.*
+openbook.*
+audit.*
+```
+
+### Manifest pattern
+
+Each addon/package should expose one manifest:
+
+```ts
+export const manifest = defineAddon({
+  name: 'case',
+  version: '0.1.0',
+  depends: ['base'],
+  models: [...],
+  data: [...],
+  views: [...],
+  menus: [...],
+  actions: [...],
+  access: [...],
+  upgrades: {...}
+})
+```
+
+Manifest metadata is the canonical module boundary. Dependencies must be explicit and cycle-free.
+
+### Data-driven views
+
+Model metadata may generate safe list/form/search administration screens:
+
+```text
+MODEL
++
+FIELD METADATA
++
+VIEW METADATA
++
+ACCESS CONTEXT
+→
+GENERIC LOW-RISK UI
+```
+
+This must **not** turn high-stakes governance into generic CRUD.
+
+Explicit screens/workflows remain mandatory for:
+
+```text
+MIZAN
+LEGAL / RIGHTS REVIEW
+DECISION AUTHORIZATION
+APPEAL
+CORRECTION
+EMERGENCY POWER
+HIGH-IMPACT PUBLICATION
+```
+
+### Governance-aware context
+
+Every model operation should be capable of carrying:
+
+```text
+actor_id
+request_id
+purpose
+identity_assurance
+jurisdiction
+institution
+roles / permissions
+transaction
+```
+
+PostgreSQL RLS remains authoritative; ORM scope checks add defense-in-depth, not a replacement for RLS.
+
+The existing `packages/data` package is a **prototype of this direction**. It should be migrated/refactored under the M0 issues rather than expanded ad hoc.
+
+---
+
 ## Simple-first technical direction
 
 The prototype deliberately avoids premature infrastructure complexity.
@@ -191,10 +359,10 @@ The prototype deliberately avoids premature infrastructure complexity.
 - **TypeScript**
 - **Next.js + React** — Public Web and Operations Web
 - **Node.js + Fastify** — API
-- **Pure TypeScript packages** — governance engines
+- **Pure TypeScript packages** — governance engines and ORM kernel
 - **Supabase PostgreSQL / Auth / Storage** — planned transactional identity/data layer
 - **PostgreSQL RLS** — planned authorization enforcement
-- **Vitest** — engine tests
+- **Vitest** — unit / rule / ORM tests
 - **Playwright** — planned E2E/accessibility journey tests
 - **GitHub Actions** — planned CI
 - **Vercel + Supabase** — intended initial hosted environments
@@ -231,6 +399,53 @@ The corpus remains separate from case evidence. Scriptural/ethical references re
 
 ---
 
+## Issue-led implementation discipline
+
+From this point, implementation is **issue-first**.
+
+```text
+BLUEPRINT REQUIREMENT
+→ MILESTONE
+→ GITHUB ISSUE
+→ IMPLEMENTATION
+→ TEST
+→ ACCEPTANCE
+→ CLOSE
+```
+
+Rules:
+
+1. **Only one milestone is active at a time.**
+2. Non-trivial implementation MUST have an issue before code is expanded.
+3. Every implementation issue MUST state scope, non-scope, dependencies, linked blueprint requirements, acceptance criteria, and tests.
+4. A new idea that does not belong to the active milestone goes to the master backlog; it does not interrupt current work.
+5. Scope growth during implementation requires updating the issue or creating a follow-up issue.
+6. A closed issue must satisfy its acceptance criteria; “code exists” is not enough.
+7. Critical behavior must have tests before its milestone can exit.
+
+### Milestone sequence
+
+```text
+M0 — FOUNDATION KERNEL
+     ORM / ORM-BASE / adapter / metadata / CI contract
+
+M1 — CASE SPINE
+     identity / jurisdiction / authority / case / work / evidence
+
+M2 — DECISION SPINE
+     legal precheck / rights / Mizan / decision / attestation
+
+M3 — ACCOUNTABILITY & PUBLIC
+     Hisab / Open Book / publication / appeal / correction
+
+M4 — ASSURANCE & PILOT
+     audit / security / accessibility / simulation / pilot gate
+```
+
+Only **M0** should be actively implemented now. Later milestones remain planned but intentionally blocked until the previous exit gate passes.
+
+---
+
 ## Run the prototype locally
 
 Prerequisite: Node.js and pnpm.
@@ -264,6 +479,8 @@ The design may seek compatibility with values such as truth, justice, rahmah, me
 
 ## Canonical specification
 
-The full governance, institutional, product, UX/UI, visual identity, asset, engine, corpus, security, privacy, rights, audit, KPI, testing, and implementation requirements remain in:
+The full governance, institutional, product, UX/UI, visual identity, asset, engine, corpus, ORM/model-layer, security, privacy, rights, audit, KPI, testing, and implementation requirements remain in:
 
 **[`BLUEPRINT.md`](./BLUEPRINT.md)**
+
+Implementation progress is tracked through GitHub Issues rather than by continuously expanding scope inside code.
