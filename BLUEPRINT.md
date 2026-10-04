@@ -1,11 +1,11 @@
-# DHGS v15.0.0 — Controlled Implementation & Product Experience Blueprint
+# DHGS v15.1.0 — Controlled Implementation, Product Experience & Data-Driven Architecture Blueprint
 
 ## Divine–Human Governance System
 
 **Document ID:** `DHGS-BP-001`  
-**Version:** `15.0.0`  
+**Version:** `15.1.0`  
 **Status:** `CONTROLLED_IMPLEMENTATION_BASELINE_CANDIDATE`  
-**Document type:** Governance + Product + UX/UI + Visual Identity + Asset + Engine + Corpus + Technical + Institutional Architecture Blueprint  
+**Document type:** Governance + Product + UX/UI + Visual Identity + Asset + Engine + Corpus + ORM/Data-Driven + Technical + Institutional Architecture Blueprint  
 **Product type:** Digital Governance Assurance Platform  
 **Architecture strategy:** Logical separation, simple deployment, modular monolith first  
 **Primary evaluation horizon:** `1 Hijri Year`  
@@ -15,9 +15,9 @@
 
 # 0. Document control, scope, and normative language
 
-This document is the **single source of truth** for the DHGS foundational and implementation architecture. It consolidates the governance, Shadow, Mizan, Hisab Ledger, Open Book, knowledge/corpus, work, identity, product, product-experience, visual-asset, technical, control, security, privacy, audit, and implementation principles developed in earlier versions.
+This document is the **single source of truth** for the DHGS foundational and implementation architecture. It consolidates the governance, Shadow, Mizan, Hisab Ledger, Open Book, knowledge/corpus, work, identity, product, product-experience, visual-asset, ORM/data-driven model layer, technical, control, security, privacy, audit, and implementation principles developed in earlier versions.
 
-The intent of v15 is **lossless consolidation plus product-experience and visual-system gap closure**. Concepts from earlier baselines are retained unless explicitly superseded in this document.
+The intent of v15.1 is **lossless consolidation plus ORM/addon architecture and issue-led implementation governance**. Concepts from earlier baselines remain valid unless explicitly superseded here.
 
 Normative language:
 
@@ -72,7 +72,7 @@ INFORMATION
 
 into a structured, auditable, human-readable process.
 
-DHGS is governance assurance infrastructure. It is not itself a sovereign state.
+DHGS is governance-assurance infrastructure. It is not itself a sovereign state.
 
 ---
 
@@ -158,6 +158,7 @@ BACKEND APIs
 WORKFLOWS
 ENGINES
 CORPUS
+ORM / MODEL LAYER
 DATABASES
 RULES
 CONTROLS
@@ -595,7 +596,7 @@ COERCIVE PUBLIC AUTHORITY
 │ Actors / Roles / Authority         │
 ├────────────────────────────────────┤
 │ DATA PLANE                         │
-│ Cases / Evidence / Ledger          │
+│ Models / Cases / Evidence / Ledger │
 ├────────────────────────────────────┤
 │ CONTROL PLANE                      │
 │ Rules / Risk / Overrides           │
@@ -618,6 +619,7 @@ AI GOVERNANCE
 ACCESSIBILITY
 PRODUCT EXPERIENCE
 VISUAL / ASSET GOVERNANCE
+ORM / DATA-DRIVEN MODULE GOVERNANCE
 ```
 
 ---
@@ -691,7 +693,9 @@ PUBLIC WEB                  OPERATIONS WEB
       ┌───────────┼────────────┐
       ▼           ▼            ▼
  DOMAIN        ENGINES       CORPUS
- SERVICES
+ SERVICES        │
+      │           ▼
+      │       ORM / MODEL LAYER
       └───────────┼────────────┘
                   ▼
              DATA LAYER
@@ -712,6 +716,7 @@ FRONTEND != BACKEND
 BACKEND != ENGINES
 ENGINES != CORPUS
 CORPUS != CASE EVIDENCE
+ORM != GOVERNANCE AUTHORITY
 HISAB LEDGER != AUDIT LOG
 INTERNAL DATA != PUBLIC DATA
 TECHNICAL ADMIN != GOVERNANCE AUTHORITY
@@ -728,6 +733,7 @@ ONE MONOREPO
 TWO FRONTENDS
 ONE BACKEND API
 PURE TYPESCRIPT ENGINE PACKAGES
+PURE TYPESCRIPT ORM / ADDON PACKAGES
 ONE SUPABASE PROJECT PER ENVIRONMENT
 ONE POSTGRES DATABASE PER ENVIRONMENT
 ```
@@ -741,6 +747,7 @@ ONE POSTGRES DATABASE PER ENVIRONMENT
 | Backend API | Node.js + Fastify |
 | Runtime validation | Zod |
 | Engines | Pure TypeScript packages |
+| ORM/model layer | DHGS TypeScript packages over PostgreSQL adapter |
 | Database | PostgreSQL via Supabase |
 | Authentication | Supabase Auth |
 | Authorization | app roles + PostgreSQL RLS |
@@ -803,13 +810,16 @@ dhgs/
 │   ├── precedent/
 │   └── lessons/
 ├── packages/
+│   ├── orm/                 # model/addon kernel
+│   ├── orm-base/            # foundational reusable addon
+│   ├── data/                # temporary prototype/spike until M0 migration
 │   ├── domain/
 │   ├── schemas/
 │   ├── database/
 │   ├── auth/
 │   ├── events/
 │   └── ui/
-├── assets/                  # future implementation phase
+├── assets/
 │   ├── brand/
 │   ├── icons/
 │   ├── illustrations/
@@ -818,7 +828,7 @@ dhgs/
 │   ├── charts/
 │   ├── social/
 │   └── print/
-├── design/                  # future design source / prototypes
+├── design/
 ├── supabase/
 ├── controls/
 ├── tests/
@@ -828,7 +838,7 @@ dhgs/
 └── .github/
 ```
 
-This document does not require creating these directories immediately.
+The repository MAY later add explicit addon packages such as `addon-case`, `addon-evidence`, or equivalent domain packages once M0 contracts are stable.
 
 ---
 
@@ -2135,6 +2145,7 @@ REQ-SEC-*  security requirements
 REQ-PRV-*  privacy requirements
 REQ-UX-*   product-experience requirements
 REQ-AST-*  visual-asset requirements
+REQ-ORM-*  ORM/data-driven model requirements
 
 CTRL-*     controls
 RULE-*     executable / evaluable rules
@@ -2165,6 +2176,11 @@ REQ-UX-002 Appeal interfaces MUST NOT use dark patterns or hidden deadlines.
 REQ-UX-003 Mizan independent reviewers MUST NOT see aggregate peer scores before individual submission where independence is required.
 REQ-AST-001 Informative visual assets require accessible text alternatives or equivalent explanation.
 REQ-AST-002 Synthetic/AI visual media MUST NOT be presented as case evidence unless its synthetic provenance is explicit and legally relevant.
+REQ-ORM-001 Every material model operation carries actor/purpose/request context.
+REQ-ORM-002 ORM scope checks do not replace PostgreSQL RLS.
+REQ-ORM-003 Governance records have no unrestricted hard-delete path.
+REQ-ORM-004 High-stakes governance actions cannot be exposed as generic CRUD actions.
+REQ-ORM-005 Addon dependencies and versions are explicit and cycle-free.
 ```
 
 Professional traceability:
@@ -2218,6 +2234,7 @@ PRIVACY
 SECURITY
 UX_SAFETY
 VISUAL_INTEGRITY
+DATA_INTEGRITY
 ```
 
 Every critical process SHOULD answer:
@@ -3174,6 +3191,7 @@ CONTROL EXISTS
 ACCEPTANCE TEST EXISTS
 SECURITY / PRIVACY NEEDS IDENTIFIED
 DEPENDENCIES KNOWN
+GITHUB ISSUE EXISTS FOR NON-TRIVIAL IMPLEMENTATION
 ```
 
 ---
@@ -3192,6 +3210,7 @@ STAGING VERIFIED
 MONITORING EXISTS
 ROLLBACK PATH EXISTS
 PUBLIC DOCUMENTATION UPDATED WHERE REQUIRED
+ISSUE ACCEPTANCE CRITERIA SATISFIED
 ```
 
 ---
@@ -3310,6 +3329,7 @@ health:
   anti_capture:
   accessibility:
   usability:
+  data_integrity:
 ```
 
 A critical-domain failure prevents overall `HEALTHY` status regardless of average.
@@ -3380,6 +3400,9 @@ DARK_PATTERN_DISCOURAGING_APPEAL
 MISLEADING_CHART_OR_VISUALIZATION
 SYNTHETIC_MEDIA_MISREPRESENTED_AS_EVIDENCE
 ACCESSIBILITY_FAILURE_BLOCKING_DUE_PROCESS
+ORM_SCOPE_BYPASS
+GENERIC_CRUD_BYPASSING_GOVERNANCE_WORKFLOW
+ADDON_DEPENDENCY_OR_UPGRADE_FAILURE
 ```
 
 ---
@@ -3390,6 +3413,9 @@ ACCESSIBILITY_FAILURE_BLOCKING_DUE_PROCESS
 UNIT TEST
 RULE TEST
 SCHEMA TEST
+ORM MODEL TEST
+ORM SCOPE / CONTEXT TEST
+ADDON / MANIFEST TEST
 STATE TRANSITION TEST
 INTEGRATION TEST
 RLS / AUTHORIZATION TEST
@@ -3419,6 +3445,8 @@ system_admin_changes_decision_outside_correction → impossible
 wrong_law_version_unrecorded → impossible
 appeal_hidden_or_dark_patterned → impossible
 protected_information_visible_in_public_preview → impossible
+orm_cross_jurisdiction_write → impossible
+generic_admin_executes_high_impact_decision → impossible
 ```
 
 ---
@@ -3480,6 +3508,7 @@ SECRET VIP / PRIVILEGED PARALLEL JUSTICE PATH
 DARK PATTERNS THAT OBSTRUCT APPEAL OR CORRECTION
 MISLEADING DATA VISUALIZATION DESIGNED TO MANIPULATE PUBLIC UNDERSTANDING
 SYNTHETIC MEDIA PRESENTED AS AUTHENTIC EVIDENCE WITHOUT DISCLOSURE
+GENERIC CRUD BYPASS OF HIGH-STAKES GOVERNANCE WORKFLOW
 ```
 
 ---
@@ -3522,6 +3551,11 @@ INV-032: no_dark_pattern_obstructing_appeal_or_correction
 INV-033: no_unlabeled_synthetic_visual_presented_as_authentic_evidence
 INV-034: no_public_visualization_without_source_period_and_unit_where_applicable
 INV-035: no_sensitive_session_replay_by_default
+INV-036: no_unrestricted_hard_delete_for_governance_records
+INV-037: no_orm_scope_check_as_substitute_for_database_RLS
+INV-038: no_generic_UI_high_stakes_governance_bypass
+INV-039: no_model_mutation_without_actor_purpose_request_context_for_material_records
+INV-040: no_undeclared_addon_dependency
 ```
 
 ---
@@ -3549,6 +3583,7 @@ SCHEMAS VALID
 CRITICAL REQUIREMENTS MAPPED
 CRITICAL RULE TESTS PASS
 INVARIANT TESTS PASS
+ORM / ADDON CONTRACT TESTS PASS
 AUTHORIZATION / RLS TESTS PASS
 IDENTITY ASSURANCE TESTS PASS
 SECURITY TESTS PASS
@@ -3568,6 +3603,8 @@ ROLLBACK PATH EXISTS
 
 ```text
 BOOT-000 FOUNDATION
+↓
+BOOT-025 ORM / DATA MODEL FOUNDATION
 ↓
 BOOT-050 PRODUCT EXPERIENCE & DESIGN FOUNDATION
 ↓
@@ -3615,7 +3652,9 @@ MONOREPO
 PUBLIC WEB SHELL
 OPS WEB SHELL
 API
-SUPABASE
+ORM KERNEL
+ORM-BASE ADDON
+POSTGRES / SUPABASE ADAPTER
 AUTH
 DATABASE
 CI
@@ -3727,7 +3766,7 @@ REAL-USER USABILITY / ACCESSIBILITY OBSERVATION
 ```text
 Citizen submits case
 → identity assurance determined
-→ case created
+→ case created through scoped model layer
 → jurisdiction and authority mandate identified
 → notice obligations identified
 → stakeholders and rights mapped
@@ -3859,6 +3898,7 @@ WHO → IDENTITY / STAKEHOLDERS
 WHO DOES WHAT → WORK / TASKS / RACI
 WITH WHAT AUTHORITY → LAW / MANDATE / JURISDICTION
 WITH WHAT INFORMATION → DATA / EVIDENCE
+HOW DATA IS ACCESSED → ORM / MODEL / RLS
 UNDER WHICH RULES → CONTROLS / POLICY
 HOW QUALITY IS ASSESSED → MIZAN / RIGHTS / EVIDENCE ENGINES
 HOW HUMANS INTERACT → PRODUCT EXPERIENCE / UI / CONTENT / ACCESSIBILITY
@@ -3882,8 +3922,9 @@ PRODUCT EXPERIENCE → safe and understandable interaction
 DESIGN SYSTEM → consistent accessible presentation rules
 VISUAL ASSETS → governed communication artifacts
 BACKEND → orchestration
+ORM / MODEL LAYER → governed data access and metadata; no independent public authority
 ENGINES → evaluation
-DATABASE → current state
+DATABASE / RLS → current state and authoritative row-level data boundary
 LAW / MANDATE → coercive authority
 HUMANS → judgment and accountable ownership
 HISAB LEDGER → governance memory
@@ -3912,6 +3953,7 @@ Evidence,
 Rights,
 Mizan,
 Controls,
+DataIntegrity,
 ProductExperience,
 Accessibility,
 VisualIntegrity,
@@ -3963,6 +4005,7 @@ CORRECTION PROTECTS THE FUTURE.
 LEARNING PREVENTS REPEATED FAILURE.
 DESIGN MUST CLARIFY POWER, NOT GLORIFY IT.
 TECHNOLOGY SERVES GOVERNANCE; IT DOES NOT OWN GOVERNANCE.
+DATA ACCESS SERVES LAWFUL PURPOSE; IT DOES NOT CREATE AUTHORITY.
 ```
 
 ---
@@ -5093,6 +5136,914 @@ USER-RESEARCH PLAN ACCEPTED
 
 ---
 
+# PART XXVIII — DHGS ORM, addon, and data-driven model architecture
+
+# 171. ORM design decision
+
+DHGS SHOULD use a **small Odoo-inspired model/addon architecture** for ordinary data access and low-risk administration.
+
+The goal is ergonomic consistency, metadata reuse, auditability, and modularity—not rebuilding a database engine or copying Odoo wholesale.
+
+```text
+POSTGRESQL / SUPABASE
+        ↑
+DATABASE ADAPTER + RLS
+        ↑
+@dhgs/orm
+        ↑
+@dhgs/orm-base
+        ↑
+DOMAIN ADDONS
+        ↑
+API / SERVICES / SAFE GENERATED UI
+```
+
+The ORM MUST NOT become a shortcut around governance workflows.
+
+The existing `packages/data` package is a prototype/spike of this direction. M0 SHOULD migrate/refactor its useful ideas into the stable `@dhgs/orm` and `@dhgs/orm-base` contracts instead of expanding both architectures indefinitely.
+
+---
+
+# 172. Package boundaries
+
+## `packages/orm` — framework kernel
+
+Responsibilities:
+
+```text
+FIELD DEFINITIONS
+MODEL DEFINITIONS
+MODEL REGISTRY
+ENVIRONMENT / REQUEST CONTEXT
+DOMAIN / FILTER AST
+REPOSITORY / MODEL API
+MANIFEST / ADDON CONTRACT
+VIEW METADATA
+ACTION / COMMAND REGISTRY
+ADAPTER CONTRACT
+TRANSACTION CONTEXT
+AUDIT / LEDGER HOOKS
+UPGRADE CONTRACT
+```
+
+It MUST NOT contain DHGS domain-specific Mizan/decision policy.
+
+## `packages/orm-base` — foundational addon
+
+Contains reusable platform models, seed/reference data, safe views, menus, access metadata, and base actions.
+
+It MUST NOT become a dumping ground for every domain model.
+
+## Domain addons
+
+Possible packages after M0:
+
+```text
+addon-identity
+addon-case
+addon-work
+addon-evidence
+addon-knowledge
+addon-governance
+addon-ledger
+addon-openbook
+addon-audit
+```
+
+Equivalent naming MAY be used, but module boundaries MUST remain explicit.
+
+---
+
+# 173. Field system
+
+Initial field kinds MAY include:
+
+```text
+string
+text
+integer
+number
+boolean
+enum
+uuid
+date
+datetime
+json
+belongsTo
+hasMany
+manyToMany where justified
+```
+
+Field metadata MAY include:
+
+```yaml
+Field:
+  label:
+  help:
+  required:
+  unique:
+  default:
+  sensitive:
+  public:
+  mutable:
+  selection:
+  relation:
+  pattern:
+  invisible_if:
+  readonly_if:
+  required_if:
+```
+
+Conditional display metadata is a UI hint only. Security and authorization MUST remain server/database enforced.
+
+---
+
+# 174. Model contract
+
+Target declaration style:
+
+```ts
+export const Case = defineModel('case.case', {
+  table: 'cases',
+  order: 'created_at desc',
+  governance: {
+    jurisdictionScoped: true,
+    audit: 'required',
+    ledger: 'required',
+    archiveOnly: true
+  },
+  fields: {
+    case_number: fields.string({ required: true, unique: true }),
+    title: fields.string({ required: true }),
+    status: fields.enum(['draft', 'submitted', 'triage', 'closed'], { required: true }),
+    jurisdiction: fields.belongsTo(Jurisdiction, { required: true })
+  }
+})
+```
+
+A model definition SHOULD be sufficient to derive runtime validation metadata, field metadata, relation metadata, generic low-risk views, and migration/schema expectations.
+
+---
+
+# 175. Base record contract
+
+Material records SHOULD expose consistent metadata such as:
+
+```yaml
+BaseRecord:
+  id:
+  active_or_archived_state:
+  created_at:
+  updated_at:
+  created_by:
+  updated_by:
+  version:
+  jurisdiction_id:
+  institution_id:
+```
+
+Not every table needs every field, but omission from material governance records requires rationale.
+
+Optimistic versioning SHOULD prevent silent lost updates.
+
+---
+
+# 176. Environment and operation context
+
+Every material model operation MUST be capable of carrying:
+
+```yaml
+ModelContext:
+  actor_id:
+  request_id:
+  purpose:
+  identity_assurance:
+  jurisdiction_ids: []
+  institution_id:
+  roles: []
+  permissions: []
+  correlation_id:
+  transaction:
+  privileged: false
+```
+
+Target API:
+
+```ts
+const env = createEnvironment(context)
+const Cases = env.model('case.case')
+```
+
+Convenience APIs such as `withContext`, `withTransaction`, or limited privileged/break-glass contexts MAY exist, but privileged elevation MUST be reasoned, time-limited where practical, and auditable.
+
+There MUST NOT be a casual equivalent of unrestricted `sudo()` that silently bypasses governance boundaries.
+
+---
+
+# 177. Model/repository methods
+
+Initial safe methods MAY include:
+
+```text
+create
+browse
+read
+search
+searchRead
+count
+write
+archive
+unarchive where allowed
+action
+```
+
+Target usage:
+
+```ts
+const rows = await Cases.search([
+  ['status', '=', 'submitted'],
+  ['jurisdiction_id', 'in', env.context.jurisdictionIds]
+], { limit: 20, order: 'created_at desc' })
+
+const record = await Cases.create(values)
+await record.write({ title: 'Corrected title' })
+await record.archive()
+```
+
+Governance models MUST NOT expose unrestricted hard delete.
+
+Where lawful retention requires deletion/anonymization, use explicit controlled retention/privacy procedures rather than ordinary CRUD deletion.
+
+---
+
+# 178. Domain/filter language
+
+A small query-domain AST MAY use tuples and boolean operators, for example:
+
+```ts
+[
+  ['status', '=', 'submitted'],
+  ['impact', 'in', ['high', 'critical']]
+]
+```
+
+Allowed operators SHOULD be explicit and validated.
+
+Sensitive/write-only fields MUST NOT become searchable/sortable in ways that leak their values.
+
+Queries MUST remain scoped by access context and PostgreSQL RLS.
+
+---
+
+# 179. Registry
+
+The model registry maps stable dot-notation names to definitions.
+
+Examples:
+
+```text
+base.jurisdiction
+base.institution
+case.case
+evidence.evidence
+governance.decision
+openbook.public_record
+```
+
+Rules:
+
+```text
+MODEL NAMES ARE UNIQUE
+MODEL NAMES ARE STABLE CONTRACTS
+DUPLICATE REGISTRATION FAILS
+UNKNOWN MODEL LOOKUP FAILS
+REGISTRY CAN BE RESET IN TESTS
+```
+
+---
+
+# 180. Addon / manifest contract
+
+Every addon SHOULD expose one canonical manifest.
+
+```ts
+export const manifest = defineAddon({
+  name: 'case',
+  version: '0.1.0',
+  depends: ['base'],
+  models: [Case, CaseParticipant],
+  data: [...],
+  views: [...],
+  menus: [...],
+  actions: [...],
+  access: [...],
+  upgrades: {...}
+})
+```
+
+Manifest fields MAY include:
+
+```yaml
+AddonManifest:
+  name:
+  version:
+  depends: []
+  models: []
+  data: []
+  views: []
+  menus: []
+  actions: []
+  access: []
+  hooks: []
+  upgrades: {}
+```
+
+Requirements:
+
+```text
+SEMANTIC VERSION
+EXPLICIT DEPENDENCIES
+DEPENDENCY CYCLE DETECTION
+MODEL UNIQUENESS
+SAFE INSTALL ORDER
+EXPLICIT UPGRADE PATH
+```
+
+---
+
+# 181. `orm-base` initial model set
+
+The initial base addon SHOULD remain small and reusable.
+
+Recommended candidates:
+
+```text
+base.jurisdiction
+base.institution
+base.party
+base.user_profile
+base.access_group
+base.group_membership
+base.authority_mandate
+base.delegation
+base.sequence
+base.attachment
+base.tag
+base.tag_link
+base.activity
+base.notification
+base.translation
+base.external_id
+base.audit_reference
+```
+
+Boundary guidance:
+
+```text
+Jurisdiction / Institution / Party / Access / Delegation
+→ base
+
+Case / Participant / Notice
+→ case addon
+
+Task / SLA / Queue
+→ work addon or case/work domain
+
+Evidence / Challenge / Chain of Custody
+→ evidence addon
+
+Knowledge / Corpus / Snapshot
+→ knowledge addon
+
+Mizan / Rights / Legal Review / Decision / Appeal / Correction / Outcome
+→ governance addon
+
+Ledger Entry / Decision Context Snapshot
+→ ledger addon
+
+Public Record / Redaction / Publication
+→ openbook addon
+```
+
+This prevents `orm-base` from becoming an unmaintainable monolith.
+
+---
+
+# 182. Seed data and stable external identifiers
+
+Reference records SHOULD use stable external identifiers rather than relying on environment-specific numeric IDs.
+
+Example:
+
+```ts
+seed(Jurisdiction, 'base.jurisdiction_global_sandbox', {
+  code: 'SANDBOX',
+  name: 'DHGS Sandbox'
+})
+```
+
+Relations in seed data MAY use references such as:
+
+```ts
+ref('base.jurisdiction_global_sandbox')
+```
+
+Seed installation SHOULD be idempotent or version-aware.
+
+Seed data MUST NOT silently overwrite material user/governance data.
+
+---
+
+# 183. Data-driven view metadata
+
+The ORM MAY describe safe generic UI through metadata.
+
+```yaml
+ViewSpec:
+  model:
+  title:
+  list:
+    columns: []
+    order:
+  form:
+    sections: []
+  search:
+    fields: []
+    filters: []
+```
+
+Pipeline:
+
+```text
+MODEL
++
+FIELD METADATA
++
+VIEW METADATA
++
+ACCESS CONTEXT
+→
+GENERIC LOW-RISK UI
+```
+
+Generated UI is appropriate for low-risk configuration/reference data and selected operational records.
+
+Generated UI MUST NOT be the only interface for high-stakes workflows.
+
+---
+
+# 184. Explicit UI boundary
+
+The following remain explicit, purpose-designed workflows even if their underlying records are ORM models:
+
+```text
+MIZAN REVIEW
+LEGAL REVIEW
+RIGHTS REVIEW
+HIGH-IMPACT DECISION AUTHORIZATION
+APPEAL
+CORRECTION
+EMERGENCY POWER
+HIGH-IMPACT PUBLICATION / REDACTION
+BREAK-GLASS ADMINISTRATION
+```
+
+Reason:
+
+```text
+DATA CRUD
+!=
+GOVERNANCE AUTHORIZATION
+```
+
+A generic form cannot create lawful authority merely by writing a row.
+
+---
+
+# 185. Action / command model
+
+Models MAY expose safe actions, but business transitions SHOULD use named commands/actions rather than arbitrary field mutation.
+
+Examples:
+
+```text
+action_submit
+action_assign
+action_archive
+request_review
+complete_review
+publish_public_record
+open_appeal
+issue_correction
+```
+
+High-stakes actions MUST call domain/policy services and enforce state transition, authority, conflict, rights, audit, and ledger rules.
+
+The generic data layer MUST NOT expose `decision.status = approved` as an unrestricted write path.
+
+---
+
+# 186. Audit and Hisab hooks
+
+ORM mutations MAY emit standardized mutation events.
+
+```yaml
+MutationEvent:
+  operation:
+  model:
+  record_id:
+  actor_id:
+  purpose:
+  request_id:
+  timestamp:
+  version:
+  changed_fields: []
+  jurisdiction_id:
+  institution_id:
+```
+
+Rules:
+
+```text
+SOFTWARE AUDIT SINK
+→ records technical mutation activity
+
+HISAB LEDGER SINK
+→ only for governance-significant models/events configured to require it
+```
+
+Not every row change belongs in Hisab. Material public-power meaning determines ledger inclusion.
+
+---
+
+# 187. Database adapter and RLS
+
+The ORM MUST remain adapter-based.
+
+Initial adapter target:
+
+# POSTGRESQL / SUPABASE
+
+The adapter is responsible for safe persistence and transaction integration; it MUST NOT invent authorization.
+
+Layered protection:
+
+```text
+APPLICATION / ORM SCOPE CHECK
++
+BACKEND AUTHORIZATION
++
+POSTGRESQL RLS
++
+AUDIT
+```
+
+RLS is authoritative for row access on exposed data. ORM checks are defense-in-depth and improve developer ergonomics/testing.
+
+---
+
+# 188. Schema and migration policy
+
+DHGS SHOULD distinguish model metadata from production migration authority.
+
+During development, metadata MAY generate or compare expected schema.
+
+Production schema change SHOULD use explicit versioned migrations.
+
+```text
+MODEL CHANGE
+→ SCHEMA DIFF
+→ MIGRATION REVIEW
+→ BACKFILL PLAN IF NEEDED
+→ STAGING
+→ TEST
+→ APPLY
+→ VERIFY
+```
+
+The runtime MUST NOT silently perform destructive production schema changes.
+
+Adding required/unique fields to populated tables requires explicit backfill/migration handling.
+
+---
+
+# 189. Upgrade contract
+
+Addon manifests MAY define version-aware upgrades.
+
+```ts
+upgrades: {
+  '0.1.0': async (trx) => { /* controlled backfill */ }
+}
+```
+
+Rules:
+
+```text
+UPGRADE IS TRANSACTIONAL WHERE PRACTICAL
+UPGRADE IS VERSIONED
+UPGRADE IS TESTED
+DOWNSTREAM DEPENDENCIES ARE CONSIDERED
+ROLLBACK / RECOVERY IS DOCUMENTED
+```
+
+No addon may silently downgrade another addon.
+
+---
+
+# 190. MVC and data-driven application pattern
+
+DHGS MAY describe its application pattern as:
+
+```text
+MODEL
+→ persistent domain data + metadata
+
+VIEW
+→ explicit UX or safe metadata-driven UI
+
+CONTROLLER / SERVICE / COMMAND
+→ orchestration, authorization, state transition, engines, audit
+```
+
+The preferred rule is:
+
+```text
+MODEL DEFINES DATA
+VIEW DEFINES PRESENTATION
+SERVICE / COMMAND DEFINES GOVERNANCE ACTION
+```
+
+This avoids placing critical rules in React components or generic ORM methods.
+
+---
+
+# 191. Generic admin safety
+
+Generated administration MUST support model-level policy such as:
+
+```yaml
+ui_policy:
+  generated: allowed | read_only | prohibited
+  create: true_or_false
+  write: true_or_false
+  archive: true_or_false
+  actions: []
+```
+
+High-risk models SHOULD default to:
+
+```text
+generated = read_only or prohibited
+```
+
+Examples:
+
+```text
+base.tag → generated admin may be allowed
+base.jurisdiction → tightly controlled generated admin
+mizan.review → explicit workflow UI
+governance.decision → explicit workflow UI
+ledger.entry → read-only specialized UI
+```
+
+---
+
+# 192. ORM testing requirements
+
+M0 SHOULD cover at minimum:
+
+```text
+MODEL REGISTRATION
+DUPLICATE MODEL FAILURE
+FIELD VALIDATION
+DOMAIN FILTERING
+SEARCH / COUNT / BROWSE
+CREATE / WRITE / ARCHIVE
+OPTIMISTIC VERSION CONFLICT
+JURISDICTION SCOPE
+INSTITUTION SCOPE
+PRIVILEGED CONTEXT AUDIT
+IMMUTABLE FIELD PROTECTION
+NO HARD DELETE
+MANIFEST DEPENDENCY ORDER
+CYCLE DETECTION
+SEED REFERENCES
+VIEW METADATA VALIDATION
+GENERATED UI POLICY
+AUDIT EVENT EMISSION
+LEDGER EVENT EMISSION FOR CONFIGURED MODELS
+ADAPTER TRANSACTION BEHAVIOR
+RLS INTEGRATION TEST
+```
+
+---
+
+# 193. ORM invariants
+
+```yaml
+ORM-INV-001: no_unrestricted_hard_delete_for_governance_records
+ORM-INV-002: no_cross_jurisdiction_mutation_without_authority
+ORM-INV-003: no_material_mutation_without_actor_purpose_request_context
+ORM-INV-004: no_orm_scope_check_replacing_RLS
+ORM-INV-005: no_generic_CRUD_approving_high_impact_decision
+ORM-INV-006: no_duplicate_model_name
+ORM-INV-007: no_addon_dependency_cycle
+ORM-INV-008: no_silent_destructive_production_schema_sync
+ORM-INV-009: no_sensitive_hidden_field_query_leak
+ORM-INV-010: no_addon_upgrade_without_version_and_test
+```
+
+---
+
+# 194. M0 ORM exit gate
+
+M0 ORM foundation passes only when:
+
+```text
+@dhgs/orm CONTRACT STABLE ENOUGH FOR FIRST ADDON
+@dhgs/orm-base MANIFEST LOADS
+BASE MODEL SET REVIEWED
+POSTGRES / SUPABASE ADAPTER WORKS IN TEST ENVIRONMENT
+MODEL CONTEXT / JURISDICTION SCOPING TESTS PASS
+RLS INTEGRATION PATH PROVEN
+ARCHIVE-NOT-DELETE POLICY TESTED
+AUDIT / LEDGER HOOK CONTRACT TESTED
+MANIFEST DEPENDENCY / CYCLE TESTS PASS
+LOW-RISK VIEW METADATA RESOLVES
+HIGH-RISK GENERATED UI PROHIBITION TESTED
+PACKAGES/DATA SPIKE EITHER MIGRATED OR FORMALLY DEPRECATED
+DOCUMENTATION UPDATED
+```
+
+---
+
+# PART XXIX — Issue-led implementation governance
+
+# 195. Implementation principle
+
+From v15.1 onward, non-trivial implementation is **issue-first**.
+
+```text
+BLUEPRINT
+→ REQUIREMENT
+→ MILESTONE
+→ GITHUB ISSUE
+→ CODE / DESIGN / DATA
+→ TEST
+→ ACCEPTANCE
+→ CLOSE
+```
+
+The issue tracker is the operational backlog; this blueprint is the architectural authority.
+
+---
+
+# 196. One-active-milestone rule
+
+Only one implementation milestone SHOULD be active at a time unless a clearly independent security/documentation fix must run in parallel.
+
+```text
+ACTIVE MILESTONE
+→ implementation work allowed
+
+FUTURE MILESTONE
+→ planning/backlog only
+```
+
+New ideas that do not belong to the active milestone MUST NOT interrupt active work. Capture them in the master backlog and revisit at the milestone boundary.
+
+---
+
+# 197. Milestone sequence
+
+```text
+M0 — FOUNDATION KERNEL
+     ORM / ORM-BASE / DB adapter / RLS context / metadata / CI contract
+
+M1 — CASE SPINE
+     identity / jurisdiction / authority / case / work / evidence
+
+M2 — DECISION SPINE
+     legal precheck / rights / Mizan / decision / attestation
+
+M3 — ACCOUNTABILITY & PUBLIC
+     Hisab / Open Book / publication / appeal / correction
+
+M4 — ASSURANCE & PILOT
+     audit / security / accessibility / simulation / pilot gate
+```
+
+M0 is the only active milestone at adoption of v15.1.
+
+---
+
+# 198. Issue contract
+
+Every implementation issue SHOULD contain:
+
+```yaml
+IssueContract:
+  milestone:
+  objective:
+  problem:
+  scope: []
+  non_scope: []
+  dependencies: []
+  linked_blueprint_sections: []
+  linked_requirements: []
+  acceptance_criteria: []
+  tests: []
+  security_privacy_notes: []
+  docs_updates: []
+```
+
+An issue without measurable acceptance criteria is not implementation-ready.
+
+---
+
+# 199. Scope-change rule
+
+During implementation:
+
+```text
+SMALL CLARIFICATION
+→ update current issue
+
+NEW INDEPENDENT REQUIREMENT
+→ create follow-up issue
+
+FUTURE-MILESTONE IDEA
+→ add to master backlog, do not expand current issue
+
+FOUNDATIONAL ARCHITECTURE CHANGE
+→ blueprint / ADR review before implementation
+```
+
+This rule prevents milestone drift.
+
+---
+
+# 200. WIP and dependency discipline
+
+Recommended initial WIP:
+
+```text
+1 PRIMARY IMPLEMENTATION ISSUE
++
+1 SUPPORTING TEST / DOC ISSUE IF NECESSARY
+```
+
+Avoid opening many partially implemented modules at once.
+
+Dependencies SHOULD be explicit:
+
+```text
+ORM KERNEL
+→ ORM-BASE
+→ DB ADAPTER / RLS
+→ DATA-DRIVEN VIEW CONTRACT
+→ M0 EXIT GATE
+→ M1
+```
+
+---
+
+# 201. Master tracking issue
+
+The repository SHOULD maintain one master implementation issue containing:
+
+```text
+CURRENT MILESTONE
+CURRENT PRIMARY ISSUE
+MILESTONE EXIT CHECKLIST
+LINKS TO ACTIVE ISSUES
+FUTURE MILESTONE CHECKLIST
+BLOCKERS
+DECISIONS / ADR NEEDED
+```
+
+The master issue is a navigation/control artifact, not a replacement for detailed implementation issues.
+
+---
+
+# 202. Milestone exit rule
+
+A milestone exits only when:
+
+```text
+ALL REQUIRED ISSUES CLOSED
+ACCEPTANCE CRITERIA SATISFIED
+REQUIRED TESTS PASS
+CRITICAL DOCUMENTATION UPDATED
+NO KNOWN CRITICAL INVARIANT FAILURE
+NEXT MILESTONE ENTRY CONDITIONS MET
+```
+
+Code quantity, commit count, or visual completeness alone does not prove milestone completion.
+
+---
+
 # APPENDIX A — Historical and symbolic context
 
 This appendix preserves non-normative concepts from the early DHGS design history so they are not silently lost while remaining separate from executable governance rules.
@@ -5148,6 +6099,8 @@ VULNERABLE-PERSON SAFEGUARDS DEFINED
 SCRIPTURAL CORPUS PROVENANCE MODEL VERIFIED
 PRODUCT EXPERIENCE COMPLETION GATE PASS
 CORE VISUAL / ASSET GOVERNANCE ACCEPTED
+ORM / ADDON FOUNDATION M0 EXIT GATE PASS
+ISSUE-LED IMPLEMENTATION GOVERNANCE ACTIVE
 HIGH-RISK END-TO-END SIMULATIONS PASS
 ```
 
