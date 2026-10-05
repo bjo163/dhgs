@@ -23,22 +23,107 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup pinned Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.23.3
 
-      - name: Enable pnpm
+      - name: Enable pinned pnpm
         run: |
           corepack enable
           corepack prepare pnpm@10.18.0 --activate
           pnpm --version
 
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+      - name: Validate toolchain
+        run: pnpm toolchain:check
+
+      - name: Install dependencies from canonical lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Prove frozen lockfile rejects manifest drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp package.json /tmp/dhgs-package.json
+          trap 'cp /tmp/dhgs-package.json package.json' EXIT
+          node - <<'NODE'
+          const fs = require('fs')
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+          pkg.devDependencies.vitest = '0.0.0-drift-fixture'
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n')
+          NODE
+          if pnpm install --frozen-lockfile --ignore-scripts >/tmp/dhgs-lock-drift.log 2>&1; then
+            echo 'Frozen install unexpectedly accepted manifest/lockfile drift.' >&2
+            cat /tmp/dhgs-lock-drift.log >&2
+            exit 1
+          fi
+          cp /tmp/dhgs-package.json package.json
+          trap - EXIT
+          echo 'Frozen lockfile correctly rejected manifest drift.'
 
       - name: Validate software version files
         run: pnpm version:check
+
+      - name: Test software version mismatch fixture
+        run: node scripts/release/version-check-fixture.mjs
+
+      - name: Validate Blueprint and README implementation contract
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -s BLUEPRINT.md
+          test -s README.md
+
+          blueprint_version="$(sed -n 's/^\*\*Version:\*\* `\([^`]*\)`.*/\1/p' BLUEPRINT.md | head -n1)"
+          readme_blueprint_version="$(sed -n 's/^\*\*Blueprint document baseline:\*\* `DHGS v\([^`]*\)`.*/\1/p' README.md | head -n1)"
+
+          if [ -z "$blueprint_version" ] || [ -z "$readme_blueprint_version" ]; then
+            echo 'Unable to read Blueprint document versions from BLUEPRINT.md / README.md.' >&2
+            exit 1
+          fi
+
+          if [ "$blueprint_version" != "$readme_blueprint_version" ]; then
+            echo "Blueprint version drift: BLUEPRINT=$blueprint_version README=$readme_blueprint_version" >&2
+            exit 1
+          fi
+
+          grep -F 'M0 — FOUNDATION KERNEL' BLUEPRINT.md >/dev/null
+          grep -F 'M5 — DEPLOYMENT, GOVERNANCE-OF-SOFTWARE & CONTROLLED PILOT' BLUEPRINT.md >/dev/null
+          grep -F '# 203. Repository delivery and version-stream contract' BLUEPRINT.md >/dev/null
+          grep -F 'GitHub issue #6' BLUEPRINT.md >/dev/null
+
+          grep -F 'M0 — FOUNDATION KERNEL — ACTIVE' README.md >/dev/null
+          grep -F 'M5 — DEPLOYMENT, GOVERNANCE-OF-SOFTWARE & CONTROLLED PILOT' README.md >/dev/null
+          grep -F 'github.com/bjo163/dhgs/issues/6' README.md >/dev/null
+          grep -F 'not yet considered active/verified' README.md >/dev/null
+
+          if grep -F 'M4 — ASSURANCE & PILOT' BLUEPRINT.md >/dev/null; then
+            echo 'Stale implementation milestone found: M4 — ASSURANCE & PILOT' >&2
+            exit 1
+          fi
+
+          echo "Blueprint/README contract aligned at document version $blueprint_version"
+
+      - name: Validate governance registry
+        run: |
+          pnpm --filter @dhgs/governance-registry typecheck
+          pnpm --filter @dhgs/governance-registry test
+
+      - name: Validate canonical contracts
+        run: |
+          pnpm --filter @dhgs/contracts typecheck
+          pnpm --filter @dhgs/contracts test
+
+      - name: Validate asynchronous foundation
+        run: |
+          pnpm --filter @dhgs/async typecheck
+          pnpm --filter @dhgs/async test
+          pnpm --filter @dhgs/async-postgres typecheck
+          pnpm --filter @dhgs/async-postgres test
+
+      - name: Generate reproducibility provenance
+        run: pnpm --silent release:provenance
 
       - name: Typecheck
         run: pnpm typecheck
@@ -48,11 +133,6 @@ jobs:
 
       - name: Build
         run: pnpm build
-
-      - name: Verify blueprint and README exist
-        run: |
-          test -s BLUEPRINT.md
-          test -s README.md
 
       - name: Check for accidentally committed secrets
         shell: bash

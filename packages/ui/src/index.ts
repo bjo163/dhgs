@@ -1,3 +1,4 @@
-export { Button } from './button';
-export { StatusBadge } from './status-badge';
-export { Surface } from './surface';
+export * from './button';
+export * from './status-badge';
+export * from './surface';
+export * from './generic-admin';

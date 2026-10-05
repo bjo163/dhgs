@@ -35,10 +35,19 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Setup Node
+      - name: Setup pinned Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.23.3
+
+      - name: Enable pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.18.0 --activate
+          pnpm --version
+
+      - name: Verify release toolchain
+        run: pnpm toolchain:check
 
       - name: Plan and apply semantic version
         id: plan
@@ -49,6 +58,10 @@ jobs:
       - name: Verify generated version metadata
         if: steps.plan.outputs.should_release == 'true'
         run: node scripts/release/version-check.mjs
+
+      - name: Generate release provenance
+        if: steps.plan.outputs.should_release == 'true'
+        run: pnpm --silent release:provenance > release-provenance.json
 
       - name: Commit version and changelog
         if: steps.plan.outputs.should_release == 'true'
@@ -87,7 +100,7 @@ jobs:
             echo "dev advanced while release was running; leaving it untouched. Reconcile main into dev before the next promotion."
           fi
 
-      - name: Create GitHub Release
+      - name: Create GitHub Release with provenance
         if: steps.plan.outputs.should_release == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -98,7 +111,7 @@ jobs:
             echo "GitHub Release $TAG already exists; refusing duplicate."
             exit 1
           fi
-          gh release create "$TAG" \
+          gh release create "$TAG" release-provenance.json \
             --repo "$GITHUB_REPOSITORY" \
             --title "DHGS v${VERSION}" \
             --generate-notes \

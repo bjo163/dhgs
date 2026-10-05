@@ -2,9 +2,13 @@
 
 > **Digital Governance Assurance Platform** for lawful, evidence-based, accountable, reviewable, correctable, privacy-preserving, accessible, and publicly understandable governance.
 
-**Blueprint baseline:** `DHGS v15.1.0`  
+**Blueprint document baseline:** `DHGS v15.1.2`  
 **Blueprint status:** Controlled implementation baseline candidate  
-**Primary specification:** [`BLUEPRINT.md`](./BLUEPRINT.md)
+**Software version:** see [`VERSION`](./VERSION) and root `package.json`  
+**Primary architectural specification:** [`BLUEPRINT.md`](./BLUEPRINT.md)  
+**Operational implementation index:** [GitHub Issue #6 — DHGS implementation roadmap and milestone control](https://github.com/bjo163/dhgs/issues/6)
+
+> **Versioning rule:** the Blueprint document version and the software semantic version are independent version streams. A Blueprint revision does not automatically imply a software release, and a software patch/minor release does not automatically change the Blueprint version.
 
 ---
 
@@ -54,6 +58,92 @@ A central design rule is:
 
 ---
 
+## Current implementation status
+
+DHGS remains a **controlled implementation candidate**, not a completed governance system.
+
+Current software milestone:
+
+# **M0 — FOUNDATION KERNEL — ACTIVE**
+
+`@dhgs/orm` kernel issue **#1 is complete**. The next foundation work remains inside M0; M1 is not unlocked until exit gate #5 passes.
+
+The milestone exit chain is:
+
+```text
+#5   M0 FOUNDATION PASS
+ ↓
+#19  M1 CASE / IDENTITY / KNOWLEDGE PASS
+ ↓
+#30  M2 DECISION PASS
+ ↓
+#42  M3 EXECUTION / ACCOUNTABILITY / PUBLIC PASS
+ ↓
+#60  M4 ASSURANCE / HARDENING PASS
+ ↓
+#75  M5 CONTROLLED PILOT GO | CORRECT | NO_GO
+ ↓
+controlled operation + evidence
+ ↓
+#76  CONTINUE | CORRECT | RESET
+```
+
+The complete operational backlog lives in **master issue #6**. GitHub issue numbers are operational work-item references; stable architecture/traceability IDs remain the `REQ-*`, `CTRL-*`, `RULE-*`, `INV-*`, `TEST-*`, and `KPI-*` identifiers defined by the Blueprint and machine registries.
+
+---
+
+## Reproducible toolchain and dependencies
+
+The controlled baseline is pinned to:
+
+```text
+Node.js 22.23.3
+pnpm 10.18.0
+pnpm-lock.yaml (committed canonical dependency graph)
+```
+
+Normal CI/security installs use `pnpm install --frozen-lockfile`. A manifest change without a matching lockfile change is expected to fail. Toolchain and lockfile provenance can be inspected with:
+
+```bash
+pnpm toolchain:check
+pnpm release:provenance
+```
+
+Dependency-update procedure is documented in [`docs/dependency-management.md`](./docs/dependency-management.md).
+
+---
+
+## Repository and delivery model
+
+Long-lived branches under the current architecture:
+
+```text
+dev
+main
+```
+
+Delivery contract:
+
+```text
+dev
+  ↓ Pull Request only
+main
+  ↓ semantic version planning
+VERSION + package.json
+  ↓
+CHANGELOG.md
+  ↓
+vX.Y.Z tag
+  ↓
+GitHub Release + release-provenance.json
+```
+
+`dev` is the active integration branch. `main` is the controlled release branch. Persistent feature/release/hotfix branches are outside the current two-branch architecture.
+
+Server-side GitHub Rulesets are **not yet considered active/verified**; issue **#77** remains the blocking control for server-side branch/tag enforcement. GitHub Actions guards are defense-in-depth, not a substitute for server-side protection.
+
+---
+
 ## Repository status
 
 The repository is in a **design-foundation, architecture-kernel, and prototype-shell stage**. The governance blueprint remains canonical; code and visual artifacts are implementation experiments until their requirements and tests are satisfied.
@@ -77,9 +167,9 @@ dhgs/
 │   └── api/
 ├── packages/
 │   ├── ui/
-│   ├── data/              # current prototype/spike; not the final ORM contract
-│   ├── orm/               # planned M0 kernel
-│   └── orm-base/          # planned M0 base addon
+│   ├── data/              # deprecated M0 spike; do not expand
+│   ├── orm/               # stable M0 kernel established by issue #1
+│   └── orm-base/          # next foundational addon
 ├── engines/
 │   ├── evidence-engine/
 │   ├── mizan-engine/
@@ -194,7 +284,7 @@ See [`design/`](./design/).
 
 ## DHGS ORM and data-driven module architecture
 
-DHGS will use a **small Odoo-inspired model/addon pattern**, adapted for governance rather than copied wholesale.
+DHGS uses a **small Odoo-inspired model/addon pattern**, adapted for governance rather than copied wholesale.
 
 ```text
 packages/orm
@@ -208,7 +298,7 @@ PostgreSQL / Supabase
 
 ### `@dhgs/orm` — framework kernel
 
-Planned responsibilities:
+Implemented M0 responsibilities include:
 
 ```text
 FIELD DEFINITIONS
@@ -217,27 +307,26 @@ MODEL REGISTRY
 ENVIRONMENT / REQUEST CONTEXT
 DOMAIN / FILTER AST
 REPOSITORY / MODEL METHODS
-MANIFEST / ADDON LOADING
-VIEW METADATA
-ACTION / COMMAND REGISTRY
-ADAPTER CONTRACT
+ADAPTER / TRANSACTION CONTRACT
 AUDIT / LEDGER HOOKS
 ```
+
+Manifest/addon loading and metadata-driven UI remain separate M0 work items rather than being silently declared complete by the kernel.
 
 Target ergonomic API:
 
 ```ts
-const env = dhgsEnv(context)
+const env = createEnvironment({ adapter, registry, context })
 const Cases = env.model('case.case')
 
 const rows = await Cases.search([
   ['status', '=', 'submitted'],
-  ['jurisdiction_id', '=', context.jurisdictionId]
+  ['jurisdictionId', 'in', context.jurisdictionIds]
 ])
 
 const record = await Cases.create(values)
-await record.write({ title: 'Corrected title' })
-await record.archive()
+await Cases.write(record.id, { title: 'Corrected title' }, { expectedVersion: record.version })
+await Cases.archive(record.id, { expectedVersion: record.version + 1 })
 ```
 
 There is **no unrestricted hard-delete API** for governance records.
@@ -333,7 +422,7 @@ HIGH-IMPACT PUBLICATION
 
 ### Governance-aware context
 
-Every model operation should be capable of carrying:
+Every material model mutation carries:
 
 ```text
 actor_id
@@ -343,12 +432,12 @@ identity_assurance
 jurisdiction
 institution
 roles / permissions
-transaction
+correlation context
 ```
 
 PostgreSQL RLS remains authoritative; ORM scope checks add defense-in-depth, not a replacement for RLS.
 
-The existing `packages/data` package is a **prototype of this direction**. It should be migrated/refactored under the M0 issues rather than expanded ad hoc.
+The existing `packages/data` package is a **deprecated prototype** retained temporarily for migration evidence. New development must target `@dhgs/orm`.
 
 ---
 
@@ -364,7 +453,7 @@ The prototype deliberately avoids premature infrastructure complexity.
 - **PostgreSQL RLS** — planned authorization enforcement
 - **Vitest** — unit / rule / ORM tests
 - **Playwright** — planned E2E/accessibility journey tests
-- **GitHub Actions** — planned CI
+- **GitHub Actions** — CI/release/security automation
 - **Vercel + Supabase** — intended initial hosted environments
 
 Not required for the MVP: Kubernetes, Kafka, blockchain, Temporal, OPA, OpenFGA, vector databases, native mobile apps, or autonomous AI agents.
@@ -427,19 +516,32 @@ Rules:
 
 ```text
 M0 — FOUNDATION KERNEL
-     ORM / ORM-BASE / adapter / metadata / CI contract
+     ORM / ORM-BASE / DB-RLS / schemas-events / async-outbox
+     UI contracts / repository automation / server-side rulesets
+     pinned toolchain / reproducible dependency baseline / documentation alignment
 
-M1 — CASE SPINE
-     identity / jurisdiction / authority / case / work / evidence
+M1 — CASE, IDENTITY, KNOWLEDGE & INTAKE SPINE
+     authentication / authorization / mandate / case / work / notice
+     privacy-noticed intake / secure evidence-file boundary
+     corpus lifecycle / knowledge retrieval / protected reporting
 
 M2 — DECISION SPINE
-     legal precheck / rights / Mizan / decision / attestation
+     legal precheck / rights / evidence engine / Mizan / policy guard
+     legal-ethical review / conflict / human decision / context snapshot
 
-M3 — ACCOUNTABILITY & PUBLIC
-     Hisab / Open Book / publication / appeal / correction
+M3 — EXECUTION, ACCOUNTABILITY & PUBLIC
+     decision execution / remedy verification / Hisab / software Audit
+     publication-redaction / Open Book / resource context
+     appeal / correction / public interfaces
 
-M4 — ASSURANCE & PILOT
-     audit / security / accessibility / simulation / pilot gate
+M4 — ASSURANCE & HARDENING
+     security / privacy / resilience / accessibility / independent oversight
+     risk-control assurance / metrics / anti-capture / simulation / calibration
+
+M5 — DEPLOYMENT, GOVERNANCE-OF-SOFTWARE & CONTROLLED PILOT
+     separated environments / migrations / controlled production release
+     external boundaries / operating modes / optional AI-signature controls
+     pilot go-no-go / year-one evidence and system review
 ```
 
 Only **M0** should be actively implemented now. Later milestones remain planned but intentionally blocked until the previous exit gate passes.
@@ -448,10 +550,11 @@ Only **M0** should be actively implemented now. Later milestones remain planned 
 
 ## Run the prototype locally
 
-Prerequisite: Node.js and pnpm.
+Prerequisites: Node `22.23.3` and pnpm `10.18.0`.
 
 ```bash
-pnpm install
+pnpm toolchain:check
+pnpm install --frozen-lockfile
 pnpm dev:public   # http://localhost:3000
 pnpm dev:ops      # http://localhost:3001
 pnpm dev:api      # http://localhost:4000
@@ -460,7 +563,7 @@ pnpm dev:api      # http://localhost:4000
 Run available tests:
 
 ```bash
-pnpm test
+pnpm check
 ```
 
 This is still a **sandbox prototype**. Do not use it for real coercive or high-impact decisions.

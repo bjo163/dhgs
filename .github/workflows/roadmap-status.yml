@@ -1,0 +1,103 @@
+name: Roadmap Status
+
+on:
+  schedule:
+    - cron: '17 1 * * *'
+  workflow_dispatch:
+  issues:
+    types: [opened, closed, reopened]
+
+permissions:
+  issues: write
+  pull-requests: read
+  contents: read
+
+concurrency:
+  group: roadmap-status
+  cancel-in-progress: true
+
+jobs:
+  summarize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update master roadmap status comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- dhgs-roadmap-status -->';
+            const all = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              per_page: 100,
+            });
+            const issues = all.filter(item => !item.pull_request);
+
+            const prefixes = ['M0', 'M1', 'M2', 'M3', 'M4', 'M5'];
+            const rows = [];
+            for (const prefix of prefixes) {
+              const relevant = issues.filter(item => new RegExp(`^\\[${prefix}\\]\\s`, 'i').test(item.title));
+              const open = relevant.filter(item => item.state === 'open');
+              const closed = relevant.length - open.length;
+              rows.push({ prefix, total: relevant.length, open, closed });
+            }
+
+            const active = rows.find(row => row.open.length) || null;
+            const m0Open = rows.find(row => row.prefix === 'M0')?.open || [];
+            const gateNumbers = [5, 19, 30, 42, 60, 75, 76];
+            const gateLines = gateNumbers.map(number => {
+              const item = issues.find(issue => issue.number === number);
+              return item ? `${item.state === 'closed' ? '✅' : '⬜'} #${number} — ${item.title}` : `⚠️ #${number} missing`;
+            });
+
+            const table = [
+              '| Milestone | Total issues | Open | Closed |',
+              '|---|---:|---:|---:|',
+              ...rows.map(row => `| ${row.prefix} | ${row.total} | ${row.open.length} | ${row.closed} |`),
+            ].join('\n');
+
+            const activeLines = active
+              ? active.open.slice(0, 25).map(item => `- #${item.number} ${item.title}`).join('\n')
+              : '- No open M0–M5 implementation issue.';
+
+            const body = [
+              marker,
+              '## Automated software roadmap status',
+              '',
+              `Last refresh: ${new Date().toISOString()}`,
+              '',
+              table,
+              '',
+              `**First milestone with open work:** ${active?.prefix ?? 'none'}`,
+              '',
+              activeLines,
+              active && active.open.length > 25 ? `- …and ${active.open.length - 25} more` : '',
+              '',
+              '### Exit gates',
+              ...gateLines,
+              '',
+              '> Counts are operational aids only. A milestone passes only when its dedicated exit-gate issue closes with required evidence.',
+            ].filter(Boolean).join('\n');
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 6,
+              per_page: 100,
+            });
+            const prior = comments.find(comment => (comment.body || '').includes(marker));
+            if (prior) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: prior.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: 6,
+                body,
+              });
+            }
