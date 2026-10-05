@@ -1,0 +1,125 @@
+name: Issue 81 Async Foundation Bootstrap Retry
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/bootstrap-async-issue-81-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: dhgs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d dhgs"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.3
+      - name: Enable pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.18.0 --activate
+      - name: Install current workspace
+        run: pnpm install --frozen-lockfile
+
+      - name: Reuse canonical bootstrap generators
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+
+          src = Path('.github/workflows/bootstrap-async-issue-81.yml').read_text()
+          lines = src.splitlines()
+
+          def extract(step_name: str) -> str:
+              marker = f'      - name: {step_name}'
+              try:
+                  start = lines.index(marker)
+              except ValueError:
+                  raise SystemExit(f'missing bootstrap step: {step_name}')
+              run_idx = None
+              for i in range(start + 1, len(lines)):
+                  if lines[i].startswith('      - name: '):
+                      break
+                  if lines[i] == '        run: |':
+                      run_idx = i + 1
+                      break
+              if run_idx is None:
+                  raise SystemExit(f'missing run block: {step_name}')
+              out = []
+              for i in range(run_idx, len(lines)):
+                  line = lines[i]
+                  if line.startswith('      - name: '):
+                      break
+                  if line.startswith('          '):
+                      out.append(line[10:])
+                  elif line == '':
+                      out.append('')
+                  else:
+                      raise SystemExit(f'unexpected indentation in {step_name}: {line!r}')
+              return '\n'.join(out) + '\n'
+
+          script = extract('Create portable async contracts') + '\n' + extract('Create PostgreSQL async store')
+          Path('/tmp/create-async.sh').write_text(script)
+          PY
+          bash /tmp/create-async.sh
+
+      - name: Correct isolated outbox dispatch fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+          path = Path('packages/async-postgres/src/__tests__/integration.test.ts')
+          text = path.read_text()
+          before = """              const [claimed] = await store.claimOutbox('worker-a', now, 60_000, 1);\n              expect(claimed?.request_id).toBe('REQ-1');\n              expect(claimed?.correlation_id).toBe('CORR-1');\n              await store.publishOutbox(claimed!.event_id, 'worker-a', now);\n              expect((await pool.query(\"SELECT status FROM dhgs_async.outbox_events WHERE event_id='evt-dispatch'\")).rows[0].status).toBe('PUBLISHED');"""
+          after = """              const batch = await store.claimOutbox('worker-a', now, 60_000, 10);\n              const claimed = batch.find((event) => event.event_id === 'evt-dispatch');\n              expect(claimed).toBeDefined();\n              expect(claimed?.request_id).toBe('REQ-1');\n              expect(claimed?.correlation_id).toBe('CORR-1');\n              for (const event of batch) await store.publishOutbox(event.event_id, 'worker-a', now);\n              expect((await pool.query(\"SELECT status FROM dhgs_async.outbox_events WHERE event_id='evt-dispatch'\")).rows[0].status).toBe('PUBLISHED');"""
+          if text.count(before) != 1:
+              raise SystemExit(f'expected one fixture block, found {text.count(before)}')
+          path.write_text(text.replace(before, after))
+          PY
+
+      - name: Update lockfile and verify packages
+        env:
+          PG_ADMIN_URL: postgres://postgres:postgres@127.0.0.1:5432/dhgs
+        run: |
+          pnpm install --lockfile-only
+          pnpm install --frozen-lockfile
+          pnpm --filter @dhgs/async typecheck
+          pnpm --filter @dhgs/async test
+          pnpm --filter @dhgs/async-postgres typecheck
+          pnpm --filter @dhgs/async-postgres test
+          pnpm --filter @dhgs/async-postgres test:integration
+
+      - name: Commit async foundation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add packages/async packages/async-postgres docs/async-foundation.md pnpm-lock.yaml
+          git commit -m 'feat(async): add outbox jobs scheduler and idempotency foundation
+
+          Refs #81'
+          git push origin HEAD:dev
