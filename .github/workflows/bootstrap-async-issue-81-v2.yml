@@ -93,11 +93,19 @@ jobs:
           from pathlib import Path
           path = Path('packages/async-postgres/src/__tests__/integration.test.ts')
           text = path.read_text()
-          before = """              const [claimed] = await store.claimOutbox('worker-a', now, 60_000, 1);\n              expect(claimed?.request_id).toBe('REQ-1');\n              expect(claimed?.correlation_id).toBe('CORR-1');\n              await store.publishOutbox(claimed!.event_id, 'worker-a', now);\n              expect((await pool.query(\"SELECT status FROM dhgs_async.outbox_events WHERE event_id='evt-dispatch'\")).rows[0].status).toBe('PUBLISHED');"""
-          after = """              const batch = await store.claimOutbox('worker-a', now, 60_000, 10);\n              const claimed = batch.find((event) => event.event_id === 'evt-dispatch');\n              expect(claimed).toBeDefined();\n              expect(claimed?.request_id).toBe('REQ-1');\n              expect(claimed?.correlation_id).toBe('CORR-1');\n              for (const event of batch) await store.publishOutbox(event.event_id, 'worker-a', now);\n              expect((await pool.query(\"SELECT status FROM dhgs_async.outbox_events WHERE event_id='evt-dispatch'\")).rows[0].status).toBe('PUBLISHED');"""
-          if text.count(before) != 1:
-              raise SystemExit(f'expected one fixture block, found {text.count(before)}')
-          path.write_text(text.replace(before, after))
+          claim = "const [claimed] = await store.claimOutbox('worker-a', now, 60_000, 1);"
+          publish = "await store.publishOutbox(claimed!.event_id, 'worker-a', now);"
+          if text.count(claim) != 1 or text.count(publish) != 1:
+              raise SystemExit(f'unexpected fixture shape: claim={text.count(claim)} publish={text.count(publish)}')
+          text = text.replace(
+              claim,
+              "const batch = await store.claimOutbox('worker-a', now, 60_000, 10);\n      const claimed = batch.find((event) => event.event_id === 'evt-dispatch');\n      expect(claimed).toBeDefined();"
+          )
+          text = text.replace(
+              publish,
+              "for (const event of batch) await store.publishOutbox(event.event_id, 'worker-a', now);"
+          )
+          path.write_text(text)
           PY
 
       - name: Update lockfile and verify packages
