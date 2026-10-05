@@ -53,6 +53,36 @@ describe('@dhgs/async', () => {
     expect(await executeJob(input)).toBe('ALREADY_PROCESSED');
     expect(calls).toBe(1);
   });
+
+  it('emits handler latency metrics without coupling exporter failure to execution', async () => {
+    const observations: unknown[] = [];
+    const ticks = [100, 112];
+    const registry = new JobHandlerRegistry().register({ type: 'NOTICE_DELIVERY', version: 1, handle: async () => {} });
+    const result = await executeJob({
+      job: job(),
+      registry,
+      authorization: { authorize: async () => true },
+      idempotency: memoryIdempotency(),
+      workerId: 'w1',
+      now: '2026-10-05T00:00:00.000Z',
+      monotonicNowMs: () => ticks.shift()!,
+      metrics: { observeHandlerLatency: async (observation) => { observations.push(observation); } }
+    });
+    expect(result).toBe('SUCCEEDED');
+    expect(observations).toEqual([{ job_type: 'NOTICE_DELIVERY', job_version: 1, duration_ms: 12, outcome: 'SUCCEEDED' }]);
+
+    const failingExporterRegistry = new JobHandlerRegistry().register({ type: 'NOTICE_DELIVERY', version: 1, handle: async () => {} });
+    await expect(executeJob({
+      job: job({ job_id: 'job-2', idempotency_key: 'notice:n-2' }),
+      registry: failingExporterRegistry,
+      authorization: { authorize: async () => true },
+      idempotency: memoryIdempotency(),
+      workerId: 'w1',
+      now: '2026-10-05T00:00:00.000Z',
+      monotonicNowMs: (() => { const values = [200, 205]; return () => values.shift()!; })(),
+      metrics: { observeHandlerLatency: async () => { throw new Error('metrics unavailable'); } }
+    })).resolves.toBe('SUCCEEDED');
+  });
 });
 
 function memoryIdempotency(): IdempotencyGate {
