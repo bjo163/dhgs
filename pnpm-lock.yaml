@@ -111,6 +111,53 @@ importers:
 
   engines/publication-engine: {}
 
+  packages/async:
+    dependencies:
+      '@dhgs/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      '@types/node':
+        specifier: ^24.0.0
+        version: 24.19.1
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.0
+        version: 3.2.7(@types/node@24.19.1)(tsx@4.23.15)
+
+  packages/async-postgres:
+    dependencies:
+      '@dhgs/async':
+        specifier: workspace:*
+        version: link:../async
+      '@dhgs/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@dhgs/orm':
+        specifier: workspace:*
+        version: link:../orm
+      '@dhgs/orm-postgres':
+        specifier: workspace:*
+        version: link:../orm-postgres
+      pg:
+        specifier: 8.23.1
+        version: 8.23.1
+    devDependencies:
+      '@types/node':
+        specifier: ^24.0.0
+        version: 24.19.1
+      '@types/pg':
+        specifier: 8.23.1
+        version: 8.23.1
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.0
+        version: 3.2.7(@types/node@24.19.1)(tsx@4.23.15)
+
   packages/contracts:
     devDependencies:
       '@types/node':
