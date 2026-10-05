@@ -1,5 +1,5 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "incremental": false, "types": ["react", "react-dom"] },
+  "compilerOptions": { "incremental": false, "types": ["node", "react", "react-dom", "vitest/globals"] },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }
