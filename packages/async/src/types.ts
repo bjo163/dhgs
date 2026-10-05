@@ -91,3 +91,12 @@ export interface AsyncMetrics {
   retry_count: number;
   dead_letter_count: number;
 }
+
+export interface AsyncMetricsHooks {
+  observeHandlerLatency(input: {
+    job_type: string;
+    job_version: number;
+    duration_ms: number;
+    outcome: 'SUCCEEDED' | 'FAILED';
+  }): void | Promise<void>;
+}
