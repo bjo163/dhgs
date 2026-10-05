@@ -46,3 +46,7 @@ jobs:
           PG_ADMIN_URL: postgres://postgres:postgres@127.0.0.1:5432/dhgs
           PG_APP_URL: postgres://dhgs_app:dhgs_app@127.0.0.1:5432/dhgs
         run: pnpm --filter @dhgs/orm-postgres test:integration
+      - name: Run asynchronous durability integration tests
+        env:
+          PG_ADMIN_URL: postgres://postgres:postgres@127.0.0.1:5432/dhgs
+        run: pnpm --filter @dhgs/async-postgres test:integration
