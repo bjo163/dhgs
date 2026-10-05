@@ -115,6 +115,13 @@ jobs:
           pnpm --filter @dhgs/contracts typecheck
           pnpm --filter @dhgs/contracts test
 
+      - name: Validate asynchronous foundation
+        run: |
+          pnpm --filter @dhgs/async typecheck
+          pnpm --filter @dhgs/async test
+          pnpm --filter @dhgs/async-postgres typecheck
+          pnpm --filter @dhgs/async-postgres test
+
       - name: Generate reproducibility provenance
         run: pnpm --silent release:provenance
 
